@@ -20,7 +20,7 @@ BUNDLE_ID_VAR = "$(BUNDLE_IDENTIFIER)"
 APP_SOURCE_DIRS = [
     "App", "Core", "Capture", "Storage", "Location", "Motion",
     "Protection", "Export", "Subscriptions", "CarPlay", "Notifications",
-    "Features", "UI",
+    "Features", "UI", "Intents",
 ]
 TEST_SOURCE_DIR = "Tests"
 UITEST_SOURCE_DIR = "UITests"

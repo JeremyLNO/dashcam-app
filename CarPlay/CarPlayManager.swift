@@ -17,6 +17,8 @@ final class CarPlayManager: ObservableObject {
     @Published private(set) var isConnected = false
 
     private let recording: RecordingManager
+    /// Asked when the CarPlay screen connects, so the same preference governs both paths.
+    var shouldAutoStartOnConnect: () -> Bool = { false }
     private var cancellables = Set<AnyCancellable>()
     private var refreshTimer: Timer?
 
@@ -42,6 +44,10 @@ final class CarPlayManager: ObservableObject {
 
         observeRecording()
         Log.carplay.info("CarPlay connected")
+
+        if shouldAutoStartOnConnect(), !recording.isRecording {
+            Task { @MainActor in await recording.start() }
+        }
     }
 
     func disconnect() {

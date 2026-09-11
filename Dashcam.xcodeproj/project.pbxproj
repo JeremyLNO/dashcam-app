@@ -20,6 +20,7 @@
 		4DD570B083AC7E416AEAE379 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 059EB25E2825B69058176ABB /* PersistenceController.swift */; };
 		21ECCE9DF8AB9EAD27B4DC8D /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62834E0A49F6222939B0126 /* SettingsStore.swift */; };
 		E7426ABF64E7ECE03725EE88 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06598A37718F331A67B71DB4 /* AppConfiguration.swift */; };
+		36CA665895A37C38989EB767 /* CarPlayConnectionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C51B815CFECF3BE7E4582 /* CarPlayConnectionMonitor.swift */; };
 		2C57CBD58944B0ECCDF19308 /* DemoDataSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C2CA6B33790753FBC09B53A /* DemoDataSeeder.swift */; };
 		AC899523C30322BA1092EBBB /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 884F52CD697627EC6F4700B8 /* Formatters.swift */; };
 		FF5B3351328AE57BEA23CAF9 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4A55026204BFA8F1503B70 /* Localization.swift */; };
@@ -64,6 +65,8 @@
 		1682E3A08A7007269982433E /* RecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4B4082160F60E8FDB19DD8 /* RecordingView.swift */; };
 		AF1C33268A61D0D71F8B7837 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128876BA9CB203F0B32BD069 /* SettingsView.swift */; };
 		8A43384751AC0301EF15CE9F /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D4CDF1A6D9A6D5E667005F /* DesignSystem.swift */; };
+		196A0DF6FB8889B71E3F3DE6 /* RecordingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */; };
+		E199FDD00CCBBB9C12B9FB20 /* CarPlayAutoStartTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D0C5D24848D735C4293345 /* CarPlayAutoStartTests.swift */; };
 		E5B259D6F221A32AFCA79CD8 /* CompositionGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */; };
 		5750DEDE63044BDDAC878EE3 /* DistanceAccumulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C42673630B54C8EE6FDC4B4A /* DistanceAccumulatorTests.swift */; };
 		AC5C7DCD23DBDF63C5CE1FB9 /* DriveSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F4DCD35B1BEA1D55114528 /* DriveSessionTests.swift */; };
@@ -119,6 +122,7 @@
 		059EB25E2825B69058176ABB /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersistenceController.swift"; sourceTree = "<group>"; };
 		C62834E0A49F6222939B0126 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsStore.swift"; sourceTree = "<group>"; };
 		06598A37718F331A67B71DB4 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppConfiguration.swift"; sourceTree = "<group>"; };
+		331C51B815CFECF3BE7E4582 /* CarPlayConnectionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CarPlayConnectionMonitor.swift"; sourceTree = "<group>"; };
 		5C2CA6B33790753FBC09B53A /* DemoDataSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DemoDataSeeder.swift"; sourceTree = "<group>"; };
 		884F52CD697627EC6F4700B8 /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Formatters.swift"; sourceTree = "<group>"; };
 		BF4A55026204BFA8F1503B70 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Localization.swift"; sourceTree = "<group>"; };
@@ -138,6 +142,7 @@
 		F7D2FDE4F9560F629A92F105 /* DiscreetScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DiscreetScreen.swift"; sourceTree = "<group>"; };
 		2A4B4082160F60E8FDB19DD8 /* RecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingView.swift"; sourceTree = "<group>"; };
 		128876BA9CB203F0B32BD069 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView.swift"; sourceTree = "<group>"; };
+		B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingIntents.swift"; sourceTree = "<group>"; };
 		97093AD977A0D3370F9EE53A /* DistanceAccumulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DistanceAccumulator.swift"; sourceTree = "<group>"; };
 		A4C7E056B15F9FDD35D5D89A /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationManager.swift"; sourceTree = "<group>"; };
 		0C52EAEF1578E7D787F4B98E /* MotionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MotionManager.swift"; sourceTree = "<group>"; };
@@ -152,6 +157,7 @@
 		3CBC9DA2BA9DF3F3ADF792AF /* StorageLocations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StorageLocations.swift"; sourceTree = "<group>"; };
 		A504B2DD910C9470D162881D /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StorageManager.swift"; sourceTree = "<group>"; };
 		4A0ED5D734E00333761AAFDD /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubscriptionManager.swift"; sourceTree = "<group>"; };
+		A5D0C5D24848D735C4293345 /* CarPlayAutoStartTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CarPlayAutoStartTests.swift"; sourceTree = "<group>"; };
 		8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CompositionGeometryTests.swift"; sourceTree = "<group>"; };
 		C42673630B54C8EE6FDC4B4A /* DistanceAccumulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DistanceAccumulatorTests.swift"; sourceTree = "<group>"; };
 		59F4DCD35B1BEA1D55114528 /* DriveSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DriveSessionTests.swift"; sourceTree = "<group>"; };
@@ -248,6 +254,7 @@
 			isa = PBXGroup;
 			children = (
 				06598A37718F331A67B71DB4 /* AppConfiguration.swift */,
+				331C51B815CFECF3BE7E4582 /* CarPlayConnectionMonitor.swift */,
 				5C2CA6B33790753FBC09B53A /* DemoDataSeeder.swift */,
 				884F52CD697627EC6F4700B8 /* Formatters.swift */,
 				BF4A55026204BFA8F1503B70 /* Localization.swift */,
@@ -423,9 +430,18 @@
 			path = UI;
 			sourceTree = "<group>";
 		};
+		EBCCA996553CC6370DA02F12 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */,
+			);
+			path = Intents;
+			sourceTree = "<group>";
+		};
 		74C0354F987B4FC0FDE2C044 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				A5D0C5D24848D735C4293345 /* CarPlayAutoStartTests.swift */,
 				8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */,
 				C42673630B54C8EE6FDC4B4A /* DistanceAccumulatorTests.swift */,
 				59F4DCD35B1BEA1D55114528 /* DriveSessionTests.swift */,
@@ -505,6 +521,7 @@
 				2646FB40C2F27F2C0CCCC3B8 /* Notifications */,
 				984D844B917CCD4C29DE2A97 /* Features */,
 				C71E237AED0167A15E00637D /* UI */,
+				EBCCA996553CC6370DA02F12 /* Intents */,
 				4541A46D5097AB86EF55A621 /* Resources */,
 				D5B807729C9161D8C6C93C82 /* Config */,
 				74C0354F987B4FC0FDE2C044 /* Tests */,
@@ -709,6 +726,7 @@
 				4DD570B083AC7E416AEAE379 /* PersistenceController.swift in Sources */,
 				21ECCE9DF8AB9EAD27B4DC8D /* SettingsStore.swift in Sources */,
 				E7426ABF64E7ECE03725EE88 /* AppConfiguration.swift in Sources */,
+				36CA665895A37C38989EB767 /* CarPlayConnectionMonitor.swift in Sources */,
 				2C57CBD58944B0ECCDF19308 /* DemoDataSeeder.swift in Sources */,
 				AC899523C30322BA1092EBBB /* Formatters.swift in Sources */,
 				FF5B3351328AE57BEA23CAF9 /* Localization.swift in Sources */,
@@ -753,6 +771,7 @@
 				1682E3A08A7007269982433E /* RecordingView.swift in Sources */,
 				AF1C33268A61D0D71F8B7837 /* SettingsView.swift in Sources */,
 				8A43384751AC0301EF15CE9F /* DesignSystem.swift in Sources */,
+				196A0DF6FB8889B71E3F3DE6 /* RecordingIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -760,6 +779,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E199FDD00CCBBB9C12B9FB20 /* CarPlayAutoStartTests.swift in Sources */,
 				E5B259D6F221A32AFCA79CD8 /* CompositionGeometryTests.swift in Sources */,
 				5750DEDE63044BDDAC878EE3 /* DistanceAccumulatorTests.swift in Sources */,
 				AC5C7DCD23DBDF63C5CE1FB9 /* DriveSessionTests.swift in Sources */,

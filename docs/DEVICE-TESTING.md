@@ -138,7 +138,21 @@ Apple Account*. Then:
 **Local (Simulator, iOS 18.x):** the scheme references `Resources/Dashcam.storekit`; the
 subscription unit tests drive the same file through `SKTestSession`.
 
-## 11. CarPlay
+## 11. CarPlay and auto-start
+
+**Auto-start on connect.** Turn on "Start recording on CarPlay", open the app, then plug
+into the car. Recording must begin on its own. Then repeat with the app *closed*: nothing
+happens, and that is correct — iOS lets no app launch itself.
+
+**The Shortcuts automation**, which is the only way to cover a closed app:
+Shortcuts ▸ Automation ▸ + ▸ CarPlay ▸ Connects ▸ "Start Recording" (the app's own action)
+▸ turn **off** "Ask Before Running". Plug in with the app closed: it should open and start.
+
+Check the three actions appear in Shortcuts at all — Start Recording, Stop Recording,
+Protect Footage — and that each one opens the app rather than claiming to run in the
+background.
+
+## 12. CarPlay
 
 Needs the `com.apple.developer.carplay-driving-task` entitlement — see
 [APP-STORE.md](APP-STORE.md). Until Apple grants it, the CarPlay scene is simply never

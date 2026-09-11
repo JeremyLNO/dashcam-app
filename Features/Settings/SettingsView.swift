@@ -119,10 +119,18 @@ struct SettingsView: View {
             Toggle(isOn: binding(\.autoStartOnLaunch)) {
                 Text(key: "settings.autostart")
             }
+
+            Toggle(isOn: binding(\.startOnCarPlayConnect)) {
+                Text(key: "settings.carplay_autostart")
+            }
+            .accessibilityIdentifier("carPlayAutoStart")
         } header: {
             Text(key: "settings.section.recording")
         } footer: {
-            Text(key: capture.status.isDual ? "settings.recording.footer" : "settings.recording.footer.single")
+            VStack(alignment: .leading, spacing: 8) {
+                Text(key: capture.status.isDual ? "settings.recording.footer" : "settings.recording.footer.single")
+                Text(key: "settings.carplay_autostart.footer")
+            }
         }
     }
 

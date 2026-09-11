@@ -59,6 +59,12 @@ reachable without authenticating — those are the things you may need in a hurr
 
 **CarPlay**, optionally, as a three-button remote: Start, Stop, Protect. Nothing else.
 
+**Starts itself when you get in the car** — with one honest caveat. The app detects the
+CarPlay connection and begins recording, *if it is already open*; iOS gives no app the
+power to launch itself. For a closed app, the three Shortcuts actions (Start Recording,
+Stop Recording, Protect Footage) let the driver build a one-time personal automation —
+"When CarPlay connects → Start Recording" — which does the whole job hands-free.
+
 ## Requirements
 
 * iOS 17.0 or later

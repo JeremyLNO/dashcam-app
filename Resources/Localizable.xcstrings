@@ -7176,6 +7176,76 @@
         }
       }
     },
+    "settings.carplay_autostart": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bei CarPlay-Verbindung aufnehmen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start recording on CarPlay"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabar al conectar CarPlay"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer à la connexion CarPlay"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gravar ao ligar ao CarPlay"
+          }
+        }
+      }
+    },
+    "settings.carplay_autostart.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Aufnahme startet von selbst, sobald das Auto verbunden ist — sofern Dashcam Pocket bereits geöffnet ist; iOS erlaubt keiner App, sich selbst zu starten. Für den Rest: Lege in Kurzbefehle eine persönliche Automation an: „Wenn CarPlay verbindet → Start Recording“, und schalte „Vor dem Ausführen fragen“ aus."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording starts by itself when the car is connected, as long as Dashcam Pocket is already open — iOS does not let an app launch itself. To cover the rest, create a personal automation in Shortcuts: “When CarPlay connects → Start Recording”, and turn off “Ask Before Running”."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La grabación empieza sola al conectar el coche, siempre que Dashcam Pocket ya esté abierta: iOS no permite que una app se inicie sola. Para el resto, crea una automatización personal en Atajos: «Cuando CarPlay se conecte → Start Recording», y desactiva «Preguntar antes de ejecutar»."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'enregistrement démarre seul à la connexion de la voiture, à condition que Dashcam Pocket soit déjà ouverte — iOS n'autorise aucune app à se lancer elle-même. Pour le reste, créez une automatisation personnelle dans Raccourcis : « Quand CarPlay se connecte → Start Recording », et désactivez « Demander avant d'exécuter »."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A gravação começa sozinha ao ligar o carro, desde que a Dashcam Pocket já esteja aberta — o iOS não permite que uma app se inicie sozinha. Para o resto, crie uma automatização pessoal em Atalhos: «Quando o CarPlay ligar → Start Recording» e desative «Perguntar antes de executar»."
+          }
+        }
+      }
+    },
     "settings.discreet": {
       "extractionState": "manual",
       "localizations": {

@@ -36,6 +36,7 @@ final class AppEnvironment: ObservableObject {
     let notifications: NotificationManager
     let review: ReviewPrompter
     let carPlay: CarPlayManager
+    let carPlayConnection: CarPlayConnectionMonitor
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -88,6 +89,7 @@ final class AppEnvironment: ObservableObject {
         )
         self.recording = recording
         self.carPlay = CarPlayManager(recording: recording)
+        self.carPlayConnection = CarPlayConnectionMonitor()
 
         // The export renderer needs the overlay preferences but has no business owning
         // the settings object; this is the one wire between them.
@@ -100,6 +102,29 @@ final class AppEnvironment: ObservableObject {
         permissions.refresh()
 
         observeSettings()
+        observeCarPlay()
+    }
+
+    /// Starts a recording when the car is plugged in, if the driver asked for that.
+    private func observeCarPlay() {
+        carPlay.shouldAutoStartOnConnect = { [weak self] in
+            guard let self else { return false }
+            return CarPlayConnectionMonitor.shouldAutoStart(
+                isEnabled: self.settingsStore.settings.startOnCarPlayConnect,
+                isAlreadyRecording: self.recording.isRecording,
+                isCameraReady: self.capture.status.mode != .unavailable
+            )
+        }
+
+        carPlayConnection.onConnected = { [weak self] in
+            guard let self else { return }
+            guard CarPlayConnectionMonitor.shouldAutoStart(
+                isEnabled: self.settingsStore.settings.startOnCarPlayConnect,
+                isAlreadyRecording: self.recording.isRecording,
+                isCameraReady: self.capture.status.mode != .unavailable
+            ) else { return }
+            Task { await self.recording.start() }
+        }
     }
 
     /// Launch work that can touch disk or the network. Called once from `AppDelegate`.

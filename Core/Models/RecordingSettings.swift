@@ -226,6 +226,10 @@ struct RecordingSettings: Codable, Equatable, Sendable {
     var retention: RetentionPolicy = .thirtyDays
     var storageLimit: StorageLimit = .gb10
     var autoStartOnLaunch: Bool = false
+    /// Start recording as soon as the phone connects to CarPlay — but only while the app
+    /// is already running. iOS gives no app the power to launch itself; the Shortcuts
+    /// automation described in the settings footer covers the rest.
+    var startOnCarPlayConnect: Bool = false
     var discreetDelay: DiscreetDelay = .never
     var impactDetectionEnabled: Bool = true
     var shockSensitivity: ShockSensitivity = .normal

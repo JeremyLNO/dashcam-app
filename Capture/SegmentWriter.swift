@@ -92,9 +92,15 @@ final class SegmentWriter {
     }
 
     /// Closes the current segment and calls back once everything is on disk.
+    ///
+    /// `self` is captured **strongly** here, deliberately. A weak capture let the writer be
+    /// deallocated between `stop()` being called and its block reaching the front of the
+    /// queue, and the block then did nothing: the `.mov` had been created by
+    /// `startWriting()` but was never finalized, and `onSegmentFinished` never fired. The
+    /// footage was on disk and the database never learned it existed — which looks exactly
+    /// like a camera that did not record. A writer has to outlive its own finalization.
     func stop(completion: @escaping @Sendable () -> Void) {
-        queue.async { [weak self] in
-            guard let self else { completion(); return }
+        queue.async {
             self.isStopping = true
             self.finalizeCurrentSegment(endingAt: self.lastPTS)
             self.pendingFinalizations.notify(queue: self.queue) { completion() }

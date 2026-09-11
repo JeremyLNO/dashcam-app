@@ -94,10 +94,15 @@ final class RecordingEngine: SampleSink, @unchecked Sendable {
 
         guard rear != nil || front != nil else { completion(); return }
 
+        // The engine has just dropped its own references, so these locals are the last
+        // thing keeping the writers alive; they must survive until finalization reports
+        // back, not until this function returns.
         let group = DispatchGroup()
         if let rear { group.enter(); rear.stop { group.leave() } }
         if let front { group.enter(); front.stop { group.leave() } }
-        group.notify(queue: .global(qos: .utility)) { completion() }
+        group.notify(queue: .global(qos: .utility)) {
+            withExtendedLifetime((rear, front)) { completion() }
+        }
     }
 
     // MARK: - SampleSink

@@ -149,6 +149,21 @@ so up to a few minutes of footage at a 3-minute segment length. Shortening the w
 reduces how much is pinned, it does not carve out a 20-second clip. Use Export ▸ custom
 range for that.
 
+## Lifetime, and footage that exists but is invisible
+
+A `SegmentWriter` must outlive its own finalization. Its `stop()` hands work to a serial
+queue, and the `.mov` is only completed — and only reported — when that work runs. With a
+weak self-capture there, and with `RecordingEngine.stop` dropping its references as soon as
+it returned, the writer could be deallocated in between. The file was still on disk,
+created by `startWriting()`, but never finalized and never announced: **the footage existed
+and the database never learned it did**, which on screen is indistinguishable from a camera
+that did not record.
+
+Its worst property was being a race. The road camera usually won and the cabin usually lost,
+so it read as "the front camera does not work" rather than as a lifetime bug. It took a test
+that drove the engine with synthetic frames and compared the callbacks against the files on
+disk — the two disagreed, and that gap was the answer.
+
 ## A coordinate space that bites
 
 A video composition's **layer-instruction transforms live in a top-left origin space** —

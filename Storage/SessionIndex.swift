@@ -56,6 +56,13 @@ final class SessionIndex: ObservableObject {
         save()
     }
 
+    /// Deletes by id rather than by object, so a caller can hold on to the identifier
+    /// after the view showing the model has gone away.
+    func deleteSession(id: UUID) {
+        guard let session = session(id: id) else { return }
+        deleteSession(session)
+    }
+
     /// Removes a session row only if nothing on disk survives — used after a sweep has
     /// deleted individual segments and left the session empty.
     func pruneIfEmpty(_ session: DriveSession) {

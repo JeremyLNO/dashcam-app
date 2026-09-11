@@ -13,6 +13,7 @@ struct SessionDetailView: View {
     @EnvironmentObject private var environment: AppEnvironment
     @EnvironmentObject private var subscriptions: SubscriptionManager
     @EnvironmentObject private var storage: StorageManager
+    @Environment(\.dismiss) private var dismiss
 
     enum ViewMode: String, CaseIterable, Identifiable {
         case both
@@ -29,12 +30,18 @@ struct SessionDetailView: View {
         }
     }
 
+    /// Captured up front: after the delete the model is gone, and the id is all that is
+    /// needed to finish the job.
+    private var sessionID: UUID { session.id }
+
     @State private var mode: ViewMode = .both
     @State private var player = AVPlayer()
     @State private var isPreparing = true
     @State private var preparationFailed = false
     @State private var playheadOffset: TimeInterval = 0
     @State private var timeObserver: Any?
+    /// Set by the Delete button. The deletion itself waits for `onDisappear`.
+    @State private var isPendingDeletion = false
     @State private var showExport = false
     @State private var showPaywall = false
 
@@ -57,6 +64,14 @@ struct SessionDetailView: View {
             player.pause()
             if let timeObserver { player.removeTimeObserver(timeObserver) }
             timeObserver = nil
+
+            // Deleting while this screen is still on screen would leave SwiftUI rendering
+            // a model the store has just dropped, which SwiftData turns into a fatal
+            // error ("this model instance was invalidated"). Waiting for the pop to
+            // finish is exact, where a timed delay would only be a guess.
+            guard isPendingDeletion else { return }
+            environment.index.deleteSession(id: sessionID)
+            storage.refresh()
         }
         .sheet(isPresented: $showExport) {
             ExportSheet(session: session)
@@ -216,13 +231,14 @@ struct SessionDetailView: View {
             .buttonStyle(DriverButtonStyle(fill: Theme.surfaceElevated, isProminent: false))
 
             Button(role: .destructive) {
-                environment.index.deleteSession(session)
-                storage.refresh()
+                isPendingDeletion = true
+                dismiss()
             } label: {
                 Label(title: { Text(key: "library.delete.action") }, icon: { Image(systemName: "trash") })
             }
             .buttonStyle(DriverButtonStyle(fill: Theme.surface, foreground: Theme.accent, isProminent: false))
             .disabled(session.hasProtectedContent)
+            .accessibilityIdentifier("deleteDrive")
         }
     }
 

@@ -32,6 +32,30 @@ final class LibraryUITests: UITestCase {
         XCTAssertTrue(app.buttons["exportButton"].exists)
     }
 
+    /// Deleting from inside a drive has to come back to the list: staying on the detail
+    /// screen would leave the user looking at something that no longer exists.
+    func testDeletingFromTheDetailScreenReturnsToTheList() {
+        launch(seedLibrary: true)
+        waitForTabBar()
+        tab("Videos").tap()
+
+        XCTAssertTrue(firstSessionRow.waitForExistence(timeout: Self.launchTimeout))
+        let rowsBefore = app.descendants(matching: .any).matching(identifier: "sessionRow").count
+        firstSessionRow.tap()
+
+        let delete = app.buttons["deleteDrive"]
+        XCTAssertTrue(delete.waitForExistence(timeout: 10))
+        delete.tap()
+
+        // Back on the library: its title is there again, and one drive fewer.
+        XCTAssertTrue(app.navigationBars["Videos"].waitForExistence(timeout: 10),
+                      "the detail screen did not pop after deleting")
+        XCTAssertFalse(delete.exists, "still on the detail screen")
+
+        let rowsAfter = app.descendants(matching: .any).matching(identifier: "sessionRow").count
+        XCTAssertEqual(rowsAfter, rowsBefore - 1, "the deleted drive is gone from the list")
+    }
+
     func testSelectionModeEnablesMultipleDeletion() {
         launch(seedLibrary: true)
         waitForTabBar()

@@ -306,6 +306,13 @@ final class RecordingManager: ObservableObject {
 
     private func startSensors() {
         if settingsStore.settings.locationMetadataEnabled {
+            // The setting is on by default, but nothing had ever triggered the system
+            // prompt: it only fired when the user toggled the switch. A fresh install
+            // could therefore never get a fix, and the GPS tile stayed Off forever.
+            // Starting a recording is exactly the moment the permission makes sense.
+            if location.authorization == .notDetermined {
+                location.requestAuthorization()
+            }
             location.start()
         }
         if settingsStore.settings.impactDetectionEnabled {

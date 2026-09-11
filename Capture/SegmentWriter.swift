@@ -174,7 +174,9 @@ final class SegmentWriter {
         let relativePath = StorageLocations.relativePath(
             sessionID: sessionID, camera: camera, index: index, revision: revision
         )
-        let url = StorageLocations.absoluteURL(forRelativePath: relativePath)
+        // The session folder does not exist until something makes it, and AVAssetWriter
+        // does not create intermediate directories — it simply fails to open the file.
+        let url = StorageLocations.prepareURL(forRelativePath: relativePath)
         try? FileManager.default.removeItem(at: url)
 
         do {
@@ -206,7 +208,10 @@ final class SegmentWriter {
             }
 
             guard newWriter.startWriting() else {
-                throw newWriter.error ?? NSError(domain: "Dashcam.SegmentWriter", code: 2)
+                throw newWriter.error ?? NSError(
+                    domain: "Dashcam.SegmentWriter", code: 2,
+                    userInfo: [NSLocalizedDescriptionKey: "startWriting refused for \(url.path)"]
+                )
             }
             newWriter.startSession(atSourceTime: pts)
 

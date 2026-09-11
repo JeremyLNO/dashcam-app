@@ -64,9 +64,12 @@ extension LocationManager: CLLocationManagerDelegate {
         let status = manager.authorizationStatus
         Task { @MainActor [weak self] in
             self?.authorization = status
-            // The user can grant permission mid-drive; pick up where we left off.
-            if status == .authorizedWhenInUse || status == .authorizedAlways, self?.isUpdating == true {
+            // The prompt is answered asynchronously, often after the recording already
+            // started, so a grant has to begin updates itself rather than wait for the
+            // next start().
+            if status == .authorizedWhenInUse || status == .authorizedAlways {
                 manager.startUpdatingLocation()
+                self?.isUpdating = true
             }
         }
     }

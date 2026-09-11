@@ -52,6 +52,20 @@ enum StorageLocations {
         recordingsRoot.appendingPathComponent(path)
     }
 
+    /// Creates the folder a segment is about to be written into, and returns its URL.
+    ///
+    /// `absoluteURL(forRelativePath:)` is a pure path computation on purpose, so something
+    /// has to create the session folder before an `AVAssetWriter` can open a file in it —
+    /// the writer will not create intermediate directories, it just fails.
+    @discardableResult
+    static func prepareURL(forRelativePath path: String) -> URL {
+        let url = absoluteURL(forRelativePath: path)
+        try? FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(), withIntermediateDirectories: true
+        )
+        return url
+    }
+
     static func clearExports() {
         try? FileManager.default.removeItem(at: exportsRoot)
     }

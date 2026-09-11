@@ -24,8 +24,10 @@ DEAD_CODE_STRIPPING = YES
 // ---- In-app purchase product identifiers ----------------------------------
 // Read at runtime from Info.plist, never hardcoded in Swift. Prices always come
 // from StoreKit, never from here.
-// Fallback only: the authoritative group id is read back from a loaded StoreKit product.
-SUBSCRIPTION_GROUP_ID = 21500001
+// Fallback only: the authoritative group id is read back from a loaded StoreKit product,
+// which is why the local Dashcam.storekit can keep its own id without any conflict.
+// This is the real App Store Connect group ("Dashcam Pocket Premium").
+SUBSCRIPTION_GROUP_ID = 22377613
 PRODUCT_ID_MONTHLY = dashcam.lno.company.monthly
 PRODUCT_ID_QUARTERLY = dashcam.lno.company.quarterly
 PRODUCT_ID_YEARLY = dashcam.lno.company.yearly

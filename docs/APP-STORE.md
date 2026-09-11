@@ -4,10 +4,25 @@ App Store Connect record: **6811080566** (`Dashcam Pocket`).
 
 ## External steps that cannot live in the repository
 
-### 1. Subscriptions
+### 1. Subscriptions — DONE (2026-09-11, via the API)
 
-Create one subscription group containing three auto-renewable subscriptions. The product
-identifiers must match `Config/Base.xcconfig`:
+Group **Dashcam Pocket Premium** (`22377613`) with three auto-renewable subscriptions, all
+at group level 1 so switching duration is a crossgrade rather than an upgrade. Each one
+carries: 175 territories, a base price, five localizations (en/fr/es/de/pt) and a **3-day
+free trial introductory offer in every territory** (175 offers each).
+
+Two API details that cost time and are not in the docs:
+- a brand-new subscription has **no `subscriptionAvailability`**, and setting a price before
+  creating one fails with a misleading `ENTITY_ERROR.RELATIONSHIP.INVALID` pointing at the
+  price point;
+- `subscriptionIntroductoryOffers` requires a **`territory` relationship** — there is no
+  "all territories" form, so it is one POST per territory per plan.
+
+⚠️ All three sit at `MISSING_METADATA`: each subscription still needs an **App Store review
+screenshot** (`appStoreReviewScreenshot`), which has to show the paywall on a real device —
+the Simulator cannot render it (see `screenshots/README.md`).
+
+The product identifiers match `Config/Base.xcconfig`:
 
 | Plan      | Product ID                          | Duration  |
 |-----------|-------------------------------------|-----------|

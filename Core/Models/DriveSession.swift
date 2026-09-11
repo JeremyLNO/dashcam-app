@@ -72,6 +72,14 @@ final class DriveSession {
         segments.filter { $0.camera == .front }.sorted { $0.index < $1.index }
     }
 
+    /// How many segments the *drive* has, not how many files are on disk.
+    ///
+    /// A dual-camera drive writes two files per window, so counting rows would tell the
+    /// driver a nine-minute trip had eighteen segments. They think in windows.
+    var segmentCount: Int {
+        max(rearSegments.count, frontSegments.count)
+    }
+
     var hasProtectedContent: Bool {
         segments.contains(where: \.isProtected)
     }

@@ -52,6 +52,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
                 await DemoDataSeeder(index: environment.index).seed()
                 environment.storage.refresh()
             }
+            if LaunchArguments.shouldSeedScreenshots {
+                await ScreenshotSeeder(index: environment.index).seed()
+                environment.storage.refresh()
+            }
         }
         return true
     }
@@ -61,11 +65,14 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 /// behaves as if this did not exist.
 enum LaunchArguments {
     static var shouldSeedDemoData: Bool { CommandLine.arguments.contains("-uiTestSeed") }
+    /// Richer, internally consistent data for App Store screenshots. Separate from the
+    /// UI-test seed, which stays minimal so the tests stay fast and deterministic.
+    static var shouldSeedScreenshots: Bool { CommandLine.arguments.contains("-screenshotSeed") }
     static var shouldResetState: Bool { CommandLine.arguments.contains("-uiTestReset") }
     static var shouldSkipOnboarding: Bool { CommandLine.arguments.contains("-uiTestSkipOnboarding") }
 
     static func applyIfNeeded() {
-        guard shouldResetState else { return }
+        guard shouldResetState || shouldSeedScreenshots else { return }
         let defaults = UserDefaults.standard
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix("settings.")
             || key.hasPrefix("onboarding.") || key.hasPrefix("review.") || key.hasPrefix("notifications.") {

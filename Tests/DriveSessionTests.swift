@@ -60,6 +60,30 @@ final class DriveSessionTests: XCTestCase {
         }
     }
 
+    /// A dual-camera drive writes two files per window. The library must report windows,
+    /// not files — otherwise a nine-minute trip claims eighteen segments.
+    func testSegmentCountReportsWindowsNotFiles() {
+        for i in 0..<3 {
+            for camera in CameraPosition.allCases {
+                TestSupport.addSegment(to: index, sessionID: sessionID, camera: camera, segmentIndex: i,
+                                       start: start.addingTimeInterval(Double(i) * 60), duration: 60)
+            }
+        }
+        let session = index.session(id: sessionID)!
+
+        XCTAssertEqual(session.segments.count, 6, "six files on disk")
+        XCTAssertEqual(session.segmentCount, 3, "three windows in the drive")
+    }
+
+    /// A rear-only drive counts its own segments, with no front camera to pair against.
+    func testSegmentCountHandlesRearOnlyDrives() {
+        for i in 0..<4 {
+            TestSupport.addSegment(to: index, sessionID: sessionID, segmentIndex: i,
+                                   start: start.addingTimeInterval(Double(i) * 60), duration: 60)
+        }
+        XCTAssertEqual(index.session(id: sessionID)!.segmentCount, 4)
+    }
+
     func testQualityRoundTripsThroughItsRawValue() {
         XCTAssertEqual(index.session(id: sessionID)!.quality, .high)
     }

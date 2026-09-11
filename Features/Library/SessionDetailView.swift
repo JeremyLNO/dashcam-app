@@ -162,7 +162,7 @@ struct SessionDetailView: View {
                 )
             }
             infoRow(titleKey: "detail.size", value: Format.bytes(session.storageSize))
-            infoRow(titleKey: "detail.segments", value: "\(session.segments.count)")
+            infoRow(titleKey: "detail.segments", value: "\(session.segmentCount)")
             infoRow(titleKey: "detail.quality", value: L10n.t(session.quality.titleKey))
             if session.hasProtectedContent {
                 infoRow(

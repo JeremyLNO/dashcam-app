@@ -300,7 +300,7 @@ struct SessionRow: View {
     }
 
     private var subtitle: String {
-        var parts = [L10n.t("library.segments", session.segments.count)]
+        var parts = [L10n.t("library.segments", session.segmentCount)]
         if let kilometres = session.distanceKilometres {
             parts.append(String(format: "%.1f km", kilometres))
         }

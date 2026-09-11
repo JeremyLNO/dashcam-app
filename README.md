@@ -29,8 +29,14 @@ picture-in-picture export honest.
 across as many files as that spans, including footage that has not been recorded yet.
 Protected footage is never deleted automatically, by any rule.
 
-**Detects impacts** with CoreMotion, filtered against the things that are not collisions:
-speed bumps, hard braking, vibration, and the phone being picked up.
+**Detects impacts and harsh braking** with CoreMotion, as two separate things. A collision
+is a step — large, sharp, over in a tenth of a second. An emergency stop is a ramp. The
+detector requires sharpness for one and duration for the other, so neither fires on the
+other's signal, and both ignore speed bumps, vibration and the phone being picked up.
+
+**Records what the drive felt like**: distance covered, peak G-force, and a G-force trace
+kept as one peak per second. Each drive shows a timeline with a mark per event — tap one
+and the player jumps there, instead of scrubbing two hours for a three-second incident.
 
 **Cleans up after itself**: a retention age (7 days / 30 days / never), a storage cap
 (5–50 GB or unlimited), and a hard floor of 1 GB free disk below which it stops rather than
@@ -41,7 +47,15 @@ burned into the recordings. The overlay is rendered only into the file you choos
 with information.
 
 **Exports** the road camera, the cabin camera, both files, or a picture-in-picture
-composition — to the share sheet, Photos, Files, AirDrop, anywhere iOS offers.
+composition — whole, or just the last 30 seconds, the last minute, or a range you pick.
+To the share sheet, Photos, Files, AirDrop, anywhere iOS offers.
+
+**Proof mode** adds a JSON manifest listing the original recordings with their SHA-256
+digests and the drive's metadata, so footage can be checked against what the device
+actually wrote. It is not signed and carries no trusted timestamp, and it says so.
+
+**Locks the library behind Face ID**, optionally. Recording, stopping and protecting stay
+reachable without authenticating — those are the things you may need in a hurry.
 
 **CarPlay**, optionally, as a three-button remote: Start, Stop, Protect. Nothing else.
 

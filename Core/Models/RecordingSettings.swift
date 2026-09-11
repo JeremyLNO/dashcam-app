@@ -229,10 +229,15 @@ struct RecordingSettings: Codable, Equatable, Sendable {
     var discreetDelay: DiscreetDelay = .never
     var impactDetectionEnabled: Bool = true
     var shockSensitivity: ShockSensitivity = .normal
+    /// Sustained heavy deceleration also protects the footage around it.
+    var harshBrakingDetectionEnabled: Bool = true
     var locationMetadataEnabled: Bool = true
     var overlayEnabled: Bool = true
     var overlayFields: OverlayFields = .default
     var frontCameraEnabled: Bool = true
+    /// Face ID / Touch ID before the video library opens. Off by default: a lock the
+    /// driver did not ask for is a lock between them and their own evidence.
+    var requireBiometricUnlock: Bool = false
 
     /// How far back a Protect action reaches, and how far forward it keeps holding.
     static let protectionLookBack: TimeInterval = 5 * 60
@@ -240,4 +245,10 @@ struct RecordingSettings: Codable, Equatable, Sendable {
 
     /// Below this much free space the recorder stops rather than risk corrupting files.
     static let criticalFreeSpace: Int64 = 1_000_000_000
+
+    /// Deceleration, in g, that has to be sustained for `harshBrakingMinimumDuration`
+    /// before it counts as harsh braking rather than ordinary slowing down. Roughly 0.5 g
+    /// is an emergency stop in a road car; normal city braking sits well under 0.3 g.
+    static let harshBrakingThresholdG: Double = 0.47
+    static let harshBrakingMinimumDuration: TimeInterval = 0.45
 }

@@ -5,13 +5,27 @@ import SwiftData
 enum ProtectionOrigin: String, Codable, CaseIterable, Sendable {
     case manual
     case impact
+    /// Sustained heavy deceleration. Deliberately distinct from `impact`: the two have
+    /// opposite signatures — a collision is a step, harsh braking is a ramp — and a
+    /// driver reading their history wants to tell them apart.
+    case harshBraking
     case carPlay
 
     var titleKey: String {
         switch self {
         case .manual: return "event.origin.manual"
         case .impact: return "event.origin.impact"
+        case .harshBraking: return "event.origin.braking"
         case .carPlay: return "event.origin.carplay"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .manual: return "hand.tap.fill"
+        case .impact: return "burst.fill"
+        case .harshBraking: return "exclamationmark.brakesignal"
+        case .carPlay: return "car.fill"
         }
     }
 }

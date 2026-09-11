@@ -12,6 +12,7 @@
 		5C78017C2E25BF7BD15FA75B /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A01F56928DFCE630027E76A /* RootView.swift */; };
 		99289A8A94E980AD17C5C35D /* DriveSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4E0FDE9BD476E5FF3C225D /* DriveSession.swift */; };
 		CFC877EF2862A784DD61B452 /* LocationSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E70C301B3D0B7FE8A2DB9 /* LocationSample.swift */; };
+		01CB9CAEB63A1D11BBB17D87 /* MotionSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32AB8A020878E621B204F402 /* MotionSample.swift */; };
 		5BAD937261203557468E208A /* ProtectedEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88EDAA775F8D91EC60F29B06 /* ProtectedEvent.swift */; };
 		EB5E34670690B830155F81C2 /* RecordingSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACB06806C8653B1F1AFD4DF /* RecordingSettings.swift */; };
 		AE34C5EE09C5A860072EB5EC /* SubscriptionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10686ED2E244ED22459B910 /* SubscriptionState.swift */; };
@@ -32,22 +33,27 @@
 		828077070568F72C7E5C5C02 /* SegmentWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A16A3C54964730F01D8A /* SegmentWriter.swift */; };
 		A9467C6E290B1204F849CB32 /* ThermalManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50389F5B13F5F7D3D4DB5460 /* ThermalManager.swift */; };
 		C2A55F6F3DC96CB31EA5692A /* ActiveFileRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575093F0FF18A79510BE461A /* ActiveFileRegistry.swift */; };
+		DC15C61C8B99C59C7F62B2ED /* FileDigest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74E46639299F07887C30600D /* FileDigest.swift */; };
 		C63E22F55BD97AFFFC63826D /* RecoveryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 710EE4A97F4978C571397BAC /* RecoveryManager.swift */; };
 		9B09365B9EB1B53CB516CA7B /* RetentionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9316463096D593E9B952F79D /* RetentionManager.swift */; };
 		F8261E7331209858700A1161 /* SessionIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2EBBFB2C2C34D5E570BC2 /* SessionIndex.swift */; };
 		A405F3FBA12D4A3759E5436E /* StorageLocations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CBC9DA2BA9DF3F3ADF792AF /* StorageLocations.swift */; };
 		D2A20A7520B94707BF3AA8DE /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A504B2DD910C9470D162881D /* StorageManager.swift */; };
+		5FA5560F181100EB9A15833C /* DistanceAccumulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97093AD977A0D3370F9EE53A /* DistanceAccumulator.swift */; };
 		D95A9ABB28F63F6528DF6B37 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C7E056B15F9FDD35D5D89A /* LocationManager.swift */; };
 		AA3FA3E52553070377771D59 /* MotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52EAEF1578E7D787F4B98E /* MotionManager.swift */; };
 		6DF25B6C22F3B7F426DEB2E8 /* EventProtectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50956EA61122B89917F75DBA /* EventProtectionManager.swift */; };
 		E313B1899C6E56832AFC684F /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52593AF28494C6731EEF5169 /* ExportManager.swift */; };
 		5AF19ADE2ECAA4228E05AD88 /* OverlayRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7DE235D1D5A6B81E0F73A18 /* OverlayRenderer.swift */; };
+		B55DAF348F28DB1F25E07400 /* ProofManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AE4EBE42399B57501F9121 /* ProofManifest.swift */; };
 		7D9A8DA7D8037C2D653AB4B1 /* SessionComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19CCDAFF24B4B728D336A65 /* SessionComposition.swift */; };
 		6074006C89873331783EDBC0 /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0ED5D734E00333761AAFDD /* SubscriptionManager.swift */; };
 		5557CAC9C31697404171C134 /* CarPlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0436DF48B820093AB4CFB07C /* CarPlayManager.swift */; };
 		E7A54E48B3506DBBB343C59E /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFACA4D3B6B1B35BF3BC8178 /* CarPlaySceneDelegate.swift */; };
 		23391C009FE0C344E4C5376C /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48890A4681B03AEECB35592D /* NotificationManager.swift */; };
 		8742A48B56CDDE96080ABA58 /* ReviewPrompter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD4959865B8D9D8D56B9D5D1 /* ReviewPrompter.swift */; };
+		E48F021D85937D4878D1627A /* BiometricGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A0E56408A63EE3794399F7 /* BiometricGate.swift */; };
+		C6AC60F6F1D8A40F8F6CFC5D /* EventTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59F9D875821AD44A5F7ED95 /* EventTimeline.swift */; };
 		FFE0F441AB1E289FF9A988CA /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F3964E4D08D2954FD6C8F2 /* ExportSheet.swift */; };
 		44478A18CDBA1A8D363FCD2F /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58278D049C482CFBB9500259 /* LibraryView.swift */; };
 		F8846E7D2150CB341960CECA /* SessionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A168E45E14AD7C867D14DE /* SessionDetailView.swift */; };
@@ -58,8 +64,11 @@
 		AF1C33268A61D0D71F8B7837 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128876BA9CB203F0B32BD069 /* SettingsView.swift */; };
 		8A43384751AC0301EF15CE9F /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D4CDF1A6D9A6D5E667005F /* DesignSystem.swift */; };
 		E5B259D6F221A32AFCA79CD8 /* CompositionGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */; };
+		5750DEDE63044BDDAC878EE3 /* DistanceAccumulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C42673630B54C8EE6FDC4B4A /* DistanceAccumulatorTests.swift */; };
 		AC5C7DCD23DBDF63C5CE1FB9 /* DriveSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F4DCD35B1BEA1D55114528 /* DriveSessionTests.swift */; };
 		D76FC78A9318B4D56640B1BC /* EventProtectionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C388B44FE23009F67F6D5D5 /* EventProtectionManagerTests.swift */; };
+		F6CB4513D5BD764403F51C59 /* ExportScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BE403F980948617709F12F2 /* ExportScopeTests.swift */; };
+		233FF23E1A709FAB039C340B /* HarshBrakingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0E1CE40F09BC449D12AED6 /* HarshBrakingTests.swift */; };
 		2DAC20DB9E7D24F4797B8F3C /* ImpactDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA9A921B3C843CAB0ECFDD0 /* ImpactDetectionTests.swift */; };
 		FBC8B6D256CBCB01E684CF63 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130EC405E03FC44301BC91F3 /* LocalizationTests.swift */; };
 		C8C0946635FF83FB831C56AF /* RetentionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCCCF422AFBE0B1628DBF3FA /* RetentionManagerTests.swift */; };
@@ -101,6 +110,7 @@
 		CFACA4D3B6B1B35BF3BC8178 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CarPlaySceneDelegate.swift"; sourceTree = "<group>"; };
 		BB4E0FDE9BD476E5FF3C225D /* DriveSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DriveSession.swift"; sourceTree = "<group>"; };
 		8E9E70C301B3D0B7FE8A2DB9 /* LocationSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationSample.swift"; sourceTree = "<group>"; };
+		32AB8A020878E621B204F402 /* MotionSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MotionSample.swift"; sourceTree = "<group>"; };
 		88EDAA775F8D91EC60F29B06 /* ProtectedEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProtectedEvent.swift"; sourceTree = "<group>"; };
 		CACB06806C8653B1F1AFD4DF /* RecordingSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingSettings.swift"; sourceTree = "<group>"; };
 		A10686ED2E244ED22459B910 /* SubscriptionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubscriptionState.swift"; sourceTree = "<group>"; };
@@ -114,7 +124,10 @@
 		3EA979AE89B4E347D18ADFEC /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Log.swift"; sourceTree = "<group>"; };
 		52593AF28494C6731EEF5169 /* ExportManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExportManager.swift"; sourceTree = "<group>"; };
 		C7DE235D1D5A6B81E0F73A18 /* OverlayRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OverlayRenderer.swift"; sourceTree = "<group>"; };
+		89AE4EBE42399B57501F9121 /* ProofManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProofManifest.swift"; sourceTree = "<group>"; };
 		A19CCDAFF24B4B728D336A65 /* SessionComposition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionComposition.swift"; sourceTree = "<group>"; };
+		D9A0E56408A63EE3794399F7 /* BiometricGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BiometricGate.swift"; sourceTree = "<group>"; };
+		A59F9D875821AD44A5F7ED95 /* EventTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventTimeline.swift"; sourceTree = "<group>"; };
 		11F3964E4D08D2954FD6C8F2 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExportSheet.swift"; sourceTree = "<group>"; };
 		58278D049C482CFBB9500259 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LibraryView.swift"; sourceTree = "<group>"; };
 		26A168E45E14AD7C867D14DE /* SessionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionDetailView.swift"; sourceTree = "<group>"; };
@@ -123,12 +136,14 @@
 		F7D2FDE4F9560F629A92F105 /* DiscreetScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DiscreetScreen.swift"; sourceTree = "<group>"; };
 		2A4B4082160F60E8FDB19DD8 /* RecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingView.swift"; sourceTree = "<group>"; };
 		128876BA9CB203F0B32BD069 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView.swift"; sourceTree = "<group>"; };
+		97093AD977A0D3370F9EE53A /* DistanceAccumulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DistanceAccumulator.swift"; sourceTree = "<group>"; };
 		A4C7E056B15F9FDD35D5D89A /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationManager.swift"; sourceTree = "<group>"; };
 		0C52EAEF1578E7D787F4B98E /* MotionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MotionManager.swift"; sourceTree = "<group>"; };
 		48890A4681B03AEECB35592D /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NotificationManager.swift"; sourceTree = "<group>"; };
 		FD4959865B8D9D8D56B9D5D1 /* ReviewPrompter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReviewPrompter.swift"; sourceTree = "<group>"; };
 		50956EA61122B89917F75DBA /* EventProtectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventProtectionManager.swift"; sourceTree = "<group>"; };
 		575093F0FF18A79510BE461A /* ActiveFileRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ActiveFileRegistry.swift"; sourceTree = "<group>"; };
+		74E46639299F07887C30600D /* FileDigest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileDigest.swift"; sourceTree = "<group>"; };
 		710EE4A97F4978C571397BAC /* RecoveryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecoveryManager.swift"; sourceTree = "<group>"; };
 		9316463096D593E9B952F79D /* RetentionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RetentionManager.swift"; sourceTree = "<group>"; };
 		1EC2EBBFB2C2C34D5E570BC2 /* SessionIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionIndex.swift"; sourceTree = "<group>"; };
@@ -136,8 +151,11 @@
 		A504B2DD910C9470D162881D /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StorageManager.swift"; sourceTree = "<group>"; };
 		4A0ED5D734E00333761AAFDD /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubscriptionManager.swift"; sourceTree = "<group>"; };
 		8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CompositionGeometryTests.swift"; sourceTree = "<group>"; };
+		C42673630B54C8EE6FDC4B4A /* DistanceAccumulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DistanceAccumulatorTests.swift"; sourceTree = "<group>"; };
 		59F4DCD35B1BEA1D55114528 /* DriveSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DriveSessionTests.swift"; sourceTree = "<group>"; };
 		1C388B44FE23009F67F6D5D5 /* EventProtectionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventProtectionManagerTests.swift"; sourceTree = "<group>"; };
+		2BE403F980948617709F12F2 /* ExportScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExportScopeTests.swift"; sourceTree = "<group>"; };
+		0F0E1CE40F09BC449D12AED6 /* HarshBrakingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HarshBrakingTests.swift"; sourceTree = "<group>"; };
 		ECA9A921B3C843CAB0ECFDD0 /* ImpactDetectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImpactDetectionTests.swift"; sourceTree = "<group>"; };
 		130EC405E03FC44301BC91F3 /* LocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocalizationTests.swift"; sourceTree = "<group>"; };
 		FCCCF422AFBE0B1628DBF3FA /* RetentionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RetentionManagerTests.swift"; sourceTree = "<group>"; };
@@ -206,6 +224,7 @@
 			children = (
 				BB4E0FDE9BD476E5FF3C225D /* DriveSession.swift */,
 				8E9E70C301B3D0B7FE8A2DB9 /* LocationSample.swift */,
+				32AB8A020878E621B204F402 /* MotionSample.swift */,
 				88EDAA775F8D91EC60F29B06 /* ProtectedEvent.swift */,
 				CACB06806C8653B1F1AFD4DF /* RecordingSettings.swift */,
 				A10686ED2E244ED22459B910 /* SubscriptionState.swift */,
@@ -264,6 +283,7 @@
 			isa = PBXGroup;
 			children = (
 				575093F0FF18A79510BE461A /* ActiveFileRegistry.swift */,
+				74E46639299F07887C30600D /* FileDigest.swift */,
 				710EE4A97F4978C571397BAC /* RecoveryManager.swift */,
 				9316463096D593E9B952F79D /* RetentionManager.swift */,
 				1EC2EBBFB2C2C34D5E570BC2 /* SessionIndex.swift */,
@@ -276,6 +296,7 @@
 		C2815EBA8C2C7B3179B7BDEC /* Location */ = {
 			isa = PBXGroup;
 			children = (
+				97093AD977A0D3370F9EE53A /* DistanceAccumulator.swift */,
 				A4C7E056B15F9FDD35D5D89A /* LocationManager.swift */,
 			);
 			path = Location;
@@ -302,6 +323,7 @@
 			children = (
 				52593AF28494C6731EEF5169 /* ExportManager.swift */,
 				C7DE235D1D5A6B81E0F73A18 /* OverlayRenderer.swift */,
+				89AE4EBE42399B57501F9121 /* ProofManifest.swift */,
 				A19CCDAFF24B4B728D336A65 /* SessionComposition.swift */,
 			);
 			path = Export;
@@ -336,6 +358,8 @@
 		E7FCDF10C5F2191B367BE6E2 /* Library */ = {
 			isa = PBXGroup;
 			children = (
+				D9A0E56408A63EE3794399F7 /* BiometricGate.swift */,
+				A59F9D875821AD44A5F7ED95 /* EventTimeline.swift */,
 				11F3964E4D08D2954FD6C8F2 /* ExportSheet.swift */,
 				58278D049C482CFBB9500259 /* LibraryView.swift */,
 				26A168E45E14AD7C867D14DE /* SessionDetailView.swift */,
@@ -400,8 +424,11 @@
 			isa = PBXGroup;
 			children = (
 				8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */,
+				C42673630B54C8EE6FDC4B4A /* DistanceAccumulatorTests.swift */,
 				59F4DCD35B1BEA1D55114528 /* DriveSessionTests.swift */,
 				1C388B44FE23009F67F6D5D5 /* EventProtectionManagerTests.swift */,
+				2BE403F980948617709F12F2 /* ExportScopeTests.swift */,
+				0F0E1CE40F09BC449D12AED6 /* HarshBrakingTests.swift */,
 				ECA9A921B3C843CAB0ECFDD0 /* ImpactDetectionTests.swift */,
 				130EC405E03FC44301BC91F3 /* LocalizationTests.swift */,
 				FCCCF422AFBE0B1628DBF3FA /* RetentionManagerTests.swift */,
@@ -671,6 +698,7 @@
 				5C78017C2E25BF7BD15FA75B /* RootView.swift in Sources */,
 				99289A8A94E980AD17C5C35D /* DriveSession.swift in Sources */,
 				CFC877EF2862A784DD61B452 /* LocationSample.swift in Sources */,
+				01CB9CAEB63A1D11BBB17D87 /* MotionSample.swift in Sources */,
 				5BAD937261203557468E208A /* ProtectedEvent.swift in Sources */,
 				EB5E34670690B830155F81C2 /* RecordingSettings.swift in Sources */,
 				AE34C5EE09C5A860072EB5EC /* SubscriptionState.swift in Sources */,
@@ -691,22 +719,27 @@
 				828077070568F72C7E5C5C02 /* SegmentWriter.swift in Sources */,
 				A9467C6E290B1204F849CB32 /* ThermalManager.swift in Sources */,
 				C2A55F6F3DC96CB31EA5692A /* ActiveFileRegistry.swift in Sources */,
+				DC15C61C8B99C59C7F62B2ED /* FileDigest.swift in Sources */,
 				C63E22F55BD97AFFFC63826D /* RecoveryManager.swift in Sources */,
 				9B09365B9EB1B53CB516CA7B /* RetentionManager.swift in Sources */,
 				F8261E7331209858700A1161 /* SessionIndex.swift in Sources */,
 				A405F3FBA12D4A3759E5436E /* StorageLocations.swift in Sources */,
 				D2A20A7520B94707BF3AA8DE /* StorageManager.swift in Sources */,
+				5FA5560F181100EB9A15833C /* DistanceAccumulator.swift in Sources */,
 				D95A9ABB28F63F6528DF6B37 /* LocationManager.swift in Sources */,
 				AA3FA3E52553070377771D59 /* MotionManager.swift in Sources */,
 				6DF25B6C22F3B7F426DEB2E8 /* EventProtectionManager.swift in Sources */,
 				E313B1899C6E56832AFC684F /* ExportManager.swift in Sources */,
 				5AF19ADE2ECAA4228E05AD88 /* OverlayRenderer.swift in Sources */,
+				B55DAF348F28DB1F25E07400 /* ProofManifest.swift in Sources */,
 				7D9A8DA7D8037C2D653AB4B1 /* SessionComposition.swift in Sources */,
 				6074006C89873331783EDBC0 /* SubscriptionManager.swift in Sources */,
 				5557CAC9C31697404171C134 /* CarPlayManager.swift in Sources */,
 				E7A54E48B3506DBBB343C59E /* CarPlaySceneDelegate.swift in Sources */,
 				23391C009FE0C344E4C5376C /* NotificationManager.swift in Sources */,
 				8742A48B56CDDE96080ABA58 /* ReviewPrompter.swift in Sources */,
+				E48F021D85937D4878D1627A /* BiometricGate.swift in Sources */,
+				C6AC60F6F1D8A40F8F6CFC5D /* EventTimeline.swift in Sources */,
 				FFE0F441AB1E289FF9A988CA /* ExportSheet.swift in Sources */,
 				44478A18CDBA1A8D363FCD2F /* LibraryView.swift in Sources */,
 				F8846E7D2150CB341960CECA /* SessionDetailView.swift in Sources */,
@@ -724,8 +757,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				E5B259D6F221A32AFCA79CD8 /* CompositionGeometryTests.swift in Sources */,
+				5750DEDE63044BDDAC878EE3 /* DistanceAccumulatorTests.swift in Sources */,
 				AC5C7DCD23DBDF63C5CE1FB9 /* DriveSessionTests.swift in Sources */,
 				D76FC78A9318B4D56640B1BC /* EventProtectionManagerTests.swift in Sources */,
+				F6CB4513D5BD764403F51C59 /* ExportScopeTests.swift in Sources */,
+				233FF23E1A709FAB039C340B /* HarshBrakingTests.swift in Sources */,
 				2DAC20DB9E7D24F4797B8F3C /* ImpactDetectionTests.swift in Sources */,
 				FBC8B6D256CBCB01E684CF63 /* LocalizationTests.swift in Sources */,
 				C8C0946635FF83FB831C56AF /* RetentionManagerTests.swift in Sources */,

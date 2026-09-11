@@ -40,6 +40,7 @@ final class RecordingManager: ObservableObject {
     private let registry: ActiveFileRegistry
 
     private let engine = RecordingEngine()
+    private var distance = DistanceAccumulator()
     private var ticker: AnyCancellable?
     private var periodicSweep: AnyCancellable?
     private var cancellables = Set<AnyCancellable>()
@@ -115,6 +116,7 @@ final class RecordingManager: ObservableObject {
         ))
 
         currentSessionID = sessionID
+        distance.reset()
         startedAt = Date()
         elapsed = 0
         segmentCount = 0
@@ -190,8 +192,9 @@ final class RecordingManager: ObservableObject {
         let isProtected = protection.shouldProtectSegment(
             sessionID: sessionID, start: finished.startDate, end: finished.endDate
         )
-        index.insertSegment(finished, sessionID: sessionID, isProtected: isProtected)
+        let segment = index.insertSegment(finished, sessionID: sessionID, isProtected: isProtected)
         segmentCount += 1
+        if let segment { hashInBackground(segment) }
 
         // Every finalized segment is a good moment to check we are not about to run out.
         let snapshot = storage.refresh()
@@ -201,6 +204,23 @@ final class RecordingManager: ObservableObject {
         if result.stillCritical {
             alert = RecordingAlert(titleKey: "alert.storage_full.title", messageKey: "alert.storage_full.stopping", isCritical: true)
             Task { await stop() }
+        }
+    }
+
+    /// Computes the segment's SHA-256 away from the main actor and stores it.
+    ///
+    /// This is what makes an exported proof bundle verifiable later, and it runs at
+    /// utility priority precisely because it must never compete with the two camera
+    /// streams that are still writing.
+    private func hashInBackground(_ segment: VideoSegment) {
+        let id = segment.id
+        let url = StorageLocations.absoluteURL(forRelativePath: segment.relativePath)
+        // The index, not self, is what the completion needs; capturing it directly keeps
+        // the detached task free of any reference back to a main-actor object.
+        let index = self.index
+        Task.detached(priority: .utility) {
+            guard let digest = FileDigest.sha256(of: url) else { return }
+            await MainActor.run { index.setDigest(digest, forSegmentID: id) }
         }
     }
 
@@ -222,6 +242,7 @@ final class RecordingManager: ObservableObject {
                 altitude: fix.altitude,
                 accuracy: fix.horizontalAccuracy
             )
+            self.accumulateDistance(to: fix, sessionID: sessionID)
         }
 
         motion.onImpact = { [weak self] event in
@@ -229,6 +250,23 @@ final class RecordingManager: ObservableObject {
             self.protectNow(origin: .impact, magnitude: event.magnitude)
             self.alert = RecordingAlert(titleKey: "alert.impact.title", messageKey: "alert.impact.message")
         }
+
+        motion.onHarshBraking = { [weak self] event in
+            guard let self, self.isRecording else { return }
+            self.protectNow(origin: .harshBraking, magnitude: event.magnitude)
+            self.alert = RecordingAlert(titleKey: "alert.braking.title", messageKey: "alert.braking.message")
+        }
+
+        motion.onSecondElapsed = { [weak self] date, peak in
+            guard let self, let sessionID = self.currentSessionID else { return }
+            self.index.appendMotionSample(sessionID: sessionID, timestamp: date, peakG: peak)
+        }
+    }
+
+    private func accumulateDistance(to fix: CLLocation, sessionID: UUID) {
+        let metres = distance.add(fix)
+        guard metres > 0 else { return }
+        index.updateStatistics(sessionID: sessionID, addingMetres: metres)
     }
 
     private func wireThermal() {
@@ -271,7 +309,10 @@ final class RecordingManager: ObservableObject {
             location.start()
         }
         if settingsStore.settings.impactDetectionEnabled {
-            motion.start(sensitivity: settingsStore.settings.shockSensitivity)
+            motion.start(
+                sensitivity: settingsStore.settings.shockSensitivity,
+                detectsHarshBraking: settingsStore.settings.harshBrakingDetectionEnabled
+            )
         }
     }
 

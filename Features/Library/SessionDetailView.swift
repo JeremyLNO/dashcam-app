@@ -1,3 +1,4 @@
+import AVFoundation
 import AVKit
 import SwiftUI
 
@@ -32,6 +33,8 @@ struct SessionDetailView: View {
     @State private var player = AVPlayer()
     @State private var isPreparing = true
     @State private var preparationFailed = false
+    @State private var playheadOffset: TimeInterval = 0
+    @State private var timeObserver: Any?
     @State private var showExport = false
     @State private var showPaywall = false
 
@@ -40,6 +43,7 @@ struct SessionDetailView: View {
             VStack(spacing: Theme.spacing) {
                 playerSurface
                 modePicker
+                timeline
                 metadata
                 actions
             }
@@ -49,7 +53,11 @@ struct SessionDetailView: View {
         .navigationTitle(Text(verbatim: Format.time(session.startedAt)))
         .navigationBarTitleDisplayMode(.inline)
         .task(id: mode) { await prepare() }
-        .onDisappear { player.pause() }
+        .onDisappear {
+            player.pause()
+            if let timeObserver { player.removeTimeObserver(timeObserver) }
+            timeObserver = nil
+        }
         .sheet(isPresented: $showExport) {
             ExportSheet(session: session)
                 .environmentObject(environment)
@@ -101,6 +109,41 @@ struct SessionDetailView: View {
         return modes.isEmpty ? [.road] : modes
     }
 
+    // MARK: - Timeline
+
+    private var timeline: some View {
+        EventTimeline(
+            duration: session.duration,
+            marks: session.activeEvents.map { event in
+                EventTimeline.Mark(
+                    id: event.id,
+                    offset: max(0, event.triggerDate.timeIntervalSince(session.startedAt)),
+                    origin: event.origin,
+                    magnitude: event.magnitude
+                )
+            },
+            protectedSpans: protectedSpans,
+            playheadOffset: playheadOffset,
+            onSeek: { offset in
+                player.seek(to: CMTime(seconds: offset, preferredTimescale: 600),
+                            toleranceBefore: .zero, toleranceAfter: .zero)
+                playheadOffset = offset
+            }
+        )
+        .dashcamCard()
+    }
+
+    /// Protected windows expressed against the drive's own clock, for the shaded bands.
+    private var protectedSpans: [ClosedRange<TimeInterval>] {
+        session.segments
+            .filter(\.isProtected)
+            .map { segment in
+                let start = max(0, segment.startDate.timeIntervalSince(session.startedAt))
+                let end = max(start, segment.endDate.timeIntervalSince(session.startedAt))
+                return start...end
+            }
+    }
+
     // MARK: - Info
 
     private var metadata: some View {
@@ -108,6 +151,16 @@ struct SessionDetailView: View {
             infoRow(titleKey: "detail.date", value: Format.date(session.startedAt))
             infoRow(titleKey: "detail.start", value: Format.time(session.startedAt))
             infoRow(titleKey: "detail.duration", value: Format.duration(session.duration))
+            if let kilometres = session.distanceKilometres {
+                infoRow(titleKey: "detail.distance", value: String(format: "%.1f km", kilometres))
+            }
+            if session.peakGForce > 0 {
+                infoRow(
+                    titleKey: "detail.peak_g",
+                    value: String(format: "%.2f g", session.peakGForce),
+                    tint: session.peakGForce >= ShockSensitivity.normal.thresholdG ? Theme.accent : Theme.textPrimary
+                )
+            }
             infoRow(titleKey: "detail.size", value: Format.bytes(session.storageSize))
             infoRow(titleKey: "detail.segments", value: "\(session.segments.count)")
             infoRow(titleKey: "detail.quality", value: L10n.t(session.quality.titleKey))
@@ -175,6 +228,18 @@ struct SessionDetailView: View {
 
     // MARK: - Preparation
 
+    /// Drives the timeline playhead. Four times a second is enough to look continuous and
+    /// cheap enough not to matter.
+    private func installPlayheadObserver() {
+        if let timeObserver { player.removeTimeObserver(timeObserver) }
+        timeObserver = player.addPeriodicTimeObserver(
+            forInterval: CMTime(seconds: 0.25, preferredTimescale: 600),
+            queue: .main
+        ) { time in
+            playheadOffset = max(0, time.seconds)
+        }
+    }
+
     private func prepare() async {
         isPreparing = true
         preparationFailed = false
@@ -198,6 +263,7 @@ struct SessionDetailView: View {
             let item = AVPlayerItem(asset: built.composition)
             item.videoComposition = built.videoComposition
             player.replaceCurrentItem(with: item)
+            installPlayheadObserver()
             isPreparing = false
         } catch {
             Log.export.error("Playback preparation failed: \(error.localizedDescription, privacy: .public)")

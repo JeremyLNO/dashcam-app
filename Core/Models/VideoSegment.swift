@@ -29,6 +29,10 @@ final class VideoSegment {
     var height: Int
     var fps: Int
     var codec: String
+    /// SHA-256 of the file, computed once just after it is finalized and never again.
+    /// Empty until that finishes, or if hashing failed. It is what makes an exported
+    /// proof bundle checkable: anyone can re-hash the file and compare.
+    var sha256: String
     /// False while the asset writer still owns the file. A non-finalized segment left
     /// over from a previous launch is what `RecoveryManager` repairs or discards.
     var isFinalized: Bool
@@ -49,7 +53,8 @@ final class VideoSegment {
         height: Int,
         fps: Int,
         codec: String,
-        isFinalized: Bool = false
+        isFinalized: Bool = false,
+        sha256: String = ""
     ) {
         self.id = id
         self.sessionID = sessionID
@@ -66,6 +71,7 @@ final class VideoSegment {
         self.fps = fps
         self.codec = codec
         self.isFinalized = isFinalized
+        self.sha256 = sha256
     }
 
     var camera: CameraPosition { CameraPosition(rawValue: cameraRaw) ?? .rear }

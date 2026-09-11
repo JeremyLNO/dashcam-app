@@ -13,6 +13,7 @@ enum PersistenceController {
         VideoSegment.self,
         ProtectedEvent.self,
         LocationSample.self,
+        MotionSample.self,
     ])
 
     static func makeContainer(inMemory: Bool = false) -> ModelContainer {

@@ -67,6 +67,10 @@ struct SettingsView: View {
         }
     }
 
+    /// The lock is only offered when the device actually has biometry enrolled —
+    /// otherwise the toggle would promise something that immediately fails.
+    private var biometricsAvailable: Bool { BiometricGate().isAvailable }
+
     private var subscriptionStatusKey: String {
         if !subscriptions.state.isDetermined { return "settings.subscription.checking" }
         if subscriptions.state.isInIntroductoryOffer { return "settings.subscription.trial" }
@@ -181,6 +185,15 @@ struct SettingsView: View {
                 } label: {
                     Text(key: "settings.sensitivity")
                 }
+                Toggle(isOn: binding(\.harshBrakingDetectionEnabled)) {
+                    Text(key: "settings.braking")
+                }
+            }
+            if biometricsAvailable {
+                Toggle(isOn: binding(\.requireBiometricUnlock)) {
+                    Text(key: "settings.biometric")
+                }
+                .accessibilityIdentifier("biometricToggle")
             }
             Picker(selection: binding(\.discreetDelay)) {
                 ForEach(DiscreetDelay.allCases) { delay in

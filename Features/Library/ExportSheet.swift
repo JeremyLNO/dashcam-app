@@ -15,6 +15,10 @@ struct ExportSheet: View {
 
     @State private var mode: ExportMode = .rear
     @State private var style: ExportStyle = .original
+    @State private var scope: ExportScope = .wholeDrive
+    @State private var customStart: Double = 0
+    @State private var customDuration: Double = 60
+    @State private var includeProof = false
     @State private var exportedURLs: [URL] = []
     @State private var isSharing = false
     @State private var errorMessage: String?
@@ -37,6 +41,24 @@ struct ExportSheet: View {
                 }
 
                 Section {
+                    Picker(selection: $scope) {
+                        ForEach(availableScopes) { scope in
+                            Text(key: scope.titleKey).tag(scope)
+                        }
+                    } label: {
+                        Text(key: "export.scope")
+                    }
+                    .pickerStyle(.inline)
+                    .accessibilityIdentifier("exportScope")
+
+                    if scope == .custom {
+                        customRangeControls
+                    }
+                } header: {
+                    Text(key: "export.scope")
+                }
+
+                Section {
                     Picker(selection: $style) {
                         ForEach(ExportStyle.allCases) { style in
                             Text(key: style.titleKey).tag(style)
@@ -49,6 +71,15 @@ struct ExportSheet: View {
                     Text(key: "export.style")
                 } footer: {
                     Text(key: "export.style.footer")
+                }
+
+                Section {
+                    Toggle(isOn: $includeProof) {
+                        Text(key: "export.proof")
+                    }
+                    .accessibilityIdentifier("proofToggle")
+                } footer: {
+                    Text(key: "export.proof.footer")
                 }
 
                 Section {
@@ -111,6 +142,49 @@ struct ExportSheet: View {
         }
     }
 
+    /// A drive shorter than a minute has no meaningful "last 30 seconds".
+    private var availableScopes: [ExportScope] {
+        ExportScope.allCases.filter { scope in
+            switch scope {
+            case .lastThirtySeconds: return session.duration > 30
+            case .lastMinute: return session.duration > 60
+            default: return true
+            }
+        }
+    }
+
+    private var customRangeControls: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: "\(L10n.t("export.range.start")): \(Format.duration(customStart))")
+                    .font(Theme.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                Slider(value: $customStart, in: 0...max(1, session.duration - 1))
+                    .onChange(of: customStart) { _, _ in clampCustomRange() }
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: "\(L10n.t("export.range.duration")): \(Format.duration(customDuration))")
+                    .font(Theme.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                Slider(value: $customDuration, in: 5...max(6, session.duration))
+                    .onChange(of: customDuration) { _, _ in clampCustomRange() }
+            }
+        }
+    }
+
+    /// Keeps the window inside the drive: a start plus a duration that ran past the end
+    /// would export a clip shorter than the one the sliders show.
+    private func clampCustomRange() {
+        let maximum = max(1, session.duration)
+        customStart = min(customStart, maximum - 1)
+        customDuration = min(customDuration, maximum - customStart)
+    }
+
+    private var customClip: SessionComposition.ClipRange? {
+        guard scope == .custom else { return nil }
+        return SessionComposition.ClipRange(start: customStart, duration: customDuration)
+    }
+
     private var availableModes: [ExportMode] {
         let hasRear = !session.rearSegments.isEmpty
         let hasFront = !session.frontSegments.isEmpty
@@ -125,7 +199,13 @@ struct ExportSheet: View {
         errorMessage = nil
         savedToPhotos = false
         do {
-            exportedURLs = try await exporter.export(session: session, mode: mode, style: style)
+            exportedURLs = try await exporter.export(
+                session: session,
+                mode: mode,
+                style: style,
+                clip: scope.clip(driveDuration: session.duration, custom: customClip),
+                includeProof: includeProof
+            )
         } catch {
             exportedURLs = []
             errorMessage = (error as? ExportError)?.errorDescription ?? error.localizedDescription

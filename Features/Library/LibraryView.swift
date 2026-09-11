@@ -11,6 +11,20 @@ struct LibraryView: View {
 
     @Query(sort: \DriveSession.startedAt, order: .reverse) private var sessions: [DriveSession]
 
+    @EnvironmentObject private var settingsStore: SettingsStore
+    @StateObject private var gate = BiometricGate()
+
+    /// Which shelf of the library is showing. Protected drives get their own, because
+    /// "the one with the incident" is the drive anyone actually comes back for.
+    enum Shelf: String, CaseIterable, Identifiable {
+        case all
+        case protected
+
+        var id: String { rawValue }
+        var titleKey: String { self == .all ? "library.shelf.all" : "library.shelf.protected" }
+    }
+
+    @State private var shelf: Shelf = .all
     @State private var isSelecting = false
     @State private var selection: Set<UUID> = []
     @State private var pendingDeletion = false
@@ -18,11 +32,23 @@ struct LibraryView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if sessions.isEmpty {
+                if settingsStore.settings.requireBiometricUnlock && !gate.isUnlocked {
+                    BiometricLockView(
+                        onUnlock: { Task { await gate.unlock() } },
+                        errorMessage: gate.lastError
+                    )
+                } else if visibleSessions.isEmpty {
                     emptyState
                 } else {
                     list
                 }
+            }
+            .task(id: settingsStore.settings.requireBiometricUnlock) {
+                guard settingsStore.settings.requireBiometricUnlock else {
+                    gate.reset()
+                    return
+                }
+                if !gate.isUnlocked { await gate.unlock() }
             }
             .background(Theme.background)
             .navigationTitle(Text(key: "tab.videos"))
@@ -50,6 +76,18 @@ struct LibraryView: View {
     private var list: some View {
         List {
             Section {
+                Picker(selection: $shelf) {
+                    ForEach(Shelf.allCases) { shelf in
+                        Text(key: shelf.titleKey).tag(shelf)
+                    }
+                } label: {
+                    Text(key: "library.shelf")
+                }
+                .pickerStyle(.segmented)
+                .accessibilityIdentifier("libraryShelf")
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+
                 storageSummary
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 10, trailing: 16))
@@ -144,10 +182,10 @@ struct LibraryView: View {
             Image(systemName: "film.stack")
                 .font(.system(size: 44, weight: .light))
                 .foregroundStyle(Theme.textTertiary)
-            Text(key: "library.empty.title")
+            Text(key: shelf == .protected ? "library.empty.protected.title" : "library.empty.title")
                 .font(Theme.headline)
                 .foregroundStyle(Theme.textSecondary)
-            Text(key: "library.empty.subtitle")
+            Text(key: shelf == .protected ? "library.empty.protected.subtitle" : "library.empty.subtitle")
                 .font(Theme.body)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Theme.textTertiary)
@@ -184,8 +222,13 @@ struct LibraryView: View {
 
     // MARK: - Helpers
 
+    /// Drives on the shelf currently selected.
+    private var visibleSessions: [DriveSession] {
+        shelf == .protected ? sessions.filter(\.hasProtectedContent) : sessions
+    }
+
     private var groupedByDay: [(key: String, value: [DriveSession])] {
-        let grouped = Dictionary(grouping: sessions) { Format.date($0.startedAt) }
+        let grouped = Dictionary(grouping: visibleSessions) { Format.date($0.startedAt) }
         // Dictionary order is undefined; re-sort by the first session's real date so days
         // do not shuffle between renders.
         return grouped
@@ -198,7 +241,7 @@ struct LibraryView: View {
     }
 
     private func deleteSelected() {
-        for session in sessions where selection.contains(session.id) {
+        for session in visibleSessions where selection.contains(session.id) {
             // Protection outranks a bulk delete: the user has to release it explicitly.
             guard !session.hasProtectedContent else { continue }
             environment.index.deleteSession(session)
@@ -226,6 +269,14 @@ struct SessionRow: View {
                             .foregroundStyle(Theme.warning)
                             .accessibilityLabel(Text(key: "a11y.protected"))
                     }
+                    // Only the causes worth spotting from the list: a manual protect is
+                    // already implied by the shield.
+                    ForEach(distinctAutomaticOrigins, id: \.self) { origin in
+                        Image(systemName: origin.symbolName)
+                            .font(.system(size: 11))
+                            .foregroundStyle(origin == .impact ? Theme.accent : Theme.warning)
+                            .accessibilityLabel(Text(key: origin.titleKey))
+                    }
                 }
                 Text(verbatim: subtitle)
                     .font(Theme.caption)
@@ -240,8 +291,20 @@ struct SessionRow: View {
         .accessibilityElement(children: .combine)
     }
 
+    private var distinctAutomaticOrigins: [ProtectionOrigin] {
+        var seen: [ProtectionOrigin] = []
+        for event in session.activeEvents where event.origin == .impact || event.origin == .harshBraking {
+            if !seen.contains(event.origin) { seen.append(event.origin) }
+        }
+        return seen
+    }
+
     private var subtitle: String {
-        let segments = L10n.t("library.segments", session.segments.count)
-        return "\(segments) · \(Format.bytes(session.storageSize))"
+        var parts = [L10n.t("library.segments", session.segments.count)]
+        if let kilometres = session.distanceKilometres {
+            parts.append(String(format: "%.1f km", kilometres))
+        }
+        parts.append(Format.bytes(session.storageSize))
+        return parts.joined(separator: " · ")
     }
 }

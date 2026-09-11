@@ -90,6 +90,14 @@ final class SessionIndex: ObservableObject {
         return segment
     }
 
+    /// Fills in a segment's digest once it has been computed off the main actor.
+    func setDigest(_ digest: String, forSegmentID id: UUID) {
+        let descriptor = FetchDescriptor<VideoSegment>(predicate: #Predicate { $0.id == id })
+        guard let segment = try? context.fetch(descriptor).first else { return }
+        segment.sha256 = digest
+        save()
+    }
+
     func allSegments() -> [VideoSegment] {
         let descriptor = FetchDescriptor<VideoSegment>(sortBy: [SortDescriptor(\.startDate, order: .forward)])
         return (try? context.fetch(descriptor)) ?? []
@@ -136,6 +144,37 @@ final class SessionIndex: ObservableObject {
             predicate: #Predicate { $0.sessionID == sessionID && $0.isActive == true }
         )
         return (try? context.fetch(descriptor)) ?? []
+    }
+
+    // MARK: - Drive statistics
+
+    /// Accumulates distance and tracks the strongest acceleration of the drive.
+    func updateStatistics(sessionID: UUID, addingMetres metres: Double = 0, peakG: Double? = nil) {
+        guard let session = session(id: sessionID) else { return }
+        if metres > 0 { session.distanceMeters += metres }
+        if let peakG, peakG > session.peakGForce { session.peakGForce = peakG }
+    }
+
+    func appendMotionSample(sessionID: UUID, timestamp: Date, peakG: Double) {
+        guard let session = session(id: sessionID) else { return }
+        let sample = MotionSample(sessionID: sessionID, timestamp: timestamp, peakG: peakG)
+        sample.session = session
+        context.insert(sample)
+        if peakG > session.peakGForce { session.peakGForce = peakG }
+    }
+
+    func motionSamples(sessionID: UUID) -> [MotionSample] {
+        let descriptor = FetchDescriptor<MotionSample>(
+            predicate: #Predicate { $0.sessionID == sessionID },
+            sortBy: [SortDescriptor(\.timestamp, order: .forward)]
+        )
+        return (try? context.fetch(descriptor)) ?? []
+    }
+
+    /// Every drive holding at least one protected segment, newest first — the Protected
+    /// album.
+    func protectedSessions() -> [DriveSession] {
+        allSessions().filter(\.hasProtectedContent)
     }
 
     // MARK: - Location

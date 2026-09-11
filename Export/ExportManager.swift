@@ -37,6 +37,47 @@ enum ExportStyle: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// How much of a drive to export.
+enum ExportScope: String, CaseIterable, Identifiable, Sendable {
+    case wholeDrive
+    case lastThirtySeconds
+    case lastMinute
+    /// A window the user picked on the timeline.
+    case custom
+
+    var id: String { rawValue }
+
+    var titleKey: String {
+        switch self {
+        case .wholeDrive: return "export.scope.whole"
+        case .lastThirtySeconds: return "export.scope.30s"
+        case .lastMinute: return "export.scope.1min"
+        case .custom: return "export.scope.custom"
+        }
+    }
+
+    /// Resolves to a clip window, or nil for the whole drive.
+    func clip(driveDuration: TimeInterval, custom: SessionComposition.ClipRange?) -> SessionComposition.ClipRange? {
+        switch self {
+        case .wholeDrive:
+            return nil
+        case .lastThirtySeconds:
+            return Self.tail(seconds: 30, of: driveDuration)
+        case .lastMinute:
+            return Self.tail(seconds: 60, of: driveDuration)
+        case .custom:
+            return custom
+        }
+    }
+
+    /// A drive shorter than the requested tail exports whole, rather than producing an
+    /// empty clip starting at a negative offset.
+    private static func tail(seconds: TimeInterval, of duration: TimeInterval) -> SessionComposition.ClipRange? {
+        guard duration > seconds else { return nil }
+        return SessionComposition.ClipRange(start: duration - seconds, duration: seconds)
+    }
+}
+
 enum ExportError: LocalizedError, Equatable {
     case subscriptionRequired
     case noFootage
@@ -79,8 +120,15 @@ final class ExportManager: ObservableObject {
 
     // MARK: - Entry point
 
-    /// Produces one file per requested camera (two for `.both`, one otherwise).
-    func export(session: DriveSession, mode: ExportMode, style: ExportStyle) async throws -> [URL] {
+    /// Produces one file per requested camera (two for `.both`, one otherwise), plus the
+    /// proof manifest when it is asked for.
+    func export(
+        session: DriveSession,
+        mode: ExportMode,
+        style: ExportStyle,
+        clip: SessionComposition.ClipRange? = nil,
+        includeProof: Bool = false
+    ) async throws -> [URL] {
         guard subscriptions.state.canExport else { throw ExportError.subscriptionRequired }
 
         let rear = session.rearSegments
@@ -101,20 +149,23 @@ final class ExportManager: ObservableObject {
         }
 
         do {
+            var urls: [URL] = []
             switch mode {
             case .rear:
-                return [try await renderSingle(segments: rear, session: session, style: style, label: "road")]
+                urls = [try await renderSingle(segments: rear, session: session, style: style, clip: clip, label: "road")]
             case .front:
-                return [try await renderSingle(segments: front, session: session, style: style, label: "cabin")]
+                urls = [try await renderSingle(segments: front, session: session, style: style, clip: clip, label: "cabin")]
             case .both:
-                var urls: [URL] = []
-                if !rear.isEmpty { urls.append(try await renderSingle(segments: rear, session: session, style: style, label: "road")) }
-                if !front.isEmpty { urls.append(try await renderSingle(segments: front, session: session, style: style, label: "cabin")) }
-                return urls
+                if !rear.isEmpty { urls.append(try await renderSingle(segments: rear, session: session, style: style, clip: clip, label: "road")) }
+                if !front.isEmpty { urls.append(try await renderSingle(segments: front, session: session, style: style, clip: clip, label: "cabin")) }
             case .pictureInPicture:
                 guard !rear.isEmpty, !front.isEmpty else { throw ExportError.noFootage }
-                return [try await renderPictureInPicture(rear: rear, front: front, session: session, style: style)]
+                urls = [try await renderPictureInPicture(rear: rear, front: front, session: session, style: style)]
             }
+            if includeProof {
+                urls.append(try writeProofManifest(for: session))
+            }
+            return urls
         } catch let error as ExportError {
             lastError = error.errorDescription
             throw error
@@ -126,7 +177,13 @@ final class ExportManager: ObservableObject {
 
     // MARK: - Single camera
 
-    private func renderSingle(segments: [VideoSegment], session: DriveSession, style: ExportStyle, label: String) async throws -> URL {
+    private func renderSingle(
+        segments: [VideoSegment],
+        session: DriveSession,
+        style: ExportStyle,
+        clip: SessionComposition.ClipRange?,
+        label: String
+    ) async throws -> URL {
         guard !segments.isEmpty else { throw ExportError.noFootage }
         let outputURL = makeOutputURL(session: session, suffix: label, style: style)
 
@@ -134,22 +191,24 @@ final class ExportManager: ObservableObject {
         case .original:
             // Passthrough: no re-encode, so the exported file carries exactly the pixels
             // that were recorded.
-            let built = try await SessionComposition.single(segments: segments, includeAudio: true)
+            let built = try await SessionComposition.single(segments: segments, includeAudio: true, clip: clip)
             if built.hasMixedGeometry {
                 // The phone was turned mid-drive, so the segments are not all the same
                 // shape. Passthrough cannot reconcile that — it would hand a player one
                 // track whose sample dimensions change part-way through. Compositing into
                 // the dominant frame size is the only output that plays correctly, so the
                 // "original" export re-encodes in this one case.
-                let laid = try await SessionComposition.singleWithLayout(segments: segments, includeAudio: true)
+                let laid = try await SessionComposition.singleWithLayout(segments: segments, includeAudio: true, clip: clip)
                 try await runExport(composition: laid.composition, preset: AVAssetExportPresetHighestQuality, videoComposition: laid.videoComposition, outputURL: outputURL)
             } else {
                 try await runExport(composition: built.composition, preset: AVAssetExportPresetPassthrough, videoComposition: nil, outputURL: outputURL)
             }
         case .withInformation:
-            let built = try await SessionComposition.singleWithLayout(segments: segments, includeAudio: true)
+            let built = try await SessionComposition.singleWithLayout(segments: segments, includeAudio: true, clip: clip)
             if let videoComposition = built.videoComposition {
-                attachOverlay(to: videoComposition, session: session, segments: segments, renderSize: built.renderSize, duration: built.duration.seconds)
+                // The overlay is anchored on the clip's own first frame, not the drive's,
+                // so a trimmed export still stamps the right wall-clock time.
+                attachOverlay(to: videoComposition, session: session, startDate: built.startDate, renderSize: built.renderSize, duration: built.duration.seconds)
             }
             try await runExport(composition: built.composition, preset: AVAssetExportPresetHighestQuality, videoComposition: built.videoComposition, outputURL: outputURL)
         }
@@ -161,7 +220,7 @@ final class ExportManager: ObservableObject {
     private func renderPictureInPicture(rear: [VideoSegment], front: [VideoSegment], session: DriveSession, style: ExportStyle) async throws -> URL {
         let built = try await SessionComposition.pictureInPicture(rear: rear, front: front, includeAudio: true)
         if style == .withInformation, let videoComposition = built.videoComposition {
-            attachOverlay(to: videoComposition, session: session, segments: rear, renderSize: built.renderSize, duration: built.duration.seconds)
+            attachOverlay(to: videoComposition, session: session, startDate: built.startDate, renderSize: built.renderSize, duration: built.duration.seconds)
         }
         let outputURL = makeOutputURL(session: session, suffix: "pip", style: style)
         try await runExport(composition: built.composition, preset: AVAssetExportPresetHighestQuality, videoComposition: built.videoComposition, outputURL: outputURL)
@@ -170,10 +229,9 @@ final class ExportManager: ObservableObject {
 
     // MARK: - Overlay
 
-    private func attachOverlay(to videoComposition: AVMutableVideoComposition, session: DriveSession, segments: [VideoSegment], renderSize: CGSize, duration: TimeInterval) {
+    private func attachOverlay(to videoComposition: AVMutableVideoComposition, session: DriveSession, startDate start: Date, renderSize: CGSize, duration: TimeInterval) {
         let settings = SettingsSnapshotProvider.current()
         guard settings.overlayEnabled, !settings.overlayFields.isEmpty else { return }
-        guard let start = segments.first?.startDate else { return }
 
         let samples = index.locationSamples(sessionID: session.id, from: start, to: start.addingTimeInterval(duration))
 
@@ -262,10 +320,37 @@ final class ExportManager: ObservableObject {
         return StorageLocations.exportsRoot.appendingPathComponent("Dashcam_\(stamp)_\(suffix)\(styleTag).mov")
     }
 
+    // MARK: - Proof
+
+    /// Writes the evidence sidecar. Any segment still missing its digest is hashed now —
+    /// normally they are hashed in the background as they are finalized, but a drive
+    /// exported seconds after it ended may have caught up with that.
+    private func writeProofManifest(for session: DriveSession) throws -> URL {
+        for segment in session.segments where segment.sha256.isEmpty {
+            let url = StorageLocations.absoluteURL(forRelativePath: segment.relativePath)
+            if let digest = FileDigest.sha256(of: url) { segment.sha256 = digest }
+        }
+        index.save()
+
+        let manifest = ProofManifest.make(
+            for: session,
+            locations: index.locationSamples(sessionID: session.id, from: session.startedAt, to: session.endedAt ?? Date())
+        )
+        let url = makeOutputURL(session: session, suffix: "proof", style: .original)
+            .deletingPathExtension()
+            .appendingPathExtension("json")
+        try manifest.write(to: url)
+        return url
+    }
+
     // MARK: - Destinations
 
     /// Photos is opt-in, per export, and never automatic.
+    ///
+    /// Only video files are offered to Photos; the proof manifest is JSON and belongs in
+    /// Files or an email, not in a photo library that would silently drop it.
     func saveToPhotoLibrary(_ url: URL) async throws {
+        guard url.pathExtension.lowercased() != "json" else { return }
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else { throw ExportError.photoLibraryDenied }
         try await PHPhotoLibrary.shared().performChanges {

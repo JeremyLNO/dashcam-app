@@ -78,7 +78,12 @@ Cannot be simulated meaningfully. On a real drive, with sensitivity on **Normal*
 * Go over a speed bump at a sane speed — should **not** trigger.
 * Brake hard (safely, empty road) — should **not** trigger.
 * Pick the phone up out of the cradle and put it back — should **not** trigger.
-* Slap the cradle firmly with a flat hand — **should** trigger.
+* Slap the cradle firmly with a flat hand — **should** trigger an **impact**.
+* Brake hard enough to feel the belt lock, on an empty road — **should** trigger **harsh
+  braking**, and must appear in the library as braking, not as an impact. The two are
+  distinguished by shape, so getting one labelled as the other is a real defect.
+* Check the drive afterwards: distance, peak G-force and a timeline mark at each event.
+  Tapping a mark must seek the player to it.
 
 Every trigger creates a protected event covering the five minutes before and the two after.
 Check the library afterwards.
@@ -109,7 +114,18 @@ Each must produce a clear message and a clean stop — never a half-written file
 * Fill the device to under 1 GB free and start recording. The app should refuse, or stop
   cleanly and finalize what it had.
 
-## 9. StoreKit
+## 9. Clips, proof and the lock
+
+* Export **Last 30 seconds** and confirm the file is 30 s long and ends where the drive
+  ends. Repeat with a custom range and check the burned-in timestamps match the clip's
+  real wall-clock time — a trimmed export whose overlay is offset is the failure to watch
+  for here.
+* Export with **proof manifest** on. Open the JSON: every segment must carry a 64-character
+  digest. Verify one by hand — `shasum -a 256` on the file pulled off the device must match.
+* Turn on **Lock videos with Face ID**, background the app, reopen it: the Videos tab must
+  ask. Record/Stop/Protect must stay reachable without authenticating.
+
+## 10. StoreKit
 
 **Sandbox (device):** sign in with a Sandbox Apple ID under *Settings ▸ Developer ▸ Sandbox
 Apple Account*. Then:
@@ -122,7 +138,7 @@ Apple Account*. Then:
 **Local (Simulator, iOS 18.x):** the scheme references `Resources/Dashcam.storekit`; the
 subscription unit tests drive the same file through `SKTestSession`.
 
-## 10. CarPlay
+## 11. CarPlay
 
 Needs the `com.apple.developer.carplay-driving-task` entitlement — see
 [APP-STORE.md](APP-STORE.md). Until Apple grants it, the CarPlay scene is simply never

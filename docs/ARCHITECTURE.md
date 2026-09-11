@@ -134,6 +134,27 @@ orphan files are adopted, unreadable ones removed, sessions left open are closed
 whose file has vanished are dropped — that last one is what stops the library listing
 drives that play nothing.
 
+## Evidence
+
+Each segment is hashed (SHA-256) just after it is finalized, off the main actor at utility
+priority so it never competes with the two camera streams still writing. A "proof mode"
+export writes a `ProofManifest` beside the video: the original files, their digests, the
+drive's timing, distance, peak G-force, events and GPS trace.
+
+The manifest deliberately claims nothing it cannot back up. There is no signature and no
+trusted timestamp — both would need a server, and this app has none by design. What it
+says is "these are the files, this is what they hashed to, here is what the device
+observed", and it states that limit in its own `notes` field.
+
+## Detection
+
+Impact and harsh braking come out of the same accelerometer stream and are separated by
+shape, not by amplitude: a collision is a step (sharp, brief), an emergency stop is a ramp
+(smooth, sustained). The excursion window opens at the *lower* of the two entry levels —
+otherwise the braking path would be unreachable behind the impact threshold — and each
+detector then applies its own rule. A gyroscope check rejects both when the phone is being
+handled rather than driven.
+
 ## What is deliberately absent
 
 No navigation, no map, no route, no geocoding, no address search. No server. No account.

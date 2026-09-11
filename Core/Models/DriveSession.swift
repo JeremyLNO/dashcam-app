@@ -19,6 +19,13 @@ final class DriveSession {
     var storageSize: Int64
     /// Quality the drive was recorded at, as a raw value (see `VideoQuality`).
     var qualityRaw: String
+    /// Metres covered, accumulated from GPS fixes while recording. Zero when location was
+    /// denied or never got a fix — which is not the same as "the car did not move", so
+    /// the UI hides it rather than showing 0 km.
+    var distanceMeters: Double
+    /// Strongest acceleration seen during the drive, in g. Recorded whether or not it was
+    /// strong enough to trigger an event.
+    var peakGForce: Double
 
     @Relationship(deleteRule: .cascade, inverse: \VideoSegment.session)
     var segments: [VideoSegment]
@@ -29,15 +36,21 @@ final class DriveSession {
     @Relationship(deleteRule: .cascade, inverse: \LocationSample.session)
     var locationSamples: [LocationSample]
 
+    @Relationship(deleteRule: .cascade, inverse: \MotionSample.session)
+    var motionSamples: [MotionSample]
+
     init(id: UUID = UUID(), startedAt: Date = Date(), quality: VideoQuality = .standard) {
         self.id = id
         self.startedAt = startedAt
         self.endedAt = nil
         self.storageSize = 0
         self.qualityRaw = quality.rawValue
+        self.distanceMeters = 0
+        self.peakGForce = 0
         self.segments = []
         self.protectedEvents = []
         self.locationSamples = []
+        self.motionSamples = []
     }
 
     var quality: VideoQuality { VideoQuality(rawValue: qualityRaw) ?? .standard }
@@ -61,6 +74,16 @@ final class DriveSession {
 
     var hasProtectedContent: Bool {
         segments.contains(where: \.isProtected)
+    }
+
+    var activeEvents: [ProtectedEvent] {
+        protectedEvents.filter(\.isActive).sorted { $0.triggerDate < $1.triggerDate }
+    }
+
+    /// Nil when no GPS fix was ever recorded, so the library can stay silent instead of
+    /// claiming a drive covered zero kilometres.
+    var distanceKilometres: Double? {
+        distanceMeters > 0 ? distanceMeters / 1000 : nil
     }
 
     /// Directory name on disk. Stable, derived from the id, and safe as a path component.

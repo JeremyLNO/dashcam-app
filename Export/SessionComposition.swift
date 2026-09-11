@@ -26,6 +26,24 @@ struct BuiltComposition {
 enum SessionComposition {
     enum BuildError: Error { case noFootage, trackCreationFailed }
 
+    /// A window inside a drive, in seconds from the first frame.
+    ///
+    /// Trimming happens while the composition is *built*, not afterwards with
+    /// `AVAssetExportSession.timeRange`. The difference matters: the overlay stamps are
+    /// scheduled against the composition's own timeline, so trimming after the fact would
+    /// leave every burned-in timestamp pointing at the wrong moment.
+    struct ClipRange: Equatable, Sendable {
+        var start: TimeInterval
+        var duration: TimeInterval
+
+        var end: TimeInterval { start + duration }
+
+        /// Where this clip sits relative to the whole drive, used to offset the overlay.
+        func offsetStartDate(from sessionStart: Date) -> Date {
+            sessionStart.addingTimeInterval(start)
+        }
+    }
+
     /// One piece of footage on the timeline, with the shape it was recorded at.
     ///
     /// Turning the phone in its cradle makes the writer cut a new segment at a new size,
@@ -40,8 +58,8 @@ enum SessionComposition {
     // MARK: - Single camera
 
     /// One camera, concatenated in segment order.
-    static func single(segments: [VideoSegment], includeAudio: Bool) async throws -> BuiltComposition {
-        let built = try await assemble(segments: segments, includeAudio: includeAudio)
+    static func single(segments: [VideoSegment], includeAudio: Bool, clip: ClipRange? = nil) async throws -> BuiltComposition {
+        let built = try await assemble(segments: segments, includeAudio: includeAudio, clip: clip)
         return BuiltComposition(
             composition: built.composition,
             videoComposition: nil,
@@ -56,10 +74,10 @@ enum SessionComposition {
     /// Same as `single`, but with an explicit video composition so an overlay can be
     /// attached (Core Animation needs a video composition to hang off) and so a drive with
     /// mixed geometry renders into one consistent frame.
-    static func singleWithLayout(segments: [VideoSegment], includeAudio: Bool) async throws -> BuiltComposition {
-        let built = try await assemble(segments: segments, includeAudio: includeAudio)
+    static func singleWithLayout(segments: [VideoSegment], includeAudio: Bool, clip: ClipRange? = nil) async throws -> BuiltComposition {
+        let built = try await assemble(segments: segments, includeAudio: includeAudio, clip: clip)
         guard let track = built.composition.tracks(withMediaType: .video).first else {
-            return try await single(segments: segments, includeAudio: includeAudio)
+            return try await single(segments: segments, includeAudio: includeAudio, clip: clip)
         }
 
         let videoComposition = AVMutableVideoComposition()
@@ -223,7 +241,7 @@ enum SessionComposition {
         var hasMixedGeometry: Bool
     }
 
-    private static func assemble(segments: [VideoSegment], includeAudio: Bool) async throws -> Assembled {
+    private static func assemble(segments: [VideoSegment], includeAudio: Bool, clip: ClipRange? = nil) async throws -> Assembled {
         guard !segments.isEmpty else { throw BuildError.noFootage }
 
         let composition = AVMutableComposition()
@@ -236,6 +254,9 @@ enum SessionComposition {
 
         var placements: [Placement] = []
         var cursor = CMTime.zero
+        /// Position of the current segment's start along the *whole* drive, which is what
+        /// a clip range is expressed against.
+        var sourceCursor: TimeInterval = 0
 
         for segment in segments {
             let asset = AVURLAsset(url: StorageLocations.absoluteURL(forRelativePath: segment.relativePath))
@@ -243,18 +264,24 @@ enum SessionComposition {
                   let duration = try? await asset.load(.duration), duration.seconds > 0
             else { continue }
 
-            let range = CMTimeRange(start: .zero, duration: duration)
-            try videoTrack.insertTimeRange(range, of: sourceVideo, at: cursor)
+            // Keep only the part of this segment that falls inside the requested clip.
+            guard let source = sourceRange(for: duration, sourceStart: sourceCursor, clip: clip) else {
+                sourceCursor += duration.seconds
+                continue
+            }
+            sourceCursor += duration.seconds
+
+            try videoTrack.insertTimeRange(source, of: sourceVideo, at: cursor)
             placements.append(Placement(
-                range: CMTimeRange(start: cursor, duration: duration),
+                range: CMTimeRange(start: cursor, duration: source.duration),
                 naturalSize: (try? await sourceVideo.load(.naturalSize)) ?? CGSize(width: 1920, height: 1080),
                 transform: (try? await sourceVideo.load(.preferredTransform)) ?? .identity
             ))
 
             if let audioTrack, let sourceAudio = try? await asset.loadTracks(withMediaType: .audio).first {
-                try? audioTrack.insertTimeRange(range, of: sourceAudio, at: cursor)
+                try? audioTrack.insertTimeRange(source, of: sourceAudio, at: cursor)
             }
-            cursor = CMTimeAdd(cursor, duration)
+            cursor = CMTimeAdd(cursor, source.duration)
         }
 
         guard cursor.seconds > 0, let first = placements.first else { throw BuildError.noFootage }
@@ -266,9 +293,23 @@ enum SessionComposition {
             placements: placements,
             duration: cursor,
             renderSize: dominantRenderSize(of: placements),
-            startDate: segments[0].startDate,
+            startDate: clip.map { segments[0].startDate.addingTimeInterval($0.start) } ?? segments[0].startDate,
             frameRate: segments.first?.fps ?? 30,
             hasMixedGeometry: isMixed(placements)
+        )
+    }
+
+    /// Intersects one segment with the requested clip, in the segment's own coordinates.
+    /// Returns nil when the segment lies entirely outside the clip.
+    static func sourceRange(for duration: CMTime, sourceStart: TimeInterval, clip: ClipRange?) -> CMTimeRange? {
+        guard let clip else { return CMTimeRange(start: .zero, duration: duration) }
+        let segmentEnd = sourceStart + duration.seconds
+        let from = max(sourceStart, clip.start)
+        let to = min(segmentEnd, clip.end)
+        guard to > from else { return nil }
+        return CMTimeRange(
+            start: CMTime(seconds: from - sourceStart, preferredTimescale: 600),
+            duration: CMTime(seconds: to - from, preferredTimescale: 600)
         )
     }
 

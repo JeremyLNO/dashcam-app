@@ -1127,31 +1127,31 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kameraaufnahme ist im Simulator nicht verfügbar. Starte Dashcam auf einem echten iPhone."
+            "value": "Kameraaufnahme ist im Simulator nicht verfügbar. Starte Dashcam Pocket auf einem echten iPhone."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Camera capture is not available in the Simulator. Run Dashcam on a real iPhone."
+            "value": "Camera capture is not available in the Simulator. Run Dashcam Pocket on a real iPhone."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "La captura de cámara no está disponible en el simulador. Ejecuta Dashcam en un iPhone real."
+            "value": "La captura de cámara no está disponible en el simulador. Ejecuta Dashcam Pocket en un iPhone real."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "La capture caméra n'est pas disponible dans le simulateur. Lancez Dashcam sur un iPhone réel."
+            "value": "La capture caméra n'est pas disponible dans le simulateur. Lancez Dashcam Pocket sur un iPhone réel."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "A captura de câmara não está disponível no simulador. Execute o Dashcam num iPhone real."
+            "value": "A captura de câmara não está disponível no simulador. Execute a Dashcam Pocket num iPhone real."
           }
         }
       }

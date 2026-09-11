@@ -1,5 +1,6 @@
 #include "Base.xcconfig"
 
-CODE_SIGN_IDENTITY = Apple Distribution
+// Automatic signing picks the identity itself. Pinning CODE_SIGN_IDENTITY here
+// makes `xcodebuild archive` refuse with "conflicting provisioning settings".
 CODE_SIGN_STYLE = Automatic
 VALIDATE_PRODUCT = YES

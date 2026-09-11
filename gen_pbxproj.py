@@ -496,7 +496,7 @@ def app_common():
         'LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");',
         f'PRODUCT_BUNDLE_IDENTIFIER = "{BUNDLE_ID_VAR}";',
         'PRODUCT_NAME = "$(TARGET_NAME)";',
-        'TARGETED_DEVICE_FAMILY = "1,2";',
+        'TARGETED_DEVICE_FAMILY = "1";',
     ]
 
 
@@ -507,7 +507,7 @@ def test_common():
         'LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks");',
         f'PRODUCT_BUNDLE_IDENTIFIER = "{BUNDLE_ID_VAR}.tests";',
         'PRODUCT_NAME = "$(TARGET_NAME)";',
-        'TARGETED_DEVICE_FAMILY = "1,2";',
+        'TARGETED_DEVICE_FAMILY = "1";',
         f'TEST_HOST = "$(BUILT_PRODUCTS_DIR)/{PROJ}.app/{PROJ}";',
     ]
 
@@ -518,7 +518,7 @@ def uitest_common():
         'LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks");',
         f'PRODUCT_BUNDLE_IDENTIFIER = "{BUNDLE_ID_VAR}.uitests";',
         'PRODUCT_NAME = "$(TARGET_NAME)";',
-        'TARGETED_DEVICE_FAMILY = "1,2";',
+        'TARGETED_DEVICE_FAMILY = "1";',
         f"TEST_TARGET_NAME = {PROJ};",
     ]
 

@@ -6,3 +6,4 @@ xcuserdata/
 *.xcworkspace/xcuserdata/
 Dashcam.xcodeproj/project.xcworkspace/
 Dashcam.xcodeproj/xcuserdata/
+*.xcarchive

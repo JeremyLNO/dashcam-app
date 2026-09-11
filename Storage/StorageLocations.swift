@@ -1,0 +1,62 @@
+import Foundation
+
+/// Where everything lives on disk, in one place.
+///
+/// Recordings go in Application Support (not Documents): they are app-managed data, not
+/// user documents, and they must never appear in the Files app or be swept into an
+/// iCloud backup — a week of dual-camera footage would blow up the user's backup.
+enum StorageLocations {
+    static var applicationSupport: URL {
+        let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    /// Root of every recorded file. Created on first access and excluded from backup.
+    static var recordingsRoot: URL {
+        var url = applicationSupport.appendingPathComponent("Recordings", isDirectory: true)
+        if !FileManager.default.fileExists(atPath: url.path) {
+            try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+            var values = URLResourceValues()
+            values.isExcludedFromBackup = true
+            try? url.setResourceValues(values)
+        }
+        return url
+    }
+
+    /// Scratch space for export renders. Cleared on launch — a half-written export has
+    /// no value after the process that was writing it went away.
+    static var exportsRoot: URL {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Exports", isDirectory: true)
+        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    static func sessionDirectory(_ sessionID: UUID) -> URL {
+        let url = recordingsRoot.appendingPathComponent(sessionID.uuidString, isDirectory: true)
+        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    /// "<session>/rear_0003.mov" — the exact string stored in `VideoSegment.relativePath`.
+    static func relativePath(sessionID: UUID, camera: CameraPosition, index: Int) -> String {
+        String(format: "%@/%@_%04d.mov", sessionID.uuidString, camera.rawValue, index)
+    }
+
+    static func absoluteURL(forRelativePath path: String) -> URL {
+        recordingsRoot.appendingPathComponent(path)
+    }
+
+    static func clearExports() {
+        try? FileManager.default.removeItem(at: exportsRoot)
+    }
+
+    /// Used only by the persistence fallback path when the store cannot be opened.
+    static func removeStoreFiles() {
+        let fm = FileManager.default
+        guard let contents = try? fm.contentsOfDirectory(at: applicationSupport, includingPropertiesForKeys: nil) else { return }
+        for url in contents where url.lastPathComponent.hasPrefix("default.store") {
+            try? fm.removeItem(at: url)
+        }
+    }
+}

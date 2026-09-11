@@ -1,0 +1,8 @@
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.DS_Store
+*.xcworkspace/xcuserdata/
+Dashcam.xcodeproj/project.xcworkspace/
+Dashcam.xcodeproj/xcuserdata/

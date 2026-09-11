@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- CarPlay Driving Task. Apple grants this entitlement per-app on request;
+	     until it is granted this key must stay commented out or the build will
+	     fail to sign. The app is fully functional without it.
+	<key>com.apple.developer.carplay-driving-task</key>
+	<true/>
+	-->
+</dict>
+</plist>

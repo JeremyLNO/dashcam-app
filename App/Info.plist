@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>$(APP_NAME)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(APP_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+	</dict>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIUserInterfaceStyle</key>
+	<string>Dark</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
+	<!-- Permission prompts. Every one of these is preceded in-app by an
+	     explanation screen, the system prompt is never the first thing shown. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Dashcam records the road ahead and the cabin while you drive. Video never leaves your iPhone.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Optional. Turn audio on to record sound alongside your driving footage. It is off by default.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Optional. Location is only attached to your recordings as metadata (position, speed). Dashcam provides no navigation and never uploads your location.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Optional. Motion data is used on-device to detect a possible impact and automatically protect the surrounding footage.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Only used when you explicitly export a recording to your photo library. Dashcam never saves to Photos automatically.</string>
+
+	<!-- Scenes. Only the CarPlay role is declared: SwiftUI owns the phone window scene,
+	     and naming a delegate class for the window role would take that away from it.
+	     The CarPlay scene is declared unconditionally — without the
+	     com.apple.developer.carplay-driving-task entitlement iOS simply never creates
+	     it, and the iPhone app is unaffected. -->
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>CPTemplateApplicationSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>CPTemplateApplicationScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>CarPlay Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).CarPlaySceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+
+	<!-- App configuration read at runtime. Values come from Config/*.xcconfig so
+	     nothing product-specific is hardcoded in Swift. -->
+	<key>DashcamConfiguration</key>
+	<dict>
+		<key>SubscriptionGroupID</key>
+		<string>$(SUBSCRIPTION_GROUP_ID)</string>
+		<key>MonthlyProductID</key>
+		<string>$(PRODUCT_ID_MONTHLY)</string>
+		<key>QuarterlyProductID</key>
+		<string>$(PRODUCT_ID_QUARTERLY)</string>
+		<key>YearlyProductID</key>
+		<string>$(PRODUCT_ID_YEARLY)</string>
+		<key>SupportURL</key>
+		<string>$(SUPPORT_URL)</string>
+		<key>BrandURL</key>
+		<string>$(BRAND_URL)</string>
+		<key>TermsURL</key>
+		<string>$(TERMS_URL)</string>
+		<key>PrivacyURL</key>
+		<string>$(PRIVACY_URL)</string>
+		<key>AppStoreAppID</key>
+		<string>$(APPSTORE_APP_ID)</string>
+		<key>OneSignalAppID</key>
+		<string>$(ONESIGNAL_APP_ID)</string>
+	</dict>
+</dict>
+</plist>

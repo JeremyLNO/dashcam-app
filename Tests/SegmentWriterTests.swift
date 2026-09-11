@@ -134,19 +134,43 @@ final class SegmentWriterTests: XCTestCase {
         XCTAssertTrue(box.values.allSatisfy(\.succeeded))
     }
 
-    /// Turning the phone mid-window must not cut the file, and must not change its shape:
-    /// the output box is fixed and landscape, and an upright frame is fitted inside it.
-    func testRotatingTheFrameNeitherCutsNorChangesTheOutputShape() throws {
+    /// Turning the phone mid-window must not cut the file, and must not change its shape.
+    ///
+    /// Asserts the **file on disk**, not the metadata row. The previous version of this
+    /// test checked `FinishedSegment.width`, which is simply what the app claimed it wrote
+    /// — it would have passed even if the encoder ignored the requested dimensions
+    /// entirely, which is exactly the failure it was supposed to catch.
+    func testTheFileOnDiskIsLandscapeEvenWhenTheFramesArrivePortrait() async throws {
         let box = SegmentBox()
         let writer = makeWriter(onFinished: { box.append($0) })
-        try feed(writer, frames: 20, width: 640, height: 360)      // landscape
-        try feed(writer, frames: 20, width: 360, height: 640, from: 20.0 / 30)   // upright
+        try feed(writer, frames: 20, width: 360, height: 640)   // upright frames only
+        stopAndWait(writer)
+
+        XCTAssertEqual(box.values.count, 1)
+        let segment = try XCTUnwrap(box.values.first)
+
+        let asset = AVURLAsset(url: StorageLocations.absoluteURL(forRelativePath: segment.relativePath))
+        let tracks = try await asset.loadTracks(withMediaType: .video)
+        let track = try XCTUnwrap(tracks.first)
+        let natural = try await track.load(.naturalSize)
+        let transform = try await track.load(.preferredTransform)
+        // What a player actually shows: the natural size with the transform applied.
+        let displayed = CGRect(origin: .zero, size: natural).applying(transform)
+
+        XCTAssertGreaterThan(abs(displayed.width), abs(displayed.height),
+                             "the file plays portrait: \(natural) transform \(transform)")
+        XCTAssertEqual(abs(displayed.width), 1280, accuracy: 2, "Eco is 1280 wide")
+        XCTAssertEqual(abs(displayed.height), 720, accuracy: 2)
+    }
+
+    func testASingleWindowStaysOneFileWhateverTheFrameShape() throws {
+        let box = SegmentBox()
+        let writer = makeWriter(onFinished: { box.append($0) })
+        try feed(writer, frames: 20, width: 640, height: 360)
+        try feed(writer, frames: 20, width: 360, height: 640, from: 20.0 / 30)
         stopAndWait(writer)
 
         XCTAssertEqual(box.values.count, 1, "one window, one file, whichever way the phone was held")
-        let segment = try XCTUnwrap(box.values.first)
-        XCTAssertGreaterThan(segment.width, segment.height, "the file is landscape")
-        XCTAssertTrue(segment.succeeded)
     }
 
     /// Every segment of a drive is the same size, which is what lets them concatenate.

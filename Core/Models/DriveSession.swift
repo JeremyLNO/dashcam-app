@@ -80,6 +80,18 @@ final class DriveSession {
         max(rearSegments.count, frontSegments.count)
     }
 
+    /// Which cameras actually produced footage on this drive.
+    ///
+    /// Surfaced in the detail screen because "I only see the road camera" has two very
+    /// different causes — an inset that failed to composite, or a cabin camera that never
+    /// recorded — and nothing on screen used to tell them apart.
+    var recordedCameras: [CameraPosition] {
+        var cameras: [CameraPosition] = []
+        if !rearSegments.isEmpty { cameras.append(.rear) }
+        if !frontSegments.isEmpty { cameras.append(.front) }
+        return cameras
+    }
+
     var hasProtectedContent: Bool {
         segments.contains(where: \.isProtected)
     }

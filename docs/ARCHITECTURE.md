@@ -149,6 +149,18 @@ so up to a few minutes of footage at a 3-minute segment length. Shortening the w
 reduces how much is pinned, it does not carve out a 20-second clip. Use Export ▸ custom
 range for that.
 
+## A coordinate space that bites
+
+A video composition's **layer-instruction transforms live in a top-left origin space** —
+unlike Core Graphics, and unlike the Core Animation layer tree used for the overlay, both
+of which put the origin bottom-left. Computing the cabin inset as
+`y = renderHeight - insetHeight - margin` therefore put it in the *bottom*-right corner
+while every geometry test passed, because those tests asserted arithmetic about where a
+layer should land rather than where it actually landed.
+
+`PictureInPictureRenderTests` renders a frame from two differently coloured clips and
+samples the pixels. It is the only kind of test that could have caught this.
+
 ## Evidence
 
 Each segment is hashed (SHA-256) just after it is finalized, off the main actor at utility

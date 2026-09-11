@@ -84,6 +84,17 @@ final class DriveSessionTests: XCTestCase {
         XCTAssertEqual(index.session(id: sessionID)!.segmentCount, 4)
     }
 
+    /// "I only see the road camera" has two causes that look identical on screen: an
+    /// inset that failed to composite, or a cabin camera that never recorded. The detail
+    /// screen now states which cameras produced footage.
+    func testRecordedCamerasReportsWhatIsActuallyOnDisk() {
+        TestSupport.addSegment(to: index, sessionID: sessionID, segmentIndex: 0, start: start)
+        XCTAssertEqual(index.session(id: sessionID)!.recordedCameras, [.rear], "rear only so far")
+
+        TestSupport.addSegment(to: index, sessionID: sessionID, camera: .front, segmentIndex: 0, start: start)
+        XCTAssertEqual(index.session(id: sessionID)!.recordedCameras, [.rear, .front])
+    }
+
     func testQualityRoundTripsThroughItsRawValue() {
         XCTAssertEqual(index.session(id: sessionID)!.quality, .high)
     }

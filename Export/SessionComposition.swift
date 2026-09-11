@@ -175,12 +175,20 @@ enum SessionComposition {
         videoComposition.renderSize = renderSize
         videoComposition.frameDuration = CMTime(value: 1, timescale: CMTimeScale(fps))
 
+        // Top-right, matching where the live recording screen puts the cabin preview —
+        // playback that moves it elsewhere reads as a different app.
+        //
+        // The y here is measured from the TOP. A video composition's layer-instruction
+        // transforms live in a top-left origin space, not the bottom-left one Core
+        // Graphics uses everywhere else in this file. Getting that backwards is what put
+        // the cabin inset in the bottom-right corner, and only rendering a frame and
+        // looking at the pixels revealed it — every geometry assertion passed happily.
         let margin = renderSize.width * 0.025
         let insetWidth = renderSize.width * 0.28
         let insetHeight = insetWidth * (renderSize.height / max(1, renderSize.width))
         let insetRect = CGRect(
             x: renderSize.width - insetWidth - margin,
-            y: renderSize.height - insetHeight - margin,
+            y: margin,
             width: insetWidth,
             height: insetHeight
         )

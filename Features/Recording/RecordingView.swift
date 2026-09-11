@@ -13,6 +13,8 @@ struct RecordingView: View {
     @EnvironmentObject private var location: LocationManager
     @EnvironmentObject private var thermal: ThermalManager
 
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
     @State private var isDiscreet = false
     @State private var lastInteraction = Date()
     @State private var discreetTimer: Timer?
@@ -51,12 +53,23 @@ struct RecordingView: View {
 
     // MARK: - Full screen
 
+    /// Landscape is the orientation this app is meant to be used in — a windscreen cradle
+    /// holds the phone sideways — so it gets a layout of its own rather than a squashed
+    /// version of the portrait one: the road fills the left two thirds, everything the
+    /// driver reads sits in a column on the right.
+    private var isLandscape: Bool { verticalSizeClass == .compact }
+
+    private var controlHeight: CGFloat {
+        isLandscape ? Theme.compactControlHeight : Theme.controlHeight
+    }
+
     private var content: some View {
-        VStack(spacing: Theme.spacing) {
-            header
-            previews
-            statusGrid
-            controls
+        Group {
+            if isLandscape {
+                landscapeContent
+            } else {
+                portraitContent
+            }
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 8)
@@ -64,12 +77,49 @@ struct RecordingView: View {
         .onTapGesture { noteInteraction() }
     }
 
+    private var portraitContent: some View {
+        VStack(spacing: Theme.spacing) {
+            header
+            previews
+            statusGrid
+            controls
+        }
+    }
+
+    private var landscapeContent: some View {
+        HStack(alignment: .top, spacing: Theme.spacing) {
+            previews
+                .frame(maxWidth: .infinity)
+                // The tab bar floats over the content, so the preview has to stop short
+                // of it rather than disappear behind it.
+                .padding(.bottom, Theme.floatingTabBarClearance)
+
+            VStack(spacing: 8) {
+                header
+                statusColumn
+                Spacer(minLength: 0)
+                controls
+            }
+            .frame(width: 366)
+            .padding(.bottom, Theme.floatingTabBarClearance)
+        }
+    }
+
+    /// Same three columns as portrait. Two wider columns were tried first and made every
+    /// label truncate — "Road ca…", "Fre…" — which is exactly what a status panel must
+    /// never do.
+    private var statusColumn: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3), spacing: 6) {
+            statusTiles
+        }
+    }
+
     private var header: some View {
         HStack {
             RecordingIndicator(isRecording: recording.isRecording)
             Spacer()
             Text(verbatim: Format.duration(recording.elapsed))
-                .font(Theme.timer(34))
+                .font(Theme.timer(isLandscape ? 26 : 34))
                 .foregroundStyle(recording.isRecording ? Theme.textPrimary : Theme.textTertiary)
                 .accessibilityLabel(Text(key: "a11y.duration"))
                 .accessibilityValue(Text(verbatim: Format.duration(recording.elapsed)))
@@ -103,46 +153,59 @@ struct RecordingView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(minHeight: 200)
+        .frame(minHeight: isLandscape ? 140 : 200)
     }
 
     private var statusGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+            statusTiles
+        }
+    }
+
+    @ViewBuilder
+    private var statusTiles: some View {
+        Group {
             StatusTile(
                 titleKey: "status.rear",
                 value: L10n.t(capture.status.rearActive ? capture.status.rearLensKey : "status.off"),
                 systemImage: "car.rear.waves.up",
-                tint: capture.status.rearActive ? Theme.positive : Theme.textTertiary
+                tint: capture.status.rearActive ? Theme.positive : Theme.textTertiary,
+                isDense: isLandscape
             )
             StatusTile(
                 titleKey: "status.front",
                 value: L10n.t(capture.status.frontActive ? "status.on" : "status.off"),
                 systemImage: "person.fill.viewfinder",
-                tint: capture.status.frontActive ? Theme.positive : Theme.textTertiary
+                tint: capture.status.frontActive ? Theme.positive : Theme.textTertiary,
+                isDense: isLandscape
             )
             StatusTile(
                 titleKey: "status.gps",
                 value: gpsValue,
                 systemImage: "location.fill",
-                tint: location.isAuthorized ? Theme.positive : Theme.textTertiary
+                tint: location.isAuthorized ? Theme.positive : Theme.textTertiary,
+                isDense: isLandscape
             )
             StatusTile(
                 titleKey: "status.free_space",
                 value: Format.bytes(storage.snapshot.freeBytes),
                 systemImage: "internaldrive",
-                tint: storage.snapshot.isCriticallyLow ? Theme.accent : Theme.textSecondary
+                tint: storage.snapshot.isCriticallyLow ? Theme.accent : Theme.textSecondary,
+                isDense: isLandscape
             )
             StatusTile(
                 titleKey: "status.remaining",
                 value: Format.duration(remainingRecordingTime),
                 systemImage: "timer",
-                tint: Theme.textSecondary
+                tint: Theme.textSecondary,
+                isDense: isLandscape
             )
             StatusTile(
                 titleKey: "status.quality",
                 value: L10n.t(thermal.effectiveQuality.titleKey),
                 systemImage: "dial.high",
-                tint: thermal.currentAction == .none ? Theme.textSecondary : Theme.warning
+                tint: thermal.currentAction == .none ? Theme.textSecondary : Theme.warning,
+                isDense: isLandscape
             )
         }
     }
@@ -158,7 +221,10 @@ struct RecordingView: View {
                     icon: { Image(systemName: recording.isRecording ? "stop.fill" : "record.circle") }
                 )
             }
-            .buttonStyle(DriverButtonStyle(fill: recording.isRecording ? Theme.surfaceElevated : Theme.accent))
+            .buttonStyle(DriverButtonStyle(
+                fill: recording.isRecording ? Theme.surfaceElevated : Theme.accent,
+                height: controlHeight
+            ))
             .disabled(capture.status.mode == .unavailable)
             .accessibilityHint(Text(key: recording.isRecording ? "a11y.stop_hint" : "a11y.start_hint"))
 
@@ -170,7 +236,11 @@ struct RecordingView: View {
                     icon: { Image(systemName: protectFlash ? "checkmark.shield.fill" : "shield.lefthalf.filled") }
                 )
             }
-            .buttonStyle(DriverButtonStyle(fill: protectFlash ? Theme.positive : Theme.surfaceElevated, isProminent: false))
+            .buttonStyle(DriverButtonStyle(
+                fill: protectFlash ? Theme.positive : Theme.surfaceElevated,
+                isProminent: false,
+                height: controlHeight
+            ))
             .disabled(!recording.isRecording)
             .accessibilityHint(Text(key: "a11y.protect_hint"))
         }

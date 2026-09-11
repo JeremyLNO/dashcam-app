@@ -97,7 +97,6 @@ final class RecordingManager: ObservableObject {
             return
         }
 
-        capture.refreshCaptureRotation()
         thermal.begin(userQuality: settingsStore.settings.quality)
 
         let sessionID = UUID()
@@ -112,7 +111,6 @@ final class RecordingManager: ObservableObject {
             frontFormat: capture.frontFormat,
             includesFront: includesFront,
             includesAudio: capture.status.audioActive,
-            rotationAngle: capture.captureRotationAngle,
             segmentDuration: settingsStore.settings.segmentDuration.seconds
         ))
 

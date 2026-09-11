@@ -164,14 +164,17 @@ final class RecoveryManager {
         )
     }
 
-    /// "rear_0003.mov" -> (.rear, 3)
+    /// "rear_0003.mov" -> (.rear, 3). "rear_0003-1.mov" -> (.rear, 3) as well: the
+    /// revision suffix marks a file the writer had to reopen mid-window after the phone
+    /// was turned, and it belongs to the same segment index.
     static func parseName(_ fileName: String) -> (camera: CameraPosition, index: Int)? {
         let base = (fileName as NSString).deletingPathExtension
         let parts = base.split(separator: "_")
         guard parts.count == 2,
-              let camera = CameraPosition(rawValue: String(parts[0])),
-              let index = Int(parts[1])
+              let camera = CameraPosition(rawValue: String(parts[0]))
         else { return nil }
+        let indexPart = parts[1].split(separator: "-")[0]
+        guard let index = Int(indexPart) else { return nil }
         return (camera, index)
     }
 }

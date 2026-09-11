@@ -74,22 +74,62 @@ final class CompositionGeometryTests: XCTestCase {
 
     // MARK: Encoder dimensions
 
-    func testEncodeDimensionsNeverUpscale() {
-        let result = CaptureManager.encodeDimensions(source: (1280, 720), targetHeight: 1080)
+    private let standard = VideoFormatDescriptor.resolved(for: .standard, codec: "hvc1")
+    private let eco = VideoFormatDescriptor.resolved(for: .eco, codec: "hvc1")
+
+    func testEncodeSizeNeverUpscales() {
+        let result = standard.encodeSize(forFrame: 1280, height: 720)
         XCTAssertEqual(result.width, 1280)
         XCTAssertEqual(result.height, 720)
     }
 
-    func testEncodeDimensionsPreserveTheCapturedAspectRatio() {
+    func testEncodeSizePreservesTheCapturedAspectRatio() {
         // A 4:3 sensor format downscaled to 1080p must become 1440x1080, not 1920x1080.
-        let result = CaptureManager.encodeDimensions(source: (2880, 2160), targetHeight: 1080)
+        let result = standard.encodeSize(forFrame: 2880, height: 2160)
         XCTAssertEqual(result.width, 1440)
         XCTAssertEqual(result.height, 1080)
     }
 
-    func testEncodeDimensionsAreEven() {
-        let result = CaptureManager.encodeDimensions(source: (1999, 1125), targetHeight: 1080)
+    /// The property that makes tilting work: a tier means "1080 across the narrow
+    /// dimension", so landscape and portrait frames cost the same and both stay sharp.
+    func testTheTierAppliesToTheShortSideWhicheverWayThePhoneIsHeld() {
+        let landscape = standard.encodeSize(forFrame: 3840, height: 2160)
+        let portrait = standard.encodeSize(forFrame: 2160, height: 3840)
+
+        XCTAssertEqual(landscape.width, 1920)
+        XCTAssertEqual(landscape.height, 1080)
+        XCTAssertEqual(portrait.width, 1080)
+        XCTAssertEqual(portrait.height, 1920)
+        XCTAssertEqual(landscape.width * landscape.height, portrait.width * portrait.height)
+    }
+
+    func testEcoTargetsSevenTwentyOnTheShortSide() {
+        let result = eco.encodeSize(forFrame: 1920, height: 1080)
+        XCTAssertEqual(result.height, 720)
+        XCTAssertEqual(result.width, 1280)
+    }
+
+    func testEncodeSizeIsAlwaysEven() {
+        let result = standard.encodeSize(forFrame: 1999, height: 1125)
         XCTAssertEqual(result.width % 2, 0)
         XCTAssertEqual(result.height % 2, 0)
+    }
+
+    /// Turning the phone changes the encoded shape, which is what forces the writer to
+    /// cut a new segment — an `AVAssetWriterInput` cannot change dimensions once open.
+    func testRotatingTheFrameChangesTheEncodedShape() {
+        let landscape = standard.encodeSize(forFrame: 1920, height: 1080)
+        let portrait = standard.encodeSize(forFrame: 1080, height: 1920)
+        XCTAssertNotEqual(landscape.width, portrait.width)
+        XCTAssertEqual(landscape.width, portrait.height)
+        XCTAssertEqual(landscape.height, portrait.width)
+    }
+
+    /// A frame that is already at the target must not be resized at all — otherwise every
+    /// rounding pass would nibble the picture.
+    func testFramesAtTheTargetAreUntouched() {
+        let result = standard.encodeSize(forFrame: 1920, height: 1080)
+        XCTAssertEqual(result.width, 1920)
+        XCTAssertEqual(result.height, 1080)
     }
 }

@@ -118,7 +118,7 @@ final class SubscriptionManagerTests: XCTestCase {
     ///   * the mapping itself is covered exhaustively by `SubscriptionStateTests`, which
     ///     exercises `canExport` for every combination of entitlement and offer state;
     ///   * the conversion is verified against the real thing in Sandbox — see
-    ///     `docs/DEVICE-TESTING.md`, section 8.
+    ///     `docs/DEVICE-TESTING.md`, section 9.
     ///
     /// This test exists to keep that gap visible rather than silent.
     func testConversionToPaidIsVerifiedInSandboxNotHere() async throws {

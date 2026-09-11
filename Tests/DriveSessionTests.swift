@@ -103,6 +103,24 @@ final class DriveSessionTests: XCTestCase {
         XCTAssertEqual(parsed?.index, 7)
     }
 
+    /// Turning the phone mid-window forces a second file at the same index; the revision
+    /// suffix keeps the path unique while the front/rear pairing stays intact.
+    func testRevisionSuffixKeepsTheIndexPairingIntact() {
+        let base = StorageLocations.relativePath(sessionID: sessionID, camera: .rear, index: 7)
+        let rotated = StorageLocations.relativePath(sessionID: sessionID, camera: .rear, index: 7, revision: 1)
+
+        XCTAssertEqual(base, "\(sessionID.uuidString)/rear_0007.mov")
+        XCTAssertEqual(rotated, "\(sessionID.uuidString)/rear_0007-1.mov")
+        XCTAssertNotEqual(base, rotated)
+
+        // Both still parse back to the same segment index, so recovery re-adopts them
+        // into the right place in the sequence.
+        XCTAssertEqual(RecoveryManager.parseName("rear_0007.mov")?.index, 7)
+        XCTAssertEqual(RecoveryManager.parseName("rear_0007-1.mov")?.index, 7)
+        XCTAssertEqual(RecoveryManager.parseName("front_0007-2.mov")?.camera, .front)
+        XCTAssertEqual(RecoveryManager.parseName("front_0007-2.mov")?.index, 7)
+    }
+
     func testParseNameRejectsAnythingItDoesNotRecognise() {
         XCTAssertNil(RecoveryManager.parseName("IMG_0001.mov"))
         XCTAssertNil(RecoveryManager.parseName("rear.mov"))

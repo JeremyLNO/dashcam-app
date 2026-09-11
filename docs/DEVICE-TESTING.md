@@ -46,14 +46,32 @@ it shows up.
   session.
 * Power the device off mid-recording (hold both buttons) and relaunch. Same expectation.
 
-## 3. GPS
+## 3. Orientation
+
+This is the part the Simulator cannot show you, because it has no cameras.
+
+* Start recording with the phone in a landscape cradle. Confirm the preview is level and
+  the status panel sits on the right.
+* **While recording**, turn the phone to portrait. The preview must follow immediately, and
+  the library afterwards must show two segments for that window — the second with portrait
+  dimensions and a `-1` in its file name. Both must play level.
+* Turn it back. A third segment appears, landscape again.
+* Play the drive back in the app: the road/cabin player composites everything into one
+  frame size, letterboxing whichever orientation was in the minority.
+* Export that drive as **Original**. Because the geometry is mixed, the export re-encodes
+  rather than passing through — check the result plays level end to end in Photos and in
+  QuickTime on a Mac.
+* A drive recorded entirely in one orientation must still export by passthrough: compare
+  the exported file's size to the sum of its segments, they should be nearly identical.
+
+## 4. GPS
 
 * Drive, or use Xcode's *Debug ▸ Simulate Location ▸ City Run*.
 * Confirm the GPS tile shows a speed, and that the exported "with information" file carries
   a plausible speed that changes over the clip.
 * Deny location and confirm recording is unaffected.
 
-## 4. CoreMotion impact detection
+## 5. CoreMotion impact detection
 
 Cannot be simulated meaningfully. On a real drive, with sensitivity on **Normal**:
 
@@ -65,7 +83,7 @@ Cannot be simulated meaningfully. On a real drive, with sensitivity on **Normal*
 Every trigger creates a protected event covering the five minutes before and the two after.
 Check the library afterwards.
 
-## 5. Thermal pressure
+## 6. Thermal pressure
 
 * Record at **High** quality with both cameras, in sunlight, while charging.
 * Watch for the "iPhone is warming up" alert. Expected order: quality drops one tier, then
@@ -74,7 +92,7 @@ Check the library afterwards.
 * `ThermalManager` also reacts to `AVCaptureMultiCamSession.systemPressureCost` reaching
   1.0, which usually arrives before the thermal state does.
 
-## 6. Capture interruptions
+## 7. Capture interruptions
 
 * Take a phone call while recording.
 * Open the Camera app from Control Center while recording.
@@ -84,14 +102,14 @@ Check the library afterwards.
 
 Each must produce a clear message and a clean stop — never a half-written file.
 
-## 7. Storage
+## 8. Storage
 
 * Set the cap to 5 GB and record past it. Oldest unprotected segments should disappear,
   protected ones must not.
 * Fill the device to under 1 GB free and start recording. The app should refuse, or stop
   cleanly and finalize what it had.
 
-## 8. StoreKit
+## 9. StoreKit
 
 **Sandbox (device):** sign in with a Sandbox Apple ID under *Settings ▸ Developer ▸ Sandbox
 Apple Account*. Then:
@@ -104,7 +122,7 @@ Apple Account*. Then:
 **Local (Simulator, iOS 18.x):** the scheme references `Resources/Dashcam.storekit`; the
 subscription unit tests drive the same file through `SKTestSession`.
 
-## 9. CarPlay
+## 10. CarPlay
 
 Needs the `com.apple.developer.carplay-driving-task` entitlement — see
 [APP-STORE.md](APP-STORE.md). Until Apple grants it, the CarPlay scene is simply never

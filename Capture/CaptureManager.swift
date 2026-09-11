@@ -52,7 +52,11 @@ final class CaptureManager: ObservableObject {
     nonisolated(unsafe) private let frontOutput = AVCaptureVideoDataOutput()
     nonisolated(unsafe) private let audioOutput = AVCaptureAudioDataOutput()
 
-    private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    /// One coordinator per camera. They report, live, the angle each connection needs in
+    /// order to keep the horizon level as the phone turns in its cradle.
+    private var rearRotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    private var frontRotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    private var rotationObservations: [NSKeyValueObservation] = []
     private var observers: [NSObjectProtocol] = []
     private var systemPressureObservation: NSKeyValueObservation?
     private var isConfigured = false
@@ -68,9 +72,9 @@ final class CaptureManager: ObservableObject {
         var rearFormat: VideoFormatDescriptor
         var frontFormat: VideoFormatDescriptor
     }
-    /// Rotation to bake into recorded files, so footage is level however the phone is
-    /// cradled. Read once per recording; a mount does not rotate mid-drive.
-    private(set) var captureRotationAngle: CGFloat = 0
+    /// Angle currently applied to the recording connections, in degrees. Published so the
+    /// UI can reason about the shape of what is being written.
+    @Published private(set) var captureRotationAngle: CGFloat = 0
 
     init() {
         rearPreviewLayer.videoGravity = .resizeAspectFill
@@ -79,6 +83,7 @@ final class CaptureManager: ObservableObject {
 
     deinit {
         observers.forEach(NotificationCenter.default.removeObserver)
+        rotationObservations.forEach { $0.invalidate() }
     }
 
     // MARK: - Lifecycle
@@ -122,7 +127,7 @@ final class CaptureManager: ObservableObject {
         isConfigured = result.status.mode != .unavailable
         if isConfigured {
             installObservers()
-            updateRotationCoordinator()
+            installRotationTracking()
             startRunning()
         }
         #endif
@@ -211,11 +216,8 @@ final class CaptureManager: ObservableObject {
         let rearDimensions = Self.configureFormat(
             on: effectiveRear, quality: quality, multiCam: useMultiCam
         )
-        let rearEncoded = Self.encodeDimensions(source: rearDimensions, targetHeight: quality.dimensions.height)
-        let rearFormat = VideoFormatDescriptor(
-            width: rearEncoded.width, height: rearEncoded.height,
-            fps: quality.frameRate, bitrate: quality.bitrate, codec: codec
-        )
+        _ = rearDimensions   // the writer sizes each segment from the frames it receives
+        let rearFormat = VideoFormatDescriptor.resolved(for: quality, codec: codec)
 
         rearOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
         // Dropping a late frame is strictly better than letting buffers pile up until the
@@ -256,11 +258,8 @@ final class CaptureManager: ObservableObject {
            let frontInput = try? AVCaptureDeviceInput(device: frontDevice) {
             self.frontInput = frontInput
             let frontDimensions = Self.configureFormat(on: frontDevice, quality: quality, multiCam: true)
-            let frontEncoded = Self.encodeDimensions(source: frontDimensions, targetHeight: quality.dimensions.height)
-            frontFormat = VideoFormatDescriptor(
-                width: frontEncoded.width, height: frontEncoded.height,
-                fps: quality.frameRate, bitrate: quality.bitrate, codec: codec
-            )
+            _ = frontDimensions
+            frontFormat = VideoFormatDescriptor.resolved(for: quality, codec: codec)
 
             frontOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
             frontOutput.alwaysDiscardsLateVideoFrames = true
@@ -435,18 +434,6 @@ final class CaptureManager: ObservableObject {
         return (Int(dims.width), Int(dims.height))
     }
 
-    /// Encoded size for a given sensor size: never upscale, and preserve the captured
-    /// aspect ratio exactly. Both dimensions are forced even — odd dimensions are
-    /// rejected outright by some HEVC encoder configurations.
-    nonisolated static func encodeDimensions(source: (width: Int, height: Int), targetHeight: Int) -> (width: Int, height: Int) {
-        func even(_ value: Int) -> Int { max(2, value - (value % 2)) }
-        guard source.height > targetHeight, source.height > 0 else {
-            return (even(source.width), even(source.height))
-        }
-        let scale = Double(targetHeight) / Double(source.height)
-        return (even(Int((Double(source.width) * scale).rounded())), even(targetHeight))
-    }
-
     /// HEVC when the encoder will take it, H.264 otherwise. Asked, never assumed —
     /// `canApply` is the only honest way to know before the writer is running.
     nonisolated private static func bestAvailableCodec() -> String {
@@ -480,19 +467,72 @@ final class CaptureManager: ObservableObject {
 
     // MARK: - Rotation
 
-    private func updateRotationCoordinator() {
-        guard let device = rearInput?.device else { return }
-        let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: rearPreviewLayer)
-        rotationCoordinator = coordinator
-        captureRotationAngle = coordinator.videoRotationAngleForHorizonLevelCapture
+    /// Tracks the phone's attitude and keeps both the previews and the recording level.
+    ///
+    /// `AVCaptureDevice.RotationCoordinator` is the supported way to do this: it accounts
+    /// for the device's physical orientation *and* for how the preview layer is laid out,
+    /// which a raw `UIDevice.orientation` reading does not. Two angles come out of it and
+    /// they are not interchangeable — the preview one keeps the on-screen image upright,
+    /// the capture one keeps the recorded frames upright.
+    ///
+    /// The rotation is applied to the capture connection rather than baked into the
+    /// writer as a transform. That costs a hardware-accelerated rotate per frame, and buys
+    /// something a transform cannot: turning the phone mid-drive changes the recording
+    /// immediately, instead of being frozen at whatever angle it had when Start was
+    /// pressed.
+    private func installRotationTracking() {
+        rotationObservations.forEach { $0.invalidate() }
+        rotationObservations.removeAll()
+
+        if let rearDevice = rearInput?.device {
+            let coordinator = AVCaptureDevice.RotationCoordinator(device: rearDevice, previewLayer: rearPreviewLayer)
+            rearRotationCoordinator = coordinator
+            observe(coordinator, camera: .rear)
+        }
+        if let frontDevice = frontInput?.device {
+            let coordinator = AVCaptureDevice.RotationCoordinator(device: frontDevice, previewLayer: frontPreviewLayer)
+            frontRotationCoordinator = coordinator
+            observe(coordinator, camera: .front)
+        }
     }
 
-    /// Re-read just before a recording starts, so footage is level for however the phone
-    /// is actually cradled right now.
-    func refreshCaptureRotation() {
-        if let coordinator = rotationCoordinator {
-            captureRotationAngle = coordinator.videoRotationAngleForHorizonLevelCapture
+    private func observe(_ coordinator: AVCaptureDevice.RotationCoordinator, camera: CameraPosition) {
+        rotationObservations.append(
+            coordinator.observe(\.videoRotationAngleForHorizonLevelPreview, options: [.initial, .new]) { [weak self] coordinator, _ in
+                let angle = coordinator.videoRotationAngleForHorizonLevelPreview
+                Task { @MainActor [weak self] in self?.applyPreviewRotation(angle, camera: camera) }
+            }
+        )
+        rotationObservations.append(
+            coordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: [.initial, .new]) { [weak self] coordinator, _ in
+                let angle = coordinator.videoRotationAngleForHorizonLevelCapture
+                Task { @MainActor [weak self] in self?.applyCaptureRotation(angle, camera: camera) }
+            }
+        )
+    }
+
+    private func applyPreviewRotation(_ angle: CGFloat, camera: CameraPosition) {
+        let layer = camera == .rear ? rearPreviewLayer : frontPreviewLayer
+        guard let connection = layer.connection,
+              connection.isVideoRotationAngleSupported(angle)
+        else { return }
+        // No implicit animation: a preview layer that animates its rotation shows a
+        // visibly smeared frame every time the phone turns.
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        connection.videoRotationAngle = angle
+        CATransaction.commit()
+    }
+
+    private func applyCaptureRotation(_ angle: CGFloat, camera: CameraPosition) {
+        let output: AVCaptureOutput = camera == .rear ? rearOutput : frontOutput
+        sessionQueue.async {
+            guard let connection = output.connection(with: .video),
+                  connection.isVideoRotationAngleSupported(angle)
+            else { return }
+            connection.videoRotationAngle = angle
         }
+        if camera == .rear { captureRotationAngle = angle }
     }
 
     // MARK: - Observers

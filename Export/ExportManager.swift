@@ -135,7 +135,17 @@ final class ExportManager: ObservableObject {
             // Passthrough: no re-encode, so the exported file carries exactly the pixels
             // that were recorded.
             let built = try await SessionComposition.single(segments: segments, includeAudio: true)
-            try await runExport(composition: built.composition, preset: AVAssetExportPresetPassthrough, videoComposition: nil, outputURL: outputURL)
+            if built.hasMixedGeometry {
+                // The phone was turned mid-drive, so the segments are not all the same
+                // shape. Passthrough cannot reconcile that — it would hand a player one
+                // track whose sample dimensions change part-way through. Compositing into
+                // the dominant frame size is the only output that plays correctly, so the
+                // "original" export re-encodes in this one case.
+                let laid = try await SessionComposition.singleWithLayout(segments: segments, includeAudio: true)
+                try await runExport(composition: laid.composition, preset: AVAssetExportPresetHighestQuality, videoComposition: laid.videoComposition, outputURL: outputURL)
+            } else {
+                try await runExport(composition: built.composition, preset: AVAssetExportPresetPassthrough, videoComposition: nil, outputURL: outputURL)
+            }
         case .withInformation:
             let built = try await SessionComposition.singleWithLayout(segments: segments, includeAudio: true)
             if let videoComposition = built.videoComposition {

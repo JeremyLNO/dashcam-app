@@ -28,13 +28,17 @@ struct FinishedSegment: Sendable {
 ///    writer derive the boundary from the same `(firstPTS, segmentDuration)` arithmetic,
 ///    so segment *n* on one camera covers the same wall-clock window as segment *n* on
 ///    the other — without the two writers ever talking to each other or sharing a lock.
+/// 3. **A segment is also cut when the frames change shape.** Rotating the phone in its
+///    cradle makes the capture connection deliver 1080×1920 where it delivered 1920×1080,
+///    and an `AVAssetWriterInput` has fixed dimensions for its whole lifetime. Cutting is
+///    what lets the recording follow the tilt immediately instead of squashing the new
+///    frames into the old box, or waiting minutes for the next scheduled boundary.
 final class SegmentWriter {
     let camera: CameraPosition
 
     private let sessionID: UUID
     private let format: VideoFormatDescriptor
     private let includesAudio: Bool
-    private let rotationAngle: CGFloat
     private let segmentDuration: TimeInterval
     private let onSegmentFinished: @Sendable (FinishedSegment) -> Void
     private let onFailure: @Sendable (Error) -> Void
@@ -46,8 +50,11 @@ final class SegmentWriter {
     private var audioInput: AVAssetWriterInput?
 
     private var currentIndex = 0
+    /// Encoded size of the segment being written. The frames decide it, not a setting.
+    private var currentEncodeSize: (width: Int, height: Int) = (0, 0)
     private var currentStartDate = Date()
     private var currentRelativePath = ""
+    private var currentRevision = 0
     private var firstPTS: CMTime?
     private var firstSampleDate = Date()
     private var lastPTS: CMTime = .zero
@@ -62,7 +69,6 @@ final class SegmentWriter {
         sessionID: UUID,
         format: VideoFormatDescriptor,
         includesAudio: Bool,
-        rotationAngle: CGFloat,
         segmentDuration: TimeInterval,
         onSegmentFinished: @escaping @Sendable (FinishedSegment) -> Void,
         onFailure: @escaping @Sendable (Error) -> Void
@@ -71,7 +77,6 @@ final class SegmentWriter {
         self.sessionID = sessionID
         self.format = format
         self.includesAudio = includesAudio
-        self.rotationAngle = rotationAngle
         self.segmentDuration = segmentDuration
         self.onSegmentFinished = onSegmentFinished
         self.onFailure = onFailure
@@ -106,22 +111,29 @@ final class SegmentWriter {
         let pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         guard pts.isValid else { return }
 
+        guard let frame = Self.frameDimensions(of: sampleBuffer) else { return }
+        let encodeSize = format.encodeSize(forFrame: frame.width, height: frame.height)
+
         if firstPTS == nil {
             firstPTS = pts
             firstSampleDate = Date()
-            startSegment(index: 0, at: pts)
+            startSegment(index: 0, at: pts, encodeSize: encodeSize)
         }
 
         guard let firstPTS else { return }
         let elapsed = CMTimeGetSeconds(CMTimeSubtract(pts, firstPTS))
         let targetIndex = max(0, Int(floor(elapsed / segmentDuration)))
 
-        if targetIndex != currentIndex {
+        // Either the scheduled boundary arrived, or the phone was turned and the frames
+        // no longer fit the input that is open.
+        if targetIndex != currentIndex || encodeSize != currentEncodeSize {
             // Close the old file and open the new one in the same breath: the sample that
-            // triggered the rotation becomes the first frame of the new segment, so the
+            // triggered the cut becomes the first frame of the new segment, so the
             // boundary costs zero frames.
             finalizeCurrentSegment(endingAt: pts)
-            startSegment(index: targetIndex, at: pts)
+            // A geometry change mid-window keeps the same index, so the front and rear
+            // segment numbering stays aligned; the file name carries a suffix instead.
+            startSegment(index: targetIndex, at: pts, encodeSize: encodeSize)
         }
 
         lastPTS = pts
@@ -146,8 +158,22 @@ final class SegmentWriter {
         videoInput.append(sampleBuffer)
     }
 
-    private func startSegment(index: Int, at pts: CMTime) {
-        let relativePath = StorageLocations.relativePath(sessionID: sessionID, camera: camera, index: index)
+    /// `CMVideoDimensions` of a sample, i.e. what the capture connection actually
+    /// delivered after any rotation it applies.
+    static func frameDimensions(of sampleBuffer: CMSampleBuffer) -> (width: Int, height: Int)? {
+        guard let description = CMSampleBufferGetFormatDescription(sampleBuffer) else { return nil }
+        let dimensions = CMVideoFormatDescriptionGetDimensions(description)
+        guard dimensions.width > 0, dimensions.height > 0 else { return nil }
+        return (Int(dimensions.width), Int(dimensions.height))
+    }
+
+    private func startSegment(index: Int, at pts: CMTime, encodeSize: (width: Int, height: Int)) {
+        // A rotation can force a second file inside the same index; the suffix keeps the
+        // path unique without disturbing the front/rear index pairing.
+        let revision = index == currentIndex ? currentRevision + 1 : 0
+        let relativePath = StorageLocations.relativePath(
+            sessionID: sessionID, camera: camera, index: index, revision: revision
+        )
         let url = StorageLocations.absoluteURL(forRelativePath: relativePath)
         try? FileManager.default.removeItem(at: url)
 
@@ -158,11 +184,10 @@ final class SegmentWriter {
             newWriter.movieFragmentInterval = CMTime(seconds: 2, preferredTimescale: 600)
             newWriter.shouldOptimizeForNetworkUse = false
 
-            let videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings())
+            let videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings(encodeSize))
             videoInput.expectsMediaDataInRealTime = true
-            // A transform, not a pixel rotation: rotating frames would cost a full extra
-            // pass over every frame for something a player does for free.
-            videoInput.transform = CGAffineTransform(rotationAngle: rotationAngle * .pi / 180)
+            // No transform: the capture connection already rotates the frames to keep the
+            // horizon level, so what arrives here is what should be played back.
             guard newWriter.canAdd(videoInput) else {
                 throw NSError(domain: "Dashcam.SegmentWriter", code: 1, userInfo: [NSLocalizedDescriptionKey: "video input rejected"])
             }
@@ -187,6 +212,8 @@ final class SegmentWriter {
 
             writer = newWriter
             currentIndex = index
+            currentRevision = revision
+            currentEncodeSize = encodeSize
             currentRelativePath = relativePath
             segmentStartPTS = pts
             currentStartDate = wallClock(for: pts)
@@ -206,6 +233,7 @@ final class SegmentWriter {
         let startDate = currentStartDate
         let endDate = wallClock(for: pts)
         let format = self.format
+        let encodeSize = currentEncodeSize
         let camera = self.camera
         let onSegmentFinished = self.onSegmentFinished
 
@@ -241,8 +269,8 @@ final class SegmentWriter {
                 endDate: max(endDate, startDate),
                 relativePath: relativePath,
                 fileSize: size,
-                width: format.width,
-                height: format.height,
+                width: encodeSize.width,
+                height: encodeSize.height,
                 fps: format.fps,
                 codec: format.codec,
                 succeeded: succeeded
@@ -259,11 +287,11 @@ final class SegmentWriter {
         return firstSampleDate.addingTimeInterval(CMTimeGetSeconds(CMTimeSubtract(pts, firstPTS)))
     }
 
-    private func videoSettings() -> [String: Any] {
+    private func videoSettings(_ encodeSize: (width: Int, height: Int)) -> [String: Any] {
         [
             AVVideoCodecKey: format.codec,
-            AVVideoWidthKey: format.width,
-            AVVideoHeightKey: format.height,
+            AVVideoWidthKey: encodeSize.width,
+            AVVideoHeightKey: encodeSize.height,
             AVVideoCompressionPropertiesKey: [
                 AVVideoAverageBitRateKey: format.bitrate,
                 AVVideoExpectedSourceFrameRateKey: format.fps,

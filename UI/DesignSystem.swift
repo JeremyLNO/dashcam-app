@@ -29,6 +29,10 @@ enum Theme {
     /// Minimum tap target for anything usable from the driver's seat. Well above the
     /// 44 pt HIG floor on purpose: this gets pressed one-handed, in motion.
     static let controlHeight: CGFloat = 68
+    /// Landscape equivalent. Still well clear of the 44 pt HIG minimum.
+    static let compactControlHeight: CGFloat = 52
+    /// Room to leave under the controls so the floating tab bar never covers them.
+    static let floatingTabBarClearance: CGFloat = 46
     static let cornerRadius: CGFloat = 18
     static let tileCorner: CGFloat = 14
     static let spacing: CGFloat = 14
@@ -52,13 +56,15 @@ struct DriverButtonStyle: ButtonStyle {
     var fill: Color
     var foreground: Color = .white
     var isProminent: Bool = true
+    /// Landscape has far less vertical room; the target still clears the 44 pt floor.
+    var height: CGFloat = Theme.controlHeight
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Theme.headline)
             .foregroundStyle(foreground)
             .frame(maxWidth: .infinity)
-            .frame(height: Theme.controlHeight)
+            .frame(height: height)
             .background(
                 RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
                     .fill(fill.opacity(configuration.isPressed ? 0.75 : 1))
@@ -78,32 +84,42 @@ struct StatusTile: View {
     let value: String
     var systemImage: String
     var tint: Color = Theme.textSecondary
+    /// Landscape trims the padding a little; the label and value still stack, because
+    /// putting them on one line truncates both at the width a side panel can offer.
+    var isDense: Bool = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 12, weight: .semibold))
-                Text(key: titleKey)
-                    .font(Theme.caption)
-            }
-            .foregroundStyle(Theme.textTertiary)
-
-            Text(verbatim: value)
-                .font(Theme.tileValue)
-                .foregroundStyle(tint)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+        VStack(alignment: .leading, spacing: isDense ? 3 : 6) {
+            label
+            valueText
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, isDense ? 9 : 12)
+        .padding(.vertical, isDense ? 7 : 10)
         .background(
             RoundedRectangle(cornerRadius: Theme.tileCorner, style: .continuous)
                 .fill(Theme.surface)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(verbatim: "\(L10n.t(titleKey)): \(value)"))
+    }
+
+    private var label: some View {
+        HStack(spacing: 5) {
+            Image(systemName: systemImage)
+                .font(.system(size: 11, weight: .semibold))
+            Text(key: titleKey)
+                .font(Theme.caption)
+        }
+        .foregroundStyle(Theme.textTertiary)
+    }
+
+    private var valueText: some View {
+        Text(verbatim: value)
+            .font(Theme.tileValue)
+            .foregroundStyle(tint)
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
     }
 }
 

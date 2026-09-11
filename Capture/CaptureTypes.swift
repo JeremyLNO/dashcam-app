@@ -108,21 +108,38 @@ protocol SampleSink: AnyObject {
 
 /// Video encoding parameters resolved from the user's quality choice and whatever the
 /// hardware actually agreed to.
+///
+/// The size is expressed as a **short side**, not a width and a height, because the
+/// frames arriving from the capture connection change shape when the phone is rotated in
+/// its cradle: 1920×1080 held landscape, 1080×1920 held portrait. A quality tier means
+/// "1080 across the narrow dimension" either way, so the same tier costs the same
+/// bandwidth whichever way the phone is mounted.
 struct VideoFormatDescriptor: Equatable, Sendable {
-    var width: Int
-    var height: Int
+    /// 720 for Eco, 1080 for Standard and High.
+    var targetShortSide: Int
     var fps: Int
     var bitrate: Int
     var codec: String
 
     static func resolved(for quality: VideoQuality, codec: String) -> VideoFormatDescriptor {
-        let dimensions = quality.dimensions
-        return VideoFormatDescriptor(
-            width: dimensions.width,
-            height: dimensions.height,
+        VideoFormatDescriptor(
+            targetShortSide: min(quality.dimensions.width, quality.dimensions.height),
             fps: quality.frameRate,
             bitrate: quality.bitrate,
             codec: codec
         )
+    }
+
+    /// Encoded size for frames of the given shape. Never upscales, preserves the aspect
+    /// ratio exactly, and forces both dimensions even — odd dimensions are rejected
+    /// outright by some HEVC encoder configurations.
+    func encodeSize(forFrame width: Int, height: Int) -> (width: Int, height: Int) {
+        func even(_ value: Int) -> Int { max(2, value - (value % 2)) }
+        let shortSide = min(width, height)
+        guard shortSide > targetShortSide, shortSide > 0 else {
+            return (even(width), even(height))
+        }
+        let scale = Double(targetShortSide) / Double(shortSide)
+        return (even(Int((Double(width) * scale).rounded())), even(Int((Double(height) * scale).rounded())))
     }
 }

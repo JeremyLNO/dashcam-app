@@ -60,6 +60,28 @@ picture-in-picture export rely on.
 a back and a front camera, preferring ultra wide. No usable set, or
 `isMultiCamSupported == false`, degrades to rear-only with a message — never a failure.
 
+**Orientation is tracked live, not sampled once.** Two `AVCaptureDevice.RotationCoordinator`
+instances (one per camera) report, continuously, the angle each connection needs to keep
+the horizon level. The preview angle goes to the preview layer connections; the capture
+angle goes to the video data output connections, so the frames arriving at the writers are
+already upright. Turning the phone in its cradle therefore changes the recording
+immediately, rather than being frozen at whatever angle Start was pressed at.
+
+That choice has a consequence: rotating the connection changes the shape of the delivered
+frames, and an `AVAssetWriterInput` has fixed dimensions for its whole lifetime. So
+`SegmentWriter` reads the dimensions off each sample buffer and cuts a new segment when
+they change — the same machinery that handles a scheduled boundary, triggered by geometry
+instead of by the clock. The segment *index* stays put so the front/rear pairing survives;
+the file name takes a `-1` suffix instead.
+
+Landscape is the primary orientation: a windscreen cradle holds the phone sideways, the
+recording screen has a layout built for it, and `UISupportedInterfaceOrientations` lists
+landscape first. Portrait is fully supported — plenty of cradles hold the phone upright —
+and the pipeline follows the device either way. Upside-down is deliberately excluded.
+
+A quality tier is expressed as a **short side** (720 or 1080) rather than a width and a
+height, so "1080p" costs the same and looks the same whichever way the phone is mounted.
+
 **Wall-clock mapping is anchored once.** The capture clock is monotonic and unrelated to
 `Date()`. Each writer records `(firstPTS, firstSampleDate)` and derives every segment
 timestamp from that, instead of calling `Date()` per sample and drifting against the

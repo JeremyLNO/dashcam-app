@@ -31,11 +31,16 @@
 	<array>
 		<string>arm64</string>
 	</array>
+	<!-- Landscape first: a dashcam is meant to be cradled sideways, and the frames
+	     the app records are landscape whenever the phone is. Portrait stays supported
+	     because a lot of cradles hold the phone upright, and the capture pipeline
+	     follows the device either way. Upside-down is deliberately absent — it is the
+	     one orientation a windscreen mount never produces. -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Dark</string>

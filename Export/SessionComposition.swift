@@ -4,13 +4,18 @@ import Foundation
 /// A composition plus everything needed to play or export it.
 struct BuiltComposition {
     let composition: AVMutableComposition
-    /// Non-nil whenever the frames need laying out (picture-in-picture, or an overlay).
+    /// Non-nil whenever the frames need laying out (picture-in-picture, an overlay, or a
+    /// drive whose geometry changed part-way through).
     let videoComposition: AVMutableVideoComposition?
     let duration: CMTime
     let renderSize: CGSize
     /// Wall-clock time of the first frame, used to line the overlay stamps up.
     let startDate: Date
     let frameRate: Int
+    /// True when the phone was turned mid-drive, so the segments are not all the same
+    /// shape. Such a drive cannot be exported by passthrough — the frames have to be
+    /// composited into one consistent frame size.
+    let hasMixedGeometry: Bool
 }
 
 /// Stitches a session's segments back into a continuous timeline.
@@ -21,86 +26,73 @@ struct BuiltComposition {
 enum SessionComposition {
     enum BuildError: Error { case noFootage, trackCreationFailed }
 
+    /// One piece of footage on the timeline, with the shape it was recorded at.
+    ///
+    /// Turning the phone in its cradle makes the writer cut a new segment at a new size,
+    /// so a single drive can hold both landscape and portrait footage. Each slice carries
+    /// its own geometry rather than the composition assuming one for the whole drive.
+    private struct Placement {
+        var range: CMTimeRange
+        var naturalSize: CGSize
+        var transform: CGAffineTransform
+    }
+
+    // MARK: - Single camera
+
     /// One camera, concatenated in segment order.
     static func single(segments: [VideoSegment], includeAudio: Bool) async throws -> BuiltComposition {
-        guard !segments.isEmpty else { throw BuildError.noFootage }
-
-        let composition = AVMutableComposition()
-        guard let videoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
-            throw BuildError.trackCreationFailed
-        }
-        let audioTrack = includeAudio
-            ? composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
-            : nil
-
-        var cursor = CMTime.zero
-        var transform = CGAffineTransform.identity
-        var naturalSize = CGSize(width: 1920, height: 1080)
-
-        for segment in segments {
-            let asset = AVURLAsset(url: StorageLocations.absoluteURL(forRelativePath: segment.relativePath))
-            guard let sourceVideo = try? await asset.loadTracks(withMediaType: .video).first,
-                  let duration = try? await asset.load(.duration), duration.seconds > 0
-            else { continue }
-
-            let range = CMTimeRange(start: .zero, duration: duration)
-            try videoTrack.insertTimeRange(range, of: sourceVideo, at: cursor)
-            transform = (try? await sourceVideo.load(.preferredTransform)) ?? .identity
-            naturalSize = (try? await sourceVideo.load(.naturalSize)) ?? naturalSize
-
-            if let audioTrack, let sourceAudio = try? await asset.loadTracks(withMediaType: .audio).first {
-                try? audioTrack.insertTimeRange(range, of: sourceAudio, at: cursor)
-            }
-            cursor = CMTimeAdd(cursor, duration)
-        }
-
-        guard cursor.seconds > 0 else { throw BuildError.noFootage }
-        videoTrack.preferredTransform = transform
-
-        let fps = segments.first?.fps ?? 30
+        let built = try await assemble(segments: segments, includeAudio: includeAudio)
         return BuiltComposition(
-            composition: composition,
+            composition: built.composition,
             videoComposition: nil,
-            duration: cursor,
-            renderSize: displaySize(naturalSize: naturalSize, transform: transform),
-            startDate: segments[0].startDate,
-            frameRate: fps
+            duration: built.duration,
+            renderSize: built.renderSize,
+            startDate: built.startDate,
+            frameRate: built.frameRate,
+            hasMixedGeometry: built.hasMixedGeometry
         )
     }
 
     /// Same as `single`, but with an explicit video composition so an overlay can be
-    /// attached (Core Animation needs a video composition to hang off).
+    /// attached (Core Animation needs a video composition to hang off) and so a drive with
+    /// mixed geometry renders into one consistent frame.
     static func singleWithLayout(segments: [VideoSegment], includeAudio: Bool) async throws -> BuiltComposition {
-        let built = try await single(segments: segments, includeAudio: includeAudio)
-        guard let track = built.composition.tracks(withMediaType: .video).first else { return built }
-
-        let naturalSize = track.naturalSize
-        let transform = track.preferredTransform
-        let renderSize = displaySize(naturalSize: naturalSize, transform: transform)
+        let built = try await assemble(segments: segments, includeAudio: includeAudio)
+        guard let track = built.composition.tracks(withMediaType: .video).first else {
+            return try await single(segments: segments, includeAudio: includeAudio)
+        }
 
         let videoComposition = AVMutableVideoComposition()
-        videoComposition.renderSize = renderSize
+        videoComposition.renderSize = built.renderSize
         videoComposition.frameDuration = CMTime(value: 1, timescale: CMTimeScale(built.frameRate))
-
-        let instruction = AVMutableVideoCompositionInstruction()
-        instruction.timeRange = CMTimeRange(start: .zero, duration: built.duration)
-        let layer = AVMutableVideoCompositionLayerInstruction(assetTrack: track)
-        layer.setTransform(
-            fittingTransform(naturalSize: naturalSize, preferred: transform, into: CGRect(origin: .zero, size: renderSize)),
-            at: .zero
-        )
-        instruction.layerInstructions = [layer]
-        videoComposition.instructions = [instruction]
+        videoComposition.instructions = built.placements.map { placement in
+            let instruction = AVMutableVideoCompositionInstruction()
+            instruction.timeRange = placement.range
+            let layer = AVMutableVideoCompositionLayerInstruction(assetTrack: track)
+            layer.setTransform(
+                fittingTransform(
+                    naturalSize: placement.naturalSize,
+                    preferred: placement.transform,
+                    into: CGRect(origin: .zero, size: built.renderSize)
+                ),
+                at: placement.range.start
+            )
+            instruction.layerInstructions = [layer]
+            return instruction
+        }
 
         return BuiltComposition(
             composition: built.composition,
             videoComposition: videoComposition,
             duration: built.duration,
-            renderSize: renderSize,
+            renderSize: built.renderSize,
             startDate: built.startDate,
-            frameRate: built.frameRate
+            frameRate: built.frameRate,
+            hasMixedGeometry: built.hasMixedGeometry
         )
     }
+
+    // MARK: - Picture in picture
 
     /// Road full-frame, cabin inset top-right.
     ///
@@ -118,9 +110,8 @@ enum SessionComposition {
             ? composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
             : nil
 
+        var rearPlacements: [Placement] = []
         var rearCursor = CMTime.zero
-        var rearTransform = CGAffineTransform.identity
-        var rearSize = CGSize(width: 1920, height: 1080)
 
         for segment in rear {
             let asset = AVURLAsset(url: StorageLocations.absoluteURL(forRelativePath: segment.relativePath))
@@ -128,8 +119,11 @@ enum SessionComposition {
                   let duration = try? await asset.load(.duration), duration.seconds > 0 else { continue }
             let range = CMTimeRange(start: .zero, duration: duration)
             try rearTrack.insertTimeRange(range, of: track, at: rearCursor)
-            rearTransform = (try? await track.load(.preferredTransform)) ?? .identity
-            rearSize = (try? await track.load(.naturalSize)) ?? rearSize
+            rearPlacements.append(Placement(
+                range: CMTimeRange(start: rearCursor, duration: duration),
+                naturalSize: (try? await track.load(.naturalSize)) ?? CGSize(width: 1920, height: 1080),
+                transform: (try? await track.load(.preferredTransform)) ?? .identity
+            ))
             if let audioTrack, let sourceAudio = try? await asset.loadTracks(withMediaType: .audio).first {
                 try? audioTrack.insertTimeRange(range, of: sourceAudio, at: rearCursor)
             }
@@ -137,9 +131,8 @@ enum SessionComposition {
         }
         guard rearCursor.seconds > 0 else { throw BuildError.noFootage }
 
+        var frontPlacements: [Placement] = []
         var frontCursor = CMTime.zero
-        var frontTransform = CGAffineTransform.identity
-        var frontSize = CGSize(width: 1920, height: 1080)
 
         for segment in front {
             let asset = AVURLAsset(url: StorageLocations.absoluteURL(forRelativePath: segment.relativePath))
@@ -149,12 +142,15 @@ enum SessionComposition {
             guard remaining.seconds > 0 else { break }
             let used = CMTimeMinimum(duration, remaining)
             try frontTrack.insertTimeRange(CMTimeRange(start: .zero, duration: used), of: track, at: frontCursor)
-            frontTransform = (try? await track.load(.preferredTransform)) ?? .identity
-            frontSize = (try? await track.load(.naturalSize)) ?? frontSize
+            frontPlacements.append(Placement(
+                range: CMTimeRange(start: frontCursor, duration: used),
+                naturalSize: (try? await track.load(.naturalSize)) ?? CGSize(width: 1920, height: 1080),
+                transform: (try? await track.load(.preferredTransform)) ?? .identity
+            ))
             frontCursor = CMTimeAdd(frontCursor, used)
         }
 
-        let renderSize = displaySize(naturalSize: rearSize, transform: rearTransform)
+        let renderSize = dominantRenderSize(of: rearPlacements)
         let fps = rear.first?.fps ?? 30
 
         let videoComposition = AVMutableVideoComposition()
@@ -171,22 +167,38 @@ enum SessionComposition {
             height: insetHeight
         )
 
-        let instruction = AVMutableVideoCompositionInstruction()
-        instruction.timeRange = CMTimeRange(start: .zero, duration: rearCursor)
+        // Split the timeline wherever either camera changed shape, so every slice gets
+        // transforms computed from the geometry that is actually on screen during it.
+        videoComposition.instructions = slices(of: [rearPlacements, frontPlacements], upTo: rearCursor).map { slice in
+            let instruction = AVMutableVideoCompositionInstruction()
+            instruction.timeRange = slice
+            var layers: [AVMutableVideoCompositionLayerInstruction] = []
 
-        let rearLayer = AVMutableVideoCompositionLayerInstruction(assetTrack: rearTrack)
-        rearLayer.setTransform(
-            fittingTransform(naturalSize: rearSize, preferred: rearTransform, into: CGRect(origin: .zero, size: renderSize)),
-            at: .zero
-        )
-        let frontLayer = AVMutableVideoCompositionLayerInstruction(assetTrack: frontTrack)
-        frontLayer.setTransform(
-            fittingTransform(naturalSize: frontSize, preferred: frontTransform, into: insetRect),
-            at: .zero
-        )
-        // Array order is front-to-back, so the cabin inset has to come first to sit on top.
-        instruction.layerInstructions = [frontLayer, rearLayer]
-        videoComposition.instructions = [instruction]
+            if let frontPlacement = placement(at: slice.start, in: frontPlacements) {
+                let layer = AVMutableVideoCompositionLayerInstruction(assetTrack: frontTrack)
+                layer.setTransform(
+                    fittingTransform(naturalSize: frontPlacement.naturalSize, preferred: frontPlacement.transform, into: insetRect),
+                    at: slice.start
+                )
+                layers.append(layer)
+            }
+            if let rearPlacement = placement(at: slice.start, in: rearPlacements) {
+                let layer = AVMutableVideoCompositionLayerInstruction(assetTrack: rearTrack)
+                layer.setTransform(
+                    fittingTransform(
+                        naturalSize: rearPlacement.naturalSize,
+                        preferred: rearPlacement.transform,
+                        into: CGRect(origin: .zero, size: renderSize)
+                    ),
+                    at: slice.start
+                )
+                layers.append(layer)
+            }
+            // Array order is front-to-back, so the cabin inset has to come first to sit
+            // on top of the road.
+            instruction.layerInstructions = layers
+            return instruction
+        }
 
         return BuiltComposition(
             composition: composition,
@@ -194,11 +206,120 @@ enum SessionComposition {
             duration: rearCursor,
             renderSize: renderSize,
             startDate: rear[0].startDate,
-            frameRate: fps
+            frameRate: fps,
+            hasMixedGeometry: isMixed(rearPlacements) || isMixed(frontPlacements)
+        )
+    }
+
+    // MARK: - Assembly
+
+    private struct Assembled {
+        var composition: AVMutableComposition
+        var placements: [Placement]
+        var duration: CMTime
+        var renderSize: CGSize
+        var startDate: Date
+        var frameRate: Int
+        var hasMixedGeometry: Bool
+    }
+
+    private static func assemble(segments: [VideoSegment], includeAudio: Bool) async throws -> Assembled {
+        guard !segments.isEmpty else { throw BuildError.noFootage }
+
+        let composition = AVMutableComposition()
+        guard let videoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
+            throw BuildError.trackCreationFailed
+        }
+        let audioTrack = includeAudio
+            ? composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
+            : nil
+
+        var placements: [Placement] = []
+        var cursor = CMTime.zero
+
+        for segment in segments {
+            let asset = AVURLAsset(url: StorageLocations.absoluteURL(forRelativePath: segment.relativePath))
+            guard let sourceVideo = try? await asset.loadTracks(withMediaType: .video).first,
+                  let duration = try? await asset.load(.duration), duration.seconds > 0
+            else { continue }
+
+            let range = CMTimeRange(start: .zero, duration: duration)
+            try videoTrack.insertTimeRange(range, of: sourceVideo, at: cursor)
+            placements.append(Placement(
+                range: CMTimeRange(start: cursor, duration: duration),
+                naturalSize: (try? await sourceVideo.load(.naturalSize)) ?? CGSize(width: 1920, height: 1080),
+                transform: (try? await sourceVideo.load(.preferredTransform)) ?? .identity
+            ))
+
+            if let audioTrack, let sourceAudio = try? await asset.loadTracks(withMediaType: .audio).first {
+                try? audioTrack.insertTimeRange(range, of: sourceAudio, at: cursor)
+            }
+            cursor = CMTimeAdd(cursor, duration)
+        }
+
+        guard cursor.seconds > 0, let first = placements.first else { throw BuildError.noFootage }
+        // Only meaningful when every segment agrees; a mixed drive is composited instead.
+        videoTrack.preferredTransform = first.transform
+
+        return Assembled(
+            composition: composition,
+            placements: placements,
+            duration: cursor,
+            renderSize: dominantRenderSize(of: placements),
+            startDate: segments[0].startDate,
+            frameRate: segments.first?.fps ?? 30,
+            hasMixedGeometry: isMixed(placements)
         )
     }
 
     // MARK: - Geometry
+
+    /// The shape that occupies most of the drive. Turning the phone for twenty seconds of
+    /// a half-hour trip must not letterbox the other twenty-nine minutes.
+    private static func dominantRenderSize(of placements: [Placement]) -> CGSize {
+        var totals: [String: (size: CGSize, seconds: Double)] = [:]
+        for placement in placements {
+            let size = displaySize(naturalSize: placement.naturalSize, transform: placement.transform)
+            let key = "\(Int(size.width))x\(Int(size.height))"
+            totals[key, default: (size, 0)].seconds += placement.range.duration.seconds
+        }
+        return totals.values.max { $0.seconds < $1.seconds }?.size ?? CGSize(width: 1920, height: 1080)
+    }
+
+    private static func isMixed(_ placements: [Placement]) -> Bool {
+        let sizes = Set(placements.map { placement -> String in
+            let size = displaySize(naturalSize: placement.naturalSize, transform: placement.transform)
+            return "\(Int(size.width))x\(Int(size.height))"
+        })
+        return sizes.count > 1
+    }
+
+    private static func placement(at time: CMTime, in placements: [Placement]) -> Placement? {
+        placements.first { $0.range.containsTime(time) }
+    }
+
+    /// Cuts the timeline at every boundary present in any of the given tracks, so each
+    /// resulting slice has a single, stable geometry for every layer.
+    private static func slices(of groups: [[Placement]], upTo end: CMTime) -> [CMTimeRange] {
+        var boundaries: Set<Double> = [0, end.seconds]
+        for group in groups {
+            for placement in group {
+                boundaries.insert(placement.range.start.seconds)
+                boundaries.insert(min(placement.range.end.seconds, end.seconds))
+            }
+        }
+        let ordered = boundaries.filter { $0 >= 0 && $0 <= end.seconds }.sorted()
+        var ranges: [CMTimeRange] = []
+        for (start, stop) in zip(ordered, ordered.dropFirst()) where stop > start {
+            ranges.append(CMTimeRange(
+                start: CMTime(seconds: start, preferredTimescale: 600),
+                end: CMTime(seconds: stop, preferredTimescale: 600)
+            ))
+        }
+        // A single placement produces a single slice; never return an empty instruction
+        // list, which AVFoundation treats as "render nothing".
+        return ranges.isEmpty ? [CMTimeRange(start: .zero, duration: end)] : ranges
+    }
 
     /// Size the footage occupies once its preferred transform is applied.
     static func displaySize(naturalSize: CGSize, transform: CGAffineTransform) -> CGSize {

@@ -14,7 +14,6 @@ final class RecordingEngine: SampleSink, @unchecked Sendable {
         let frontFormat: VideoFormatDescriptor
         let includesFront: Bool
         let includesAudio: Bool
-        let rotationAngle: CGFloat
         let segmentDuration: TimeInterval
     }
 
@@ -55,7 +54,6 @@ final class RecordingEngine: SampleSink, @unchecked Sendable {
             sessionID: id,
             format: configuration.rearFormat,
             includesAudio: configuration.includesAudio,
-            rotationAngle: configuration.rotationAngle,
             segmentDuration: configuration.segmentDuration,
             onSegmentFinished: { segment in finished?(segment, id) },
             onFailure: { error in failed?(error) }
@@ -68,8 +66,7 @@ final class RecordingEngine: SampleSink, @unchecked Sendable {
                 format: configuration.frontFormat,
                 // Audio rides with the road camera only: one microphone, one copy.
                 includesAudio: false,
-                rotationAngle: configuration.rotationAngle,
-                segmentDuration: configuration.segmentDuration,
+                    segmentDuration: configuration.segmentDuration,
                 onSegmentFinished: { segment in finished?(segment, id) },
                 onFailure: { error in failed?(error) }
             )

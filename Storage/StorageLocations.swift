@@ -39,8 +39,13 @@ enum StorageLocations {
     }
 
     /// "<session>/rear_0003.mov" — the exact string stored in `VideoSegment.relativePath`.
-    static func relativePath(sessionID: UUID, camera: CameraPosition, index: Int) -> String {
-        String(format: "%@/%@_%04d.mov", sessionID.uuidString, camera.rawValue, index)
+    ///
+    /// A `revision` above zero appends "-1", "-2"… That happens when the phone is turned
+    /// mid-window: the frames change shape, the writer has to open a new file, and the
+    /// segment index must stay put so the front and rear numbering keeps lining up.
+    static func relativePath(sessionID: UUID, camera: CameraPosition, index: Int, revision: Int = 0) -> String {
+        let suffix = revision > 0 ? "-\(revision)" : ""
+        return String(format: "%@/%@_%04d%@.mov", sessionID.uuidString, camera.rawValue, index, suffix)
     }
 
     static func absoluteURL(forRelativePath path: String) -> URL {

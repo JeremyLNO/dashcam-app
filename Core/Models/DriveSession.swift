@@ -92,6 +92,21 @@ final class DriveSession {
         return cameras
     }
 
+    /// "Road 1920×1080 + Cabin 1920×1080", or just the one camera that recorded.
+    ///
+    /// The dimensions are the ones actually written, not the ones requested — which is the
+    /// whole point: a drive that says "Road 1920×1080" alone means the cabin never
+    /// recorded, and one that reports a portrait size means the landscape lock did not
+    /// take. Both were previously indistinguishable from "the player is broken".
+    var cameraSummary: String {
+        let parts: [String] = [CameraPosition.rear, .front].compactMap { camera in
+            let segments = camera == .rear ? rearSegments : frontSegments
+            guard let first = segments.first else { return nil }
+            return "\(L10n.t(camera.localizedNameKey)) \(first.width)×\(first.height)"
+        }
+        return parts.isEmpty ? "—" : parts.joined(separator: " + ")
+    }
+
     var hasProtectedContent: Bool {
         segments.contains(where: \.isProtected)
     }

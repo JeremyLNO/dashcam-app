@@ -14,11 +14,12 @@ No navigation. No map. No account. No server. Nothing is uploaded, ever.
 for the road with the wide lens as a fallback. Devices that cannot run two cameras
 simultaneously say so and record the road only.
 
-**Follows the phone.** Landscape is the primary orientation — a windscreen cradle holds
-the phone sideways, and the recording screen has a layout built for it. Tilt the phone
-mid-drive and both the preview and the recording follow immediately, so the horizon stays
-level; the writer cuts a segment at the moment the frames change shape rather than
-squashing them into the old one.
+**Always records landscape.** Whichever way the phone is cradled, the file is a full
+16:9 picture: the upright image is scaled to fill the frame and cropped top and bottom,
+never letterboxed. A portrait mount still sees a narrower slice of the road than a
+landscape one — no encoder can invent the sides the lens never captured — but what it does
+see fills the frame. The preview and the recording both follow the phone as it turns, so
+the horizon stays level.
 
 **Cuts everything into segments** of 1, 3 or 5 minutes, finalized one by one, so a crash or
 a power cut costs at most the segment being written. Front and rear segments carrying the

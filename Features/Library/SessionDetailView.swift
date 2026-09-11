@@ -180,7 +180,7 @@ struct SessionDetailView: View {
             infoRow(titleKey: "detail.segments", value: "\(session.segmentCount)")
             infoRow(
                 titleKey: "detail.cameras",
-                value: session.recordedCameras.map { L10n.t($0.localizedNameKey) }.joined(separator: " + "),
+                value: session.cameraSummary,
                 tint: session.recordedCameras.count > 1 ? Theme.textPrimary : Theme.warning
             )
             infoRow(titleKey: "detail.quality", value: L10n.t(session.quality.titleKey))

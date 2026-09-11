@@ -1,5 +1,6 @@
 import AVFoundation
 import CoreVideo
+import UIKit
 import XCTest
 @testable import Dashcam
 
@@ -27,13 +28,27 @@ final class SegmentWriterTests: XCTestCase {
 
     // MARK: Frame factory
 
-    private func makeSampleBuffer(width: Int, height: Int, pts: CMTime) throws -> CMSampleBuffer {
+    private func makeSampleBuffer(width: Int, height: Int, pts: CMTime, fill: UIColor? = nil) throws -> CMSampleBuffer {
         var pixelBuffer: CVPixelBuffer?
         XCTAssertEqual(CVPixelBufferCreate(
             kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA,
             [kCVPixelBufferIOSurfacePropertiesKey as String: [:]] as CFDictionary, &pixelBuffer
         ), kCVReturnSuccess)
         let buffer = try XCTUnwrap(pixelBuffer)
+
+        if let fill {
+            CVPixelBufferLockBaseAddress(buffer, [])
+            if let context = CGContext(
+                data: CVPixelBufferGetBaseAddress(buffer), width: width, height: height,
+                bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(buffer),
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+            ) {
+                context.setFillColor(fill.cgColor)
+                context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+            }
+            CVPixelBufferUnlockBaseAddress(buffer, [])
+        }
 
         var formatDescription: CMFormatDescription?
         XCTAssertEqual(CMVideoFormatDescriptionCreateForImageBuffer(
@@ -71,10 +86,10 @@ final class SegmentWriterTests: XCTestCase {
     }
 
     /// Feeds `count` frames at 30 fps starting at `from`.
-    private func feed(_ writer: SegmentWriter, frames count: Int, width: Int = 640, height: Int = 360, from: Double = 0) throws {
+    private func feed(_ writer: SegmentWriter, frames count: Int, width: Int = 640, height: Int = 360, from: Double = 0, fill: UIColor? = nil) throws {
         for index in 0..<count {
             let pts = CMTime(seconds: from + Double(index) / 30, preferredTimescale: 600)
-            writer.appendVideo(try makeSampleBuffer(width: width, height: height, pts: pts))
+            writer.appendVideo(try makeSampleBuffer(width: width, height: height, pts: pts, fill: fill))
         }
     }
 
@@ -161,6 +176,48 @@ final class SegmentWriterTests: XCTestCase {
                              "the file plays portrait: \(natural) transform \(transform)")
         XCTAssertEqual(abs(displayed.width), 1280, accuracy: 2, "Eco is 1280 wide")
         XCTAssertEqual(abs(displayed.height), 720, accuracy: 2)
+    }
+
+    /// The point of the whole landscape lock: an upright source must come out as a
+    /// **full-frame** landscape picture, not a narrow strip between black bars.
+    ///
+    /// Sampling the corners is the only way to tell those two apart — both produce a file
+    /// whose dimensions are 1280×720, and every dimension assertion passes either way.
+    func testAnUprightSourceFillsTheLandscapeFrameWithoutBars() async throws {
+        let box = SegmentBox()
+        let writer = makeWriter(onFinished: { box.append($0) })
+        try feed(writer, frames: 30, width: 360, height: 640,
+                 fill: UIColor(red: 0.1, green: 0.8, blue: 0.2, alpha: 1))
+        stopAndWait(writer)
+
+        let segment = try XCTUnwrap(box.values.first)
+        let asset = AVURLAsset(url: StorageLocations.absoluteURL(forRelativePath: segment.relativePath))
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        generator.requestedTimeToleranceBefore = .zero
+        generator.requestedTimeToleranceAfter = CMTime(seconds: 0.5, preferredTimescale: 600)
+        let image = try generator.copyCGImage(at: CMTime(seconds: 0.5, preferredTimescale: 600), actualTime: nil)
+
+        XCTAssertGreaterThan(image.width, image.height, "the file is not landscape")
+        for (label, x) in [("left", 0.05), ("right", 0.95)] {
+            let colour = Self.sample(image, x: x, y: 0.5)
+            XCTAssertGreaterThan(colour.g, 60, "\(label) edge is a black bar, not picture: \(colour)")
+        }
+    }
+
+    static func sample(_ image: CGImage, x: Double, y: Double) -> (r: Int, g: Int, b: Int) {
+        let width = image.width, height = image.height
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        guard let context = CGContext(
+            data: &pixels, width: width, height: height, bitsPerComponent: 8,
+            bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return (0, 0, 0) }
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        let px = min(width - 1, max(0, Int(Double(width) * x)))
+        let py = min(height - 1, max(0, Int(Double(height) * y)))
+        let offset = (py * width + px) * 4
+        return (Int(pixels[offset]), Int(pixels[offset + 1]), Int(pixels[offset + 2]))
     }
 
     func testASingleWindowStaysOneFileWhateverTheFrameShape() throws {

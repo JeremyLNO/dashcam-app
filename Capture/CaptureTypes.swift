@@ -112,12 +112,13 @@ protocol SampleSink: AnyObject {
 /// is widescreen by nature, and a portrait file is awkward everywhere it matters — an
 /// insurer's viewer, a TV, a police report.
 ///
-/// Holding the phone upright does not magically widen the lens: the sensor sees a tall,
-/// narrow slice of the road, and no encoder can invent the sides it never captured. What
-/// the app guarantees is the *frame*: the upright image is fitted inside a 16:9 box
-/// (`AVVideoScalingModeResizeAspect`), pillarboxed rather than stretched or cropped. Mount
-/// the phone sideways and it fills the frame; mount it upright and it is correct but
-/// narrow.
+/// Holding the phone upright does not widen the lens — the sensor still sees a tall,
+/// narrow slice of the road. What the app guarantees is a full landscape *picture*: the
+/// upright image is scaled to fill the 16:9 box and cropped top and bottom
+/// (`AVVideoScalingModeResizeAspectFill`), never letterboxed. Letterboxing produced a file
+/// with landscape dimensions whose picture was a strip between black bars, which is not a
+/// landscape video in any sense that matters — and which vanished entirely once shrunk
+/// into the cabin inset.
 struct VideoFormatDescriptor: Equatable, Sendable {
     /// Always the wider of the two, i.e. 1280×720 or 1920×1080.
     var outputWidth: Int

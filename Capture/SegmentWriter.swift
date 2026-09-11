@@ -270,9 +270,15 @@ final class SegmentWriter {
             AVVideoCodecKey: format.codec,
             AVVideoWidthKey: format.outputWidth,
             AVVideoHeightKey: format.outputHeight,
-            // The one line that makes the output landscape whatever the phone is doing:
-            // fit the incoming frame inside the box, bars rather than stretch or crop.
-            AVVideoScalingModeKey: AVVideoScalingModeResizeAspect,
+            // Fill the landscape box, cropping rather than letterboxing.
+            //
+            // `ResizeAspect` also produces a 1280×720 file from an upright source — but
+            // the picture inside it is a narrow strip between black bars, which is not a
+            // landscape video by any useful definition, and shrinks to an invisible sliver
+            // once it is composited into the cabin inset. Filling crops the top and bottom
+            // of the upright image instead, and on a dashcam the band that survives is the
+            // road.
+            AVVideoScalingModeKey: AVVideoScalingModeResizeAspectFill,
             AVVideoCompressionPropertiesKey: [
                 AVVideoAverageBitRateKey: format.bitrate,
                 AVVideoExpectedSourceFrameRateKey: format.fps,

@@ -95,6 +95,20 @@ final class DriveSessionTests: XCTestCase {
         XCTAssertEqual(index.session(id: sessionID)!.recordedCameras, [.rear, .front])
     }
 
+    /// The summary states the size actually written, so a portrait file or a missing
+    /// cabin camera is visible on the screen instead of being guessed at.
+    func testCameraSummaryStatesWhatWasActuallyWritten() {
+        XCTAssertEqual(index.session(id: sessionID)!.cameraSummary, "—", "nothing recorded yet")
+
+        TestSupport.addSegment(to: index, sessionID: sessionID, segmentIndex: 0, start: start)
+        let rearOnly = index.session(id: sessionID)!.cameraSummary
+        XCTAssertTrue(rearOnly.contains("1920×1080"), rearOnly)
+        XCTAssertFalse(rearOnly.contains("+"), "only one camera recorded")
+
+        TestSupport.addSegment(to: index, sessionID: sessionID, camera: .front, segmentIndex: 0, start: start)
+        XCTAssertTrue(index.session(id: sessionID)!.cameraSummary.contains("+"), "both cameras")
+    }
+
     func testQualityRoundTripsThroughItsRawValue() {
         XCTAssertEqual(index.session(id: sessionID)!.quality, .high)
     }

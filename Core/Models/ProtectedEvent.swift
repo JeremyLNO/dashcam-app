@@ -20,6 +20,25 @@ enum ProtectionOrigin: String, Codable, CaseIterable, Sendable {
         }
     }
 
+    /// How far the protection reaches on either side of the trigger.
+    ///
+    /// It depends on who pulled the trigger, not on what happened. A human presses the
+    /// button late and needs minutes of history; the accelerometer timestamps the instant
+    /// itself and needs seconds.
+    var lookBack: TimeInterval {
+        switch self {
+        case .manual, .carPlay: return RecordingSettings.protectionLookBack
+        case .impact, .harshBraking: return RecordingSettings.automaticLookBack
+        }
+    }
+
+    var lookAhead: TimeInterval {
+        switch self {
+        case .manual, .carPlay: return RecordingSettings.protectionLookAhead
+        case .impact, .harshBraking: return RecordingSettings.automaticLookAhead
+        }
+    }
+
     var symbolName: String {
         switch self {
         case .manual: return "hand.tap.fill"
@@ -54,17 +73,19 @@ final class ProtectedEvent {
         id: UUID = UUID(),
         sessionID: UUID,
         triggerDate: Date,
-        lookBack: TimeInterval = RecordingSettings.protectionLookBack,
-        lookAhead: TimeInterval = RecordingSettings.protectionLookAhead,
         origin: ProtectionOrigin,
+        lookBack: TimeInterval? = nil,
+        lookAhead: TimeInterval? = nil,
         magnitude: Double = 0,
         isActive: Bool = true
     ) {
         self.id = id
         self.sessionID = sessionID
         self.triggerDate = triggerDate
-        self.windowStart = triggerDate.addingTimeInterval(-lookBack)
-        self.windowEnd = triggerDate.addingTimeInterval(lookAhead)
+        // The origin decides the window unless a caller overrides it, so there is exactly
+        // one place that knows how long each kind of event reaches.
+        self.windowStart = triggerDate.addingTimeInterval(-(lookBack ?? origin.lookBack))
+        self.windowEnd = triggerDate.addingTimeInterval(lookAhead ?? origin.lookAhead)
         self.originRaw = origin.rawValue
         self.magnitude = magnitude
         self.isActive = isActive

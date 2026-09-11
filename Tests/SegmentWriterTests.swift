@@ -134,21 +134,32 @@ final class SegmentWriterTests: XCTestCase {
         XCTAssertTrue(box.values.allSatisfy(\.succeeded))
     }
 
-    /// Turning the phone changes the frame shape, which an open input cannot accept — the
-    /// writer has to cut, and both files have to survive.
-    func testItCutsWhenTheFrameGeometryChanges() throws {
+    /// Turning the phone mid-window must not cut the file, and must not change its shape:
+    /// the output box is fixed and landscape, and an upright frame is fitted inside it.
+    func testRotatingTheFrameNeitherCutsNorChangesTheOutputShape() throws {
         let box = SegmentBox()
         let writer = makeWriter(onFinished: { box.append($0) })
-        try feed(writer, frames: 20, width: 640, height: 360)
-        try feed(writer, frames: 20, width: 360, height: 640, from: 20.0 / 30)
+        try feed(writer, frames: 20, width: 640, height: 360)      // landscape
+        try feed(writer, frames: 20, width: 360, height: 640, from: 20.0 / 30)   // upright
         stopAndWait(writer)
 
-        XCTAssertEqual(box.values.count, 2, "one file per geometry")
-        let sizes = Set(box.values.map { "\($0.width)x\($0.height)" })
-        XCTAssertEqual(sizes.count, 2)
-        XCTAssertEqual(Set(box.values.map(\.index)), [0], "same window, so the index does not move")
-        XCTAssertEqual(Set(box.values.map(\.relativePath)).count, 2, "distinct paths")
-        XCTAssertTrue(box.values.allSatisfy(\.succeeded))
+        XCTAssertEqual(box.values.count, 1, "one window, one file, whichever way the phone was held")
+        let segment = try XCTUnwrap(box.values.first)
+        XCTAssertGreaterThan(segment.width, segment.height, "the file is landscape")
+        XCTAssertTrue(segment.succeeded)
+    }
+
+    /// Every segment of a drive is the same size, which is what lets them concatenate.
+    func testEverySegmentHasTheSameLandscapeShape() throws {
+        let box = SegmentBox()
+        let writer = makeWriter(segmentSeconds: 1, onFinished: { box.append($0) })
+        try feed(writer, frames: 30, width: 640, height: 360)
+        try feed(writer, frames: 45, width: 360, height: 640, from: 1.0)
+        stopAndWait(writer)
+
+        let shapes = Set(box.values.map { "\($0.width)x\($0.height)" })
+        XCTAssertEqual(shapes.count, 1, "the output shape never varies: \(shapes)")
+        XCTAssertTrue(box.values.allSatisfy { $0.width > $0.height })
     }
 
     func testStoppingWithoutAnyFrameProducesNothingAndDoesNotHang() {

@@ -243,9 +243,19 @@ struct RecordingSettings: Codable, Equatable, Sendable {
     /// driver did not ask for is a lock between them and their own evidence.
     var requireBiometricUnlock: Bool = false
 
-    /// How far back a Protect action reaches, and how far forward it keeps holding.
+    /// How far back a *manual* Protect reaches, and how far forward it holds.
+    ///
+    /// Generous on purpose: a driver presses the button after realising something
+    /// happened, which is seconds to minutes late.
     static let protectionLookBack: TimeInterval = 5 * 60
     static let protectionLookAhead: TimeInterval = 2 * 60
+
+    /// The window around an *automatically detected* event.
+    ///
+    /// Tight, because the sensor knows the exact instant — there is no reaction delay to
+    /// compensate for. Ten seconds either side covers the approach and the aftermath.
+    static let automaticLookBack: TimeInterval = 10
+    static let automaticLookAhead: TimeInterval = 10
 
     /// Below this much free space the recorder stops rather than risk corrupting files.
     static let criticalFreeSpace: Int64 = 1_000_000_000

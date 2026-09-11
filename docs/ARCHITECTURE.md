@@ -134,6 +134,21 @@ orphan files are adopted, unreadable ones removed, sessions left open are closed
 whose file has vanished are dropped — that last one is what stops the library listing
 drives that play nothing.
 
+## Protection windows
+
+How far a protection reaches depends on *who* triggered it, not on what happened:
+
+| Origin | Back | Forward | Why |
+|---|---|---|---|
+| Manual button, CarPlay | 5 min | 2 min | A person presses it after realising something happened — seconds to minutes late. |
+| Impact, harsh braking | 10 s | 10 s | The accelerometer timestamps the instant itself. There is no reaction delay to pay for. |
+
+One caveat worth knowing: protection marks whole **segments**, not slices of time. A
+ten-second window around an impact keeps whichever segment contains it — one or two files,
+so up to a few minutes of footage at a 3-minute segment length. Shortening the window
+reduces how much is pinned, it does not carve out a 20-second clip. Use Export ▸ custom
+range for that.
+
 ## Evidence
 
 Each segment is hashed (SHA-256) just after it is finalized, off the main actor at utility

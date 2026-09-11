@@ -26,7 +26,9 @@ same index cover the same window — that pairing is what keeps the two-up playe
 picture-in-picture export honest.
 
 **Protects an incident** with one big button: five minutes back and two minutes forward,
-across as many files as that spans, including footage that has not been recorded yet.
+across as many files as that spans, including footage that has not been recorded yet. A
+*detected* event — an impact, an emergency stop — uses a tight ten seconds either side
+instead, because the sensor knows the exact instant and owes nothing to reaction time.
 Protected footage is never deleted automatically, by any rule.
 
 **Detects impacts and harsh braking** with CoreMotion, as two separate things. A collision

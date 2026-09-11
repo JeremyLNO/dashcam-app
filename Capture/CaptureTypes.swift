@@ -106,40 +106,36 @@ protocol SampleSink: AnyObject {
     func handleDroppedSample(from source: SampleSource)
 }
 
-/// Video encoding parameters resolved from the user's quality choice and whatever the
-/// hardware actually agreed to.
+/// Video encoding parameters resolved from the user's quality choice.
 ///
-/// The size is expressed as a **short side**, not a width and a height, because the
-/// frames arriving from the capture connection change shape when the phone is rotated in
-/// its cradle: 1920×1080 held landscape, 1080×1920 held portrait. A quality tier means
-/// "1080 across the narrow dimension" either way, so the same tier costs the same
-/// bandwidth whichever way the phone is mounted.
+/// The output is **always landscape**, whatever way the phone is cradled. Dashcam footage
+/// is widescreen by nature, and a portrait file is awkward everywhere it matters — an
+/// insurer's viewer, a TV, a police report.
+///
+/// Holding the phone upright does not magically widen the lens: the sensor sees a tall,
+/// narrow slice of the road, and no encoder can invent the sides it never captured. What
+/// the app guarantees is the *frame*: the upright image is fitted inside a 16:9 box
+/// (`AVVideoScalingModeResizeAspect`), pillarboxed rather than stretched or cropped. Mount
+/// the phone sideways and it fills the frame; mount it upright and it is correct but
+/// narrow.
 struct VideoFormatDescriptor: Equatable, Sendable {
-    /// 720 for Eco, 1080 for Standard and High.
-    var targetShortSide: Int
+    /// Always the wider of the two, i.e. 1280×720 or 1920×1080.
+    var outputWidth: Int
+    var outputHeight: Int
     var fps: Int
     var bitrate: Int
     var codec: String
 
+    var outputSize: (width: Int, height: Int) { (outputWidth, outputHeight) }
+
     static func resolved(for quality: VideoQuality, codec: String) -> VideoFormatDescriptor {
-        VideoFormatDescriptor(
-            targetShortSide: min(quality.dimensions.width, quality.dimensions.height),
+        let dimensions = quality.dimensions
+        return VideoFormatDescriptor(
+            outputWidth: max(dimensions.width, dimensions.height),
+            outputHeight: min(dimensions.width, dimensions.height),
             fps: quality.frameRate,
             bitrate: quality.bitrate,
             codec: codec
         )
-    }
-
-    /// Encoded size for frames of the given shape. Never upscales, preserves the aspect
-    /// ratio exactly, and forces both dimensions even — odd dimensions are rejected
-    /// outright by some HEVC encoder configurations.
-    func encodeSize(forFrame width: Int, height: Int) -> (width: Int, height: Int) {
-        func even(_ value: Int) -> Int { max(2, value - (value % 2)) }
-        let shortSide = min(width, height)
-        guard shortSide > targetShortSide, shortSide > 0 else {
-            return (even(width), even(height))
-        }
-        let scale = Double(targetShortSide) / Double(shortSide)
-        return (even(Int((Double(width) * scale).rounded())), even(Int((Double(height) * scale).rounded())))
     }
 }

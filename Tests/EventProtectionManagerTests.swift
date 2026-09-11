@@ -105,15 +105,35 @@ final class EventProtectionManagerTests: XCTestCase {
     /// Two overlapping events: dropping one must not release footage the other still
     /// wants.
     func testOverlappingEventsKeepSegmentsProtected() {
+        // Segment covers [trigger-60, trigger].
         TestSupport.addSegment(to: index, sessionID: sessionID, segmentIndex: 0,
                                start: trigger.addingTimeInterval(-60), duration: 60)
         protection.protect(sessionID: sessionID, triggerDate: trigger, origin: .manual)
-        protection.protect(sessionID: sessionID, triggerDate: trigger.addingTimeInterval(30), origin: .impact, magnitude: 2.9)
+        // An impact five seconds before the press: its ±10 s window lands inside the
+        // segment too, so both events claim it.
+        protection.protect(sessionID: sessionID, triggerDate: trigger.addingTimeInterval(-5),
+                           origin: .impact, magnitude: 2.9)
 
-        let first = index.activeEvents(forSession: sessionID).sorted { $0.triggerDate < $1.triggerDate }[0]
-        protection.removeProtection(event: first)
+        let manual = index.activeEvents(forSession: sessionID).first { $0.origin == .manual }!
+        protection.removeProtection(event: manual)
 
-        XCTAssertTrue(index.allSegments()[0].isProtected, "the second event still covers this segment")
+        XCTAssertTrue(index.allSegments()[0].isProtected, "the impact still covers this segment")
+    }
+
+    /// The flip side, and the reason the window length matters: an automatic event only
+    /// reaches ten seconds, so a second event well clear of the segment does not keep it.
+    func testAnEventOutsideTheSegmentDoesNotKeepItProtected() {
+        TestSupport.addSegment(to: index, sessionID: sessionID, segmentIndex: 0,
+                               start: trigger.addingTimeInterval(-60), duration: 60)
+        protection.protect(sessionID: sessionID, triggerDate: trigger, origin: .manual)
+        // Thirty seconds later: window [trigger+20, trigger+40], nowhere near the segment.
+        protection.protect(sessionID: sessionID, triggerDate: trigger.addingTimeInterval(30),
+                           origin: .impact, magnitude: 2.9)
+
+        let manual = index.activeEvents(forSession: sessionID).first { $0.origin == .manual }!
+        protection.removeProtection(event: manual)
+
+        XCTAssertFalse(index.allSegments()[0].isProtected, "nothing claims this segment any more")
     }
 
     /// Releasing a whole drive has to deactivate its open events too, or the next
@@ -132,6 +152,33 @@ final class EventProtectionManagerTests: XCTestCase {
             start: trigger.addingTimeInterval(10),
             end: trigger.addingTimeInterval(70)
         ))
+    }
+
+    /// An automatic event is timestamped by the sensor, so it needs no reaction margin:
+    /// ten seconds either side of the impact, not the manual button's five minutes.
+    func testAnImpactProtectsTenSecondsEitherSide() {
+        protection.protect(sessionID: sessionID, triggerDate: trigger, origin: .impact, magnitude: 3.2)
+        let event = index.activeEvents(forSession: sessionID).first!
+
+        XCTAssertEqual(event.windowStart.timeIntervalSince(trigger), -10, accuracy: 0.001)
+        XCTAssertEqual(event.windowEnd.timeIntervalSince(trigger), 10, accuracy: 0.001)
+    }
+
+    func testHarshBrakingUsesTheSameTightWindowAsAnImpact() {
+        protection.protect(sessionID: sessionID, triggerDate: trigger, origin: .harshBraking, magnitude: 0.6)
+        let event = index.activeEvents(forSession: sessionID).first!
+
+        XCTAssertEqual(event.windowStart.timeIntervalSince(trigger), -10, accuracy: 0.001)
+        XCTAssertEqual(event.windowEnd.timeIntervalSince(trigger), 10, accuracy: 0.001)
+    }
+
+    /// CarPlay's Protect is a person pressing a button, so it keeps the generous window.
+    func testCarPlayProtectKeepsTheManualWindow() {
+        protection.protect(sessionID: sessionID, triggerDate: trigger, origin: .carPlay)
+        let event = index.activeEvents(forSession: sessionID).first!
+
+        XCTAssertEqual(event.windowStart.timeIntervalSince(trigger), -300, accuracy: 0.001)
+        XCTAssertEqual(event.windowEnd.timeIntervalSince(trigger), 120, accuracy: 0.001)
     }
 
     func testWindowGeometryMatchesTheSpecifiedFiveAndTwoMinutes() {

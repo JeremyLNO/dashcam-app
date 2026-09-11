@@ -28,11 +28,11 @@ struct FinishedSegment: Sendable {
 ///    writer derive the boundary from the same `(firstPTS, segmentDuration)` arithmetic,
 ///    so segment *n* on one camera covers the same wall-clock window as segment *n* on
 ///    the other — without the two writers ever talking to each other or sharing a lock.
-/// 3. **A segment is also cut when the frames change shape.** Rotating the phone in its
-///    cradle makes the capture connection deliver 1080×1920 where it delivered 1920×1080,
-///    and an `AVAssetWriterInput` has fixed dimensions for its whole lifetime. Cutting is
-///    what lets the recording follow the tilt immediately instead of squashing the new
-///    frames into the old box, or waiting minutes for the next scheduled boundary.
+/// 3. **The frame is always landscape.** Rotating the phone changes the shape of the
+///    frames the capture connection delivers, but not the shape of the file: the encoder
+///    fits whatever arrives into a fixed 16:9 box, pillarboxing an upright image rather
+///    than stretching or cropping it. That keeps every segment of a drive the same size,
+///    which is what lets them concatenate and composite without a compositor.
 final class SegmentWriter {
     let camera: CameraPosition
 
@@ -50,11 +50,8 @@ final class SegmentWriter {
     private var audioInput: AVAssetWriterInput?
 
     private var currentIndex = 0
-    /// Encoded size of the segment being written. The frames decide it, not a setting.
-    private var currentEncodeSize: (width: Int, height: Int) = (0, 0)
     private var currentStartDate = Date()
     private var currentRelativePath = ""
-    private var currentRevision = 0
     private var firstPTS: CMTime?
     private var firstSampleDate = Date()
     private var lastPTS: CMTime = .zero
@@ -111,29 +108,22 @@ final class SegmentWriter {
         let pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         guard pts.isValid else { return }
 
-        guard let frame = Self.frameDimensions(of: sampleBuffer) else { return }
-        let encodeSize = format.encodeSize(forFrame: frame.width, height: frame.height)
-
         if firstPTS == nil {
             firstPTS = pts
             firstSampleDate = Date()
-            startSegment(index: 0, at: pts, encodeSize: encodeSize)
+            startSegment(index: 0, at: pts)
         }
 
         guard let firstPTS else { return }
         let elapsed = CMTimeGetSeconds(CMTimeSubtract(pts, firstPTS))
         let targetIndex = max(0, Int(floor(elapsed / segmentDuration)))
 
-        // Either the scheduled boundary arrived, or the phone was turned and the frames
-        // no longer fit the input that is open.
-        if targetIndex != currentIndex || encodeSize != currentEncodeSize {
+        if targetIndex != currentIndex {
             // Close the old file and open the new one in the same breath: the sample that
             // triggered the cut becomes the first frame of the new segment, so the
             // boundary costs zero frames.
             finalizeCurrentSegment(endingAt: pts)
-            // A geometry change mid-window keeps the same index, so the front and rear
-            // segment numbering stays aligned; the file name carries a suffix instead.
-            startSegment(index: targetIndex, at: pts, encodeSize: encodeSize)
+            startSegment(index: targetIndex, at: pts)
         }
 
         lastPTS = pts
@@ -158,22 +148,8 @@ final class SegmentWriter {
         videoInput.append(sampleBuffer)
     }
 
-    /// `CMVideoDimensions` of a sample, i.e. what the capture connection actually
-    /// delivered after any rotation it applies.
-    static func frameDimensions(of sampleBuffer: CMSampleBuffer) -> (width: Int, height: Int)? {
-        guard let description = CMSampleBufferGetFormatDescription(sampleBuffer) else { return nil }
-        let dimensions = CMVideoFormatDescriptionGetDimensions(description)
-        guard dimensions.width > 0, dimensions.height > 0 else { return nil }
-        return (Int(dimensions.width), Int(dimensions.height))
-    }
-
-    private func startSegment(index: Int, at pts: CMTime, encodeSize: (width: Int, height: Int)) {
-        // A rotation can force a second file inside the same index; the suffix keeps the
-        // path unique without disturbing the front/rear index pairing.
-        let revision = index == currentIndex ? currentRevision + 1 : 0
-        let relativePath = StorageLocations.relativePath(
-            sessionID: sessionID, camera: camera, index: index, revision: revision
-        )
+    private func startSegment(index: Int, at pts: CMTime) {
+        let relativePath = StorageLocations.relativePath(sessionID: sessionID, camera: camera, index: index)
         // The session folder does not exist until something makes it, and AVAssetWriter
         // does not create intermediate directories — it simply fails to open the file.
         let url = StorageLocations.prepareURL(forRelativePath: relativePath)
@@ -186,7 +162,7 @@ final class SegmentWriter {
             newWriter.movieFragmentInterval = CMTime(seconds: 2, preferredTimescale: 600)
             newWriter.shouldOptimizeForNetworkUse = false
 
-            let videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings(encodeSize))
+            let videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings())
             videoInput.expectsMediaDataInRealTime = true
             // No transform: the capture connection already rotates the frames to keep the
             // horizon level, so what arrives here is what should be played back.
@@ -217,8 +193,6 @@ final class SegmentWriter {
 
             writer = newWriter
             currentIndex = index
-            currentRevision = revision
-            currentEncodeSize = encodeSize
             currentRelativePath = relativePath
             segmentStartPTS = pts
             currentStartDate = wallClock(for: pts)
@@ -238,7 +212,6 @@ final class SegmentWriter {
         let startDate = currentStartDate
         let endDate = wallClock(for: pts)
         let format = self.format
-        let encodeSize = currentEncodeSize
         let camera = self.camera
         let onSegmentFinished = self.onSegmentFinished
 
@@ -274,8 +247,8 @@ final class SegmentWriter {
                 endDate: max(endDate, startDate),
                 relativePath: relativePath,
                 fileSize: size,
-                width: encodeSize.width,
-                height: encodeSize.height,
+                width: format.outputWidth,
+                height: format.outputHeight,
                 fps: format.fps,
                 codec: format.codec,
                 succeeded: succeeded
@@ -292,11 +265,14 @@ final class SegmentWriter {
         return firstSampleDate.addingTimeInterval(CMTimeGetSeconds(CMTimeSubtract(pts, firstPTS)))
     }
 
-    private func videoSettings(_ encodeSize: (width: Int, height: Int)) -> [String: Any] {
+    private func videoSettings() -> [String: Any] {
         [
             AVVideoCodecKey: format.codec,
-            AVVideoWidthKey: encodeSize.width,
-            AVVideoHeightKey: encodeSize.height,
+            AVVideoWidthKey: format.outputWidth,
+            AVVideoHeightKey: format.outputHeight,
+            // The one line that makes the output landscape whatever the phone is doing:
+            // fit the incoming frame inside the box, bars rather than stretch or crop.
+            AVVideoScalingModeKey: AVVideoScalingModeResizeAspect,
             AVVideoCompressionPropertiesKey: [
                 AVVideoAverageBitRateKey: format.bitrate,
                 AVVideoExpectedSourceFrameRateKey: format.fps,

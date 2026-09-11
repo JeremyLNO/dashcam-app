@@ -37,9 +37,10 @@ struct LibraryView: View {
                         onUnlock: { Task { await gate.unlock() } },
                         errorMessage: gate.lastError
                     )
-                } else if visibleSessions.isEmpty {
-                    emptyState
                 } else {
+                    // The shelf picker lives outside this branch on purpose: putting it
+                    // inside `list` meant an empty Protected shelf replaced the picker
+                    // with the empty state, and there was no way back to All drives.
                     list
                 }
             }
@@ -91,6 +92,14 @@ struct LibraryView: View {
                 storageSummary
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 10, trailing: 16))
+            }
+
+            if visibleSessions.isEmpty {
+                Section {
+                    emptyState
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 30, leading: 16, bottom: 30, trailing: 16))
+                }
             }
 
             ForEach(groupedByDay, id: \.key) { group in
@@ -178,7 +187,7 @@ struct LibraryView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Image(systemName: "film.stack")
                 .font(.system(size: 44, weight: .light))
                 .foregroundStyle(Theme.textTertiary)
@@ -191,7 +200,7 @@ struct LibraryView: View {
                 .foregroundStyle(Theme.textTertiary)
                 .padding(.horizontal, 40)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
     }
 
     @ToolbarContentBuilder

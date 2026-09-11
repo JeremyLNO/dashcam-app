@@ -1,5 +1,6 @@
 import AVFoundation
 import SwiftUI
+import UIKit
 
 /// The screen the driver looks at. Everything on it is readable at a glance, and the two
 /// things you might need in an emergency — stop, and protect — are the two biggest
@@ -81,7 +82,12 @@ struct RecordingView: View {
         VStack(spacing: Theme.spacing) {
             header
             previews
-            statusGrid
+            // While recording, the instrument panel goes away: the road and the two
+            // controls are all a driver should have to look at, and the previews get the
+            // room back. The tiles are a pre-flight check, not something to read at speed.
+            if !recording.isRecording {
+                statusGrid
+            }
             controls
         }
     }
@@ -96,7 +102,9 @@ struct RecordingView: View {
 
             VStack(spacing: 8) {
                 header
-                statusColumn
+                if !recording.isRecording {
+                    statusColumn
+                }
                 Spacer(minLength: 0)
                 controls
             }
@@ -266,12 +274,17 @@ struct RecordingView: View {
 
     // MARK: - Actions
 
+    /// Feedback for a manual Protect lives entirely on the button — a colour change, a
+    /// label change and a haptic. No alert, no banner: a dialog in front of the road is
+    /// the last thing a driver needs, and it would have to be dismissed at exactly the
+    /// wrong moment.
     private func protect() {
         guard recording.protectNow(origin: .manual) else { return }
-        withAnimation { protectFlash = true }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        withAnimation(.easeOut(duration: 0.15)) { protectFlash = true }
         noteInteraction()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            withAnimation { protectFlash = false }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            withAnimation(.easeIn(duration: 0.4)) { protectFlash = false }
         }
     }
 

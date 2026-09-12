@@ -222,7 +222,7 @@ struct SettingsView: View {
                 options: StorageLimit.allCases,
                 selection: binding(\.storageLimit)
             )
-            SettingsRow(titleKey: "settings.storage_protected") {
+            SettingsRow(titleKey: "settings.storage_protected_included", systemImage: "checkmark.shield.fill", accent: .green) {
                 Text(verbatim: Format.bytes(storage.snapshot.protectedBytes))
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
@@ -232,48 +232,92 @@ struct SettingsView: View {
         }
     }
 
-    /// How full the phone is, drawn rather than spelled out — the one figure here that is
-    /// about proportion, not about a setting.
+    /// What Dashcam Pocket occupies, next to what the rest of the phone occupies.
+    ///
+    /// The previous version put "Used by Dashcam" above a bar that measured the whole
+    /// device: the app looked like it was eating hundreds of gigabytes. The figure the
+    /// app is responsible for is now the large one, in its own colour, and the phone's
+    /// total is what it is measured against — never confused with it.
     private var storageBar: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(key: "settings.storage_used")
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(key: "settings.storage_app")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Spacer()
-                Text(verbatim: L10n.t(
-                    "settings.storage_free_of",
-                    Format.bytes(storage.snapshot.freeBytes),
-                    Format.bytes(storage.snapshot.totalBytes)
-                ))
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Theme.textSecondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+                Spacer(minLength: 8)
+                Text(verbatim: Format.bytes(storage.snapshot.dashcamBytes))
+                    .font(.system(size: 22, weight: .heavy))
+                    .foregroundStyle(Theme.teal)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
 
+            // Three slices of one disk: this app, everything else, and what is left.
             GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Theme.surfaceElevated)
+                HStack(spacing: 2) {
                     Capsule()
                         .fill(storage.snapshot.isCriticallyLow ? Theme.danger : Theme.teal)
-                        .frame(width: max(6, proxy.size.width * usedFraction))
+                        .frame(width: max(4, proxy.size.width * dashcamFraction))
+                    Capsule()
+                        .fill(Theme.textSecondary.opacity(0.35))
+                        .frame(width: max(2, proxy.size.width * otherFraction))
+                    Capsule()
+                        .fill(Theme.surfaceElevated)
                 }
             }
-            .frame(height: 10)
+            .frame(height: 12)
 
-            Text(verbatim: L10n.t("settings.storage_percent", Int((usedFraction * 100).rounded())))
-                .font(.system(size: 13, weight: .medium))
+            HStack(spacing: 14) {
+                legend(key: "settings.storage_app_short", value: Format.bytes(storage.snapshot.dashcamBytes), colour: Theme.teal)
+                legend(key: "settings.storage_other", value: Format.bytes(otherUsedBytes), colour: Theme.textSecondary.opacity(0.35))
+                legend(key: "settings.storage_free", value: Format.bytes(storage.snapshot.freeBytes), colour: Theme.surfaceElevated)
+            }
+
+            Text(verbatim: L10n.t("settings.storage_share", Format.bytes(storage.snapshot.totalBytes)))
+                .font(.system(size: 13, weight: .regular))
                 .foregroundStyle(Theme.textSecondary)
         }
         .padding(.bottom, 4)
         .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(verbatim: L10n.t("settings.storage_app") + ": " + Format.bytes(storage.snapshot.dashcamBytes)))
     }
 
-    private var usedFraction: Double {
+    private func legend(key: String, value: String, colour: Color) -> some View {
+        HStack(spacing: 5) {
+            Circle().fill(colour).frame(width: 8, height: 8)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(key: key)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                Text(verbatim: value)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Everything on the phone that is not this app's recordings.
+    private var otherUsedBytes: Int64 {
+        max(0, storage.snapshot.totalBytes - storage.snapshot.freeBytes - storage.snapshot.dashcamBytes)
+    }
+
+    private var dashcamFraction: Double {
+        fraction(of: storage.snapshot.dashcamBytes)
+    }
+
+    private var otherFraction: Double {
+        fraction(of: otherUsedBytes)
+    }
+
+    private func fraction(of bytes: Int64) -> Double {
         let total = Double(storage.snapshot.totalBytes)
         guard total > 0 else { return 0 }
-        return min(1, max(0, Double(storage.snapshot.totalBytes - storage.snapshot.freeBytes) / total))
+        return min(1, max(0, Double(bytes) / total))
     }
 
     // MARK: - Privacy & metadata

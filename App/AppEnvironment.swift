@@ -32,6 +32,7 @@ final class AppEnvironment: ObservableObject {
     let recording: RecordingManager
     let subscriptions: SubscriptionManager
     let exporter: ExportManager
+    let autoExporter: AutoExporter
     let permissions: PermissionCoordinator
     let notifications: NotificationManager
     let review: ReviewPrompter
@@ -69,7 +70,12 @@ final class AppEnvironment: ObservableObject {
 
         let subscriptions = SubscriptionManager(configuration: configuration)
         self.subscriptions = subscriptions
-        self.exporter = ExportManager(index: index, subscriptions: subscriptions, registry: registry)
+        let exporter = ExportManager(index: index, subscriptions: subscriptions, registry: registry)
+        self.exporter = exporter
+        let autoExporter = AutoExporter(
+            index: index, exporter: exporter, settingsStore: settingsStore, subscriptions: subscriptions
+        )
+        self.autoExporter = autoExporter
         let permissions = PermissionCoordinator()
         self.permissions = permissions
         self.notifications = NotificationManager(configuration: configuration)
@@ -88,6 +94,22 @@ final class AppEnvironment: ObservableObject {
             registry: registry
         )
         self.recording = recording
+        // A finished drive is the only moment the protected windows are complete: their
+        // forward half is footage that did not exist when the event fired.
+        recording.onSessionFinished = { [weak autoExporter] sessionID in
+            Task { await autoExporter?.exportProtectedFootage(ofSession: sessionID) }
+        }
+        // Control Center's buttons are performed by the app once it has been opened, so
+        // this is where they find something to act on.
+        ControlBridge.startRecording = { [weak recording] in
+            guard let recording, !recording.isRecording else { return }
+            await recording.start()
+        }
+        ControlBridge.stopRecording = { [weak recording] in await recording?.stop() }
+        ControlBridge.protectFootage = { [weak recording] in
+            recording?.protectNow(origin: .manual)
+        }
+
         self.carPlay = CarPlayManager(recording: recording)
         self.carPlayConnection = CarPlayConnectionMonitor()
 

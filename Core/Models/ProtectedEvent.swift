@@ -66,6 +66,10 @@ final class ProtectedEvent {
     var magnitude: Double
     /// Cleared when the user removes protection; the event row is kept as history.
     var isActive: Bool
+    /// When the automatic export wrote this window out, if it ever did. It exists so the
+    /// same incident cannot land in the photo library twice — after a relaunch, a crash
+    /// recovery, or a second pass over an old drive.
+    var autoExportedAt: Date?
 
     var session: DriveSession?
 
@@ -89,6 +93,7 @@ final class ProtectedEvent {
         self.originRaw = origin.rawValue
         self.magnitude = magnitude
         self.isActive = isActive
+        self.autoExportedAt = nil
     }
 
     var origin: ProtectionOrigin { ProtectionOrigin(rawValue: originRaw) ?? .manual }

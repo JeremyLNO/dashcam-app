@@ -17,6 +17,7 @@ struct DashcamApp: App {
                     .environmentObject(environment.subscriptions)
                     .environmentObject(environment.storage)
                     .environmentObject(environment.exporter)
+                    .environmentObject(environment.autoExporter)
                     .environmentObject(environment.notifications)
                     .environmentObject(environment.review)
                     .environmentObject(environment.location)

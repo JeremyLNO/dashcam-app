@@ -6,9 +6,15 @@ directories below is discovered recursively and mirrored as nested PBXGroups, so
 a file means creating it and re-running this script. UUIDs are md5 hashes of a role key,
 which keeps successive runs byte-stable and diffable.
 
-Targets: the app, a unit-test bundle, a UI-test bundle. CarPlay needs no separate target
-(its scene delegate ships inside the app), which is part of why the CarPlay feature can be
-switched off by simply not granting the entitlement.
+Targets: the app, a unit-test bundle, a UI-test bundle, and a widget extension carrying
+the Control Center buttons. CarPlay needs no separate target (its scene delegate ships
+inside the app), which is part of why the CarPlay feature can be switched off by simply not
+granting the entitlement.
+
+The control extension is a target only because it has to be: Control Center runs its
+buttons from a separate process. It compiles two files — its own widget bundle and the
+shared intent file, which the app compiles as well so the system can perform the intent in
+whichever binary is running.
 """
 import hashlib
 import os
@@ -22,6 +28,12 @@ APP_SOURCE_DIRS = [
     "Protection", "Export", "Subscriptions", "CarPlay", "Notifications",
     "Features", "UI", "Intents",
 ]
+CONTROL_SOURCE_DIR = "Controls"
+# Compiled into the extension *and* the app: an intent must exist in both binaries for
+# iOS to hand it to the app once the control has opened it.
+CONTROL_SHARED_SOURCES = ["Intents/ControlCommands.swift"]
+CONTROL_INFO_PLIST = "Controls/Info.plist"
+CONTROL_TARGET = f"{PROJ}Controls"
 TEST_SOURCE_DIR = "Tests"
 UITEST_SOURCE_DIR = "UITests"
 RESOURCES_DIR = "Resources"
@@ -74,6 +86,7 @@ for d in APP_SOURCE_DIRS:
     app_files += find_swift(d)
 test_files = find_swift(TEST_SOURCE_DIR)
 uitest_files = find_swift(UITEST_SOURCE_DIR)
+control_files = find_swift(CONTROL_SOURCE_DIR) + CONTROL_SHARED_SOURCES
 
 _fileref = {}
 
@@ -147,6 +160,17 @@ def emit_top_group(name, paths):
 
 # ---- UUIDs ------------------------------------------------------------------
 prod_ref = uid("product.app")
+control_prod_ref = uid("product.controls")
+control_target = uid("target.controls")
+control_sources_phase = uid("phase.control.sources")
+control_frameworks_phase = uid("phase.control.frameworks")
+control_cfg_list = uid("cfglist.controls")
+control_proxy = uid("containerproxy.controls")
+control_dep = uid("targetdep.controls")
+control_embed_phase = uid("phase.app.embedextensions")
+control_embed_build = uid("build.embed.controls")
+control_group = uid("group.controls")
+control_plist_ref = uid("fileref.control.plist")
 test_prod_ref = uid("product.tests")
 uitest_prod_ref = uid("product.uitests")
 main_group = uid("group.main")
@@ -178,6 +202,7 @@ xcconfig_refs = {f: fileref("Config/" + f) for f in XCCONFIGS}
 app_build = {f: uid("buildfile.app." + f) for f in app_files}
 test_build = {f: uid("buildfile.tests." + f) for f in test_files}
 uitest_build = {f: uid("buildfile.uitests." + f) for f in uitest_files}
+control_build = {f: uid("buildfile.controls." + f) for f in control_files}
 resource_build = {path: uid("buildfile.resource." + path) for path, _ in RESOURCE_FILES}
 storekit_test_build = uid("buildfile.tests.storekit")
 
@@ -204,6 +229,9 @@ for f in test_files:
     L(f'\t\t{test_build[f]} /* {os.path.basename(f)} in Sources */ = {{isa = PBXBuildFile; fileRef = {fileref(f)} /* {os.path.basename(f)} */; }};')
 for f in uitest_files:
     L(f'\t\t{uitest_build[f]} /* {os.path.basename(f)} in Sources */ = {{isa = PBXBuildFile; fileRef = {fileref(f)} /* {os.path.basename(f)} */; }};')
+for f in control_files:
+    L(f'\t\t{control_build[f]} /* {os.path.basename(f)} in Sources */ = {{isa = PBXBuildFile; fileRef = {fileref(f)} /* {os.path.basename(f)} */; }};')
+L(f'\t\t{control_embed_build} /* {CONTROL_TARGET}.appex in Embed Foundation Extensions */ = {{isa = PBXBuildFile; fileRef = {control_prod_ref} /* {CONTROL_TARGET}.appex */; settings = {{ATTRIBUTES = (RemoveHeadersOnCopy, ); }}; }};')
 for path, _ in RESOURCE_FILES:
     base = os.path.basename(path)
     L(f'\t\t{resource_build[path]} /* {base} in Resources */ = {{isa = PBXBuildFile; fileRef = {fileref(path)} /* {base} */; }};')
@@ -214,6 +242,8 @@ L("/* End PBXBuildFile section */")
 
 L("\n/* Begin PBXFileReference section */")
 L(f'\t\t{prod_ref} /* {PROJ}.app */ = {{isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "{PROJ}.app"; sourceTree = BUILT_PRODUCTS_DIR; }};')
+L(f'\t\t{control_prod_ref} /* {CONTROL_TARGET}.appex */ = {{isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "{CONTROL_TARGET}.appex"; sourceTree = BUILT_PRODUCTS_DIR; }};')
+L(f'\t\t{control_plist_ref} /* Info.plist */ = {{isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; }};')
 L(f'\t\t{test_prod_ref} /* {PROJ}Tests.xctest */ = {{isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "{PROJ}Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; }};')
 L(f'\t\t{uitest_prod_ref} /* {PROJ}UITests.xctest */ = {{isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "{PROJ}UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; }};')
 for f in sorted(set(app_files + test_files + uitest_files)):
@@ -230,7 +260,7 @@ for f in XCCONFIGS:
 L("/* End PBXFileReference section */")
 
 L("\n/* Begin PBXFrameworksBuildPhase section */")
-for phase in [frameworks_phase, test_frameworks_phase, uitest_frameworks_phase]:
+for phase in [frameworks_phase, test_frameworks_phase, uitest_frameworks_phase, control_frameworks_phase]:
     L(f"\t\t{phase} /* Frameworks */ = {{")
     L("\t\t\tisa = PBXFrameworksBuildPhase;")
     L("\t\t\tbuildActionMask = 2147483647;")
@@ -249,6 +279,18 @@ for d in APP_SOURCE_DIRS:
     top_groups[d] = emit_top_group(d, app_files)
 # Info.plist and the entitlements live in App/, folded into that same group so their
 # paths resolve relative to it.
+control_swift = find_swift(CONTROL_SOURCE_DIR)
+L(f"\t\t{control_group} /* {CONTROL_SOURCE_DIR} */ = {{")
+L("\t\t\tisa = PBXGroup;")
+L("\t\t\tchildren = (")
+for f in control_swift:
+    L(f"\t\t\t\t{fileref(f)} /* {os.path.basename(f)} */,")
+L(f"\t\t\t\t{control_plist_ref} /* Info.plist */,")
+L("\t\t\t);")
+L(f"\t\t\tpath = {CONTROL_SOURCE_DIR};")
+L('\t\t\tsourceTree = "<group>";')
+L("\t\t};")
+
 test_group = emit_top_group(TEST_SOURCE_DIR, test_files)
 uitest_group = emit_top_group(UITEST_SOURCE_DIR, uitest_files)
 
@@ -277,6 +319,7 @@ L(f"\t\t{products_group} /* Products */ = {{")
 L("\t\t\tisa = PBXGroup;")
 L("\t\t\tchildren = (")
 L(f"\t\t\t\t{prod_ref} /* {PROJ}.app */,")
+L(f"\t\t\t\t{control_prod_ref} /* {CONTROL_TARGET}.appex */,")
 L(f"\t\t\t\t{test_prod_ref} /* {PROJ}Tests.xctest */,")
 L(f"\t\t\t\t{uitest_prod_ref} /* {PROJ}UITests.xctest */,")
 L("\t\t\t);")
@@ -291,6 +334,7 @@ for d in APP_SOURCE_DIRS:
     L(f"\t\t\t\t{top_groups[d]} /* {d} */,")
 L(f"\t\t\t\t{resources_group} /* Resources */,")
 L(f"\t\t\t\t{config_group} /* Config */,")
+L(f"\t\t\t\t{control_group} /* {CONTROL_SOURCE_DIR} */,")
 L(f"\t\t\t\t{test_group} /* Tests */,")
 L(f"\t\t\t\t{uitest_group} /* UITests */,")
 L(f"\t\t\t\t{products_group} /* Products */,")
@@ -307,10 +351,12 @@ L("\t\t\tbuildPhases = (")
 L(f"\t\t\t\t{sources_phase} /* Sources */,")
 L(f"\t\t\t\t{frameworks_phase} /* Frameworks */,")
 L(f"\t\t\t\t{resources_phase} /* Resources */,")
+L(f"\t\t\t\t{control_embed_phase} /* Embed Foundation Extensions */,")
 L("\t\t\t);")
 L("\t\t\tbuildRules = (")
 L("\t\t\t);")
 L("\t\t\tdependencies = (")
+L(f"\t\t\t\t{control_dep} /* PBXTargetDependency */,")
 L("\t\t\t);")
 L(f"\t\t\tname = {PROJ};")
 L("\t\t\tpackageProductDependencies = (")
@@ -345,6 +391,22 @@ for name, target, cfg, sphase, fphase, dep, prod, ptype in [
     L(f"\t\t\tproductReference = {prod} /* {name}.xctest */;")
     L(f'\t\t\tproductType = "{ptype}";')
     L("\t\t};")
+L(f"\t\t{control_target} /* {CONTROL_TARGET} */ = {{")
+L("\t\t\tisa = PBXNativeTarget;")
+L(f'\t\t\tbuildConfigurationList = {control_cfg_list} /* Build configuration list for PBXNativeTarget "{CONTROL_TARGET}" */;')
+L("\t\t\tbuildPhases = (")
+L(f"\t\t\t\t{control_sources_phase} /* Sources */,")
+L(f"\t\t\t\t{control_frameworks_phase} /* Frameworks */,")
+L("\t\t\t);")
+L("\t\t\tbuildRules = (")
+L("\t\t\t);")
+L("\t\t\tdependencies = (")
+L("\t\t\t);")
+L(f"\t\t\tname = {CONTROL_TARGET};")
+L(f"\t\t\tproductName = {CONTROL_TARGET};")
+L(f"\t\t\tproductReference = {control_prod_ref} /* {CONTROL_TARGET}.appex */;")
+L('\t\t\tproductType = "com.apple.product-type.app-extension";')
+L("\t\t};")
 L("/* End PBXNativeTarget section */")
 
 L("\n/* Begin PBXProject section */")
@@ -356,6 +418,9 @@ L("\t\t\t\tLastSwiftUpdateCheck = 1620;")
 L("\t\t\t\tLastUpgradeCheck = 1620;")
 L("\t\t\t\tTargetAttributes = {")
 L(f"\t\t\t\t\t{app_target} = {{")
+L("\t\t\t\t\t\tCreatedOnToolsVersion = 16.2;")
+L("\t\t\t\t\t};")
+L(f"\t\t\t\t\t{control_target} = {{")
 L("\t\t\t\t\t\tCreatedOnToolsVersion = 16.2;")
 L("\t\t\t\t\t};")
 for t in (test_target, uitest_target):
@@ -383,6 +448,7 @@ L('\t\t\tprojectDirPath = "";')
 L('\t\t\tprojectRoot = "";')
 L("\t\t\ttargets = (")
 L(f"\t\t\t\t{app_target} /* {PROJ} */,")
+L(f"\t\t\t\t{control_target} /* {CONTROL_TARGET} */,")
 L(f"\t\t\t\t{test_target} /* {PROJ}Tests */,")
 L(f"\t\t\t\t{uitest_target} /* {PROJ}UITests */,")
 L("\t\t\t);")
@@ -398,6 +464,13 @@ for proxy in (test_proxy, uitest_proxy):
     L(f"\t\t\tremoteGlobalIDString = {app_target};")
     L(f"\t\t\tremoteInfo = {PROJ};")
     L("\t\t};")
+L(f"\t\t{control_proxy} /* PBXContainerItemProxy */ = {{")
+L("\t\t\tisa = PBXContainerItemProxy;")
+L(f"\t\t\tcontainerPortal = {project_uid} /* Project object */;")
+L("\t\t\tproxyType = 1;")
+L(f"\t\t\tremoteGlobalIDString = {control_target};")
+L(f"\t\t\tremoteInfo = {CONTROL_TARGET};")
+L("\t\t};")
 L("/* End PBXContainerItemProxy section */")
 
 L("\n/* Begin PBXTargetDependency section */")
@@ -407,6 +480,11 @@ for dep, proxy in ((test_dep, test_proxy), (uitest_dep, uitest_proxy)):
     L(f"\t\t\ttarget = {app_target} /* {PROJ} */;")
     L(f"\t\t\ttargetProxy = {proxy} /* PBXContainerItemProxy */;")
     L("\t\t};")
+L(f"\t\t{control_dep} /* PBXTargetDependency */ = {{")
+L("\t\t\tisa = PBXTargetDependency;")
+L(f"\t\t\ttarget = {control_target} /* {CONTROL_TARGET} */;")
+L(f"\t\t\ttargetProxy = {control_proxy} /* PBXContainerItemProxy */;")
+L("\t\t};")
 L("/* End PBXTargetDependency section */")
 
 if SPM_PACKAGES:
@@ -452,11 +530,26 @@ L("\t\t\trunOnlyForDeploymentPostprocessing = 0;")
 L("\t\t};")
 L("/* End PBXResourcesBuildPhase section */")
 
+L("\n/* Begin PBXCopyFilesBuildPhase section */")
+L(f"\t\t{control_embed_phase} /* Embed Foundation Extensions */ = {{")
+L("\t\t\tisa = PBXCopyFilesBuildPhase;")
+L("\t\t\tbuildActionMask = 2147483647;")
+L('\t\t\tdstPath = "";')
+L("\t\t\tdstSubfolderSpec = 13;")
+L("\t\t\tfiles = (")
+L(f"\t\t\t\t{control_embed_build} /* {CONTROL_TARGET}.appex in Embed Foundation Extensions */,")
+L("\t\t\t);")
+L('\t\t\tname = "Embed Foundation Extensions";')
+L("\t\t\trunOnlyForDeploymentPostprocessing = 0;")
+L("\t\t};")
+L("/* End PBXCopyFilesBuildPhase section */")
+
 L("\n/* Begin PBXSourcesBuildPhase section */")
 for phase, files, table in [
     (sources_phase, app_files, app_build),
     (test_sources_phase, test_files, test_build),
     (uitest_sources_phase, uitest_files, uitest_build),
+    (control_sources_phase, control_files, control_build),
 ]:
     L(f"\t\t{phase} /* Sources */ = {{")
     L("\t\t\tisa = PBXSourcesBuildPhase;")
@@ -523,6 +616,24 @@ def uitest_common():
     ]
 
 
+def control_common():
+    return [
+        "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;",
+        "ENABLE_PREVIEWS = YES;",
+        "GENERATE_INFOPLIST_FILE = NO;",
+        f'INFOPLIST_FILE = "{CONTROL_INFO_PLIST}";',
+        "INFOPLIST_KEY_CFBundleDisplayName = \"Dashcam Controls\";",
+        # Controls are an iOS 18 feature. The app itself still runs on 17: the extension
+        # simply is not installed on anything older.
+        "IPHONEOS_DEPLOYMENT_TARGET = 18.0;",
+        'LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks");',
+        f'PRODUCT_BUNDLE_IDENTIFIER = "{BUNDLE_ID_VAR}.controls";',
+        'PRODUCT_NAME = "$(TARGET_NAME)";',
+        "SKIP_INSTALL = YES;",
+        'TARGETED_DEVICE_FAMILY = "1";',
+    ]
+
+
 L("\n/* Begin XCBuildConfiguration section */")
 for env, xcconfig in ENVIRONMENTS:
     cfg = uid("cfg.proj." + env)
@@ -548,7 +659,12 @@ for env, xcconfig in ENVIRONMENTS:
     L(f"\t\t\tname = {env};")
     L("\t\t};")
 
-for prefix, settings in [("cfg.app.", app_common()), ("cfg.tests.", test_common()), ("cfg.uitests.", uitest_common())]:
+for prefix, settings in [
+    ("cfg.app.", app_common()),
+    ("cfg.controls.", control_common()),
+    ("cfg.tests.", test_common()),
+    ("cfg.uitests.", uitest_common()),
+]:
     for env, _ in ENVIRONMENTS:
         cfg = uid(prefix + env)
         L(f"\t\t{cfg} /* {env} */ = {{")
@@ -578,6 +694,7 @@ def emit_cfg_list(list_uid, comment, prefix):
 
 emit_cfg_list(proj_cfg_list, f'Build configuration list for PBXProject "{PROJ}"', "cfg.proj.")
 emit_cfg_list(app_cfg_list, f'Build configuration list for PBXNativeTarget "{PROJ}"', "cfg.app.")
+emit_cfg_list(control_cfg_list, f'Build configuration list for PBXNativeTarget "{CONTROL_TARGET}"', "cfg.controls.")
 emit_cfg_list(test_cfg_list, f'Build configuration list for PBXNativeTarget "{PROJ}Tests"', "cfg.tests.")
 emit_cfg_list(uitest_cfg_list, f'Build configuration list for PBXNativeTarget "{PROJ}UITests"', "cfg.uitests.")
 L("/* End XCConfigurationList section */")

@@ -146,6 +146,15 @@ final class SessionIndex: ObservableObject {
         return events.filter { $0.isOpen(at: date) }
     }
 
+    /// Stamps an event as already exported by itself. One writer, so the automatic export
+    /// cannot copy the same incident into the photo library twice.
+    func markAutoExported(eventID: UUID, at date: Date = Date()) {
+        let descriptor = FetchDescriptor<ProtectedEvent>(predicate: #Predicate { $0.id == eventID })
+        guard let event = (try? context.fetch(descriptor))?.first else { return }
+        event.autoExportedAt = date
+        save()
+    }
+
     func activeEvents(forSession sessionID: UUID) -> [ProtectedEvent] {
         let descriptor = FetchDescriptor<ProtectedEvent>(
             predicate: #Predicate { $0.sessionID == sessionID && $0.isActive == true }

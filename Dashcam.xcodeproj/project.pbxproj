@@ -45,7 +45,9 @@
 		D95A9ABB28F63F6528DF6B37 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C7E056B15F9FDD35D5D89A /* LocationManager.swift */; };
 		AA3FA3E52553070377771D59 /* MotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52EAEF1578E7D787F4B98E /* MotionManager.swift */; };
 		6DF25B6C22F3B7F426DEB2E8 /* EventProtectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50956EA61122B89917F75DBA /* EventProtectionManager.swift */; };
+		11760AD6A79A6E140EE4C8B1 /* AutoExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B5E8AA4099992446C1767B /* AutoExporter.swift */; };
 		E313B1899C6E56832AFC684F /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52593AF28494C6731EEF5169 /* ExportManager.swift */; };
+		936D321F40AFCE391B2CDA50 /* IncidentReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9064D212923ACF14069262 /* IncidentReport.swift */; };
 		5AF19ADE2ECAA4228E05AD88 /* OverlayRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7DE235D1D5A6B81E0F73A18 /* OverlayRenderer.swift */; };
 		B55DAF348F28DB1F25E07400 /* ProofManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AE4EBE42399B57501F9121 /* ProofManifest.swift */; };
 		7D9A8DA7D8037C2D653AB4B1 /* SessionComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19CCDAFF24B4B728D336A65 /* SessionComposition.swift */; };
@@ -55,6 +57,7 @@
 		23391C009FE0C344E4C5376C /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48890A4681B03AEECB35592D /* NotificationManager.swift */; };
 		8742A48B56CDDE96080ABA58 /* ReviewPrompter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD4959865B8D9D8D56B9D5D1 /* ReviewPrompter.swift */; };
 		E48F021D85937D4878D1627A /* BiometricGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A0E56408A63EE3794399F7 /* BiometricGate.swift */; };
+		11937CD92DD8315A671D1C24 /* DriveMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67754CDE2723EA46E1C4556C /* DriveMap.swift */; };
 		53BB7E20EE8AED07497B36C4 /* DriveThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15431E69D859CE8AFBA876 /* DriveThumbnail.swift */; };
 		C6AC60F6F1D8A40F8F6CFC5D /* EventTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59F9D875821AD44A5F7ED95 /* EventTimeline.swift */; };
 		FFE0F441AB1E289FF9A988CA /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F3964E4D08D2954FD6C8F2 /* ExportSheet.swift */; };
@@ -63,9 +66,11 @@
 		70B69B11362F15766AEA4E06 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7975660CA6839AEB438A1334 /* OnboardingView.swift */; };
 		1208F07E1DC91715A947F364 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB7FD6D0E9A8A53A3C95972 /* PaywallView.swift */; };
 		269B36EA5DF9324C6C46626F /* DiscreetScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D2FDE4F9560F629A92F105 /* DiscreetScreen.swift */; };
+		DBF4014381EF8BF8642E8D03 /* MountAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3962361BD0D5AD11527FA13A /* MountAssistant.swift */; };
 		1682E3A08A7007269982433E /* RecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4B4082160F60E8FDB19DD8 /* RecordingView.swift */; };
 		AF1C33268A61D0D71F8B7837 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128876BA9CB203F0B32BD069 /* SettingsView.swift */; };
 		8A43384751AC0301EF15CE9F /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D4CDF1A6D9A6D5E667005F /* DesignSystem.swift */; };
+		D7E130AAA5ABAAA01927A683 /* ControlCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 609947873BB6ABA09F8E94A8 /* ControlCommands.swift */; };
 		196A0DF6FB8889B71E3F3DE6 /* RecordingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */; };
 		E199FDD00CCBBB9C12B9FB20 /* CarPlayAutoStartTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D0C5D24848D735C4293345 /* CarPlayAutoStartTests.swift */; };
 		E5B259D6F221A32AFCA79CD8 /* CompositionGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */; };
@@ -93,6 +98,9 @@
 		0702A2C8EACEC761A424BD35 /* RecordingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09BCB26E8FA8725C466814D1 /* RecordingUITests.swift */; };
 		719010F41B53F3D301DFDFA4 /* SettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12312626F4F564FF118575EB /* SettingsUITests.swift */; };
 		7BFBFF0F7CE3BC3594F37231 /* UITestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0A85E318F01E6FCD77A5BF /* UITestCase.swift */; };
+		C1253EA324839AE2912B2FAF /* DashcamControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592BDD574B1635BCAA504BE /* DashcamControls.swift */; };
+		485C5B8D3ECC5BD2D559BFE6 /* ControlCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 609947873BB6ABA09F8E94A8 /* ControlCommands.swift */; };
+		2BAAA3FA745CAAA806841E56 /* DashcamControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F44A94D97C6F6BC4311E5C20 /* DashcamControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		82FD68215DD1AD9795844367 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8D7172619DB15AD08404D409 /* Assets.xcassets */; };
 		1028DAF610B6A7BB2969113F /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4F3133CB82A42C2405ECFE76 /* Localizable.xcstrings */; };
 		868C33FDCA12FBB82FC39BC6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2E88A5130923D54E34C2E978 /* PrivacyInfo.xcprivacy */; };
@@ -102,6 +110,8 @@
 
 /* Begin PBXFileReference section */
 		996AD237BC284D463E664FFE /* Dashcam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dashcam.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F44A94D97C6F6BC4311E5C20 /* DashcamControls.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "DashcamControls.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EDB7A12CEA6E59121965192 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BD5FEB36355BB38F98691943 /* DashcamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DashcamTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE9198967288169819E0B4CF /* DashcamUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DashcamUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		98A98A8D12AAAE9D910CAC37 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppEnvironment.swift"; sourceTree = "<group>"; };
@@ -133,11 +143,14 @@
 		BF4A55026204BFA8F1503B70 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Localization.swift"; sourceTree = "<group>"; };
 		3EA979AE89B4E347D18ADFEC /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Log.swift"; sourceTree = "<group>"; };
 		C93660396293AC50A8BBF60B /* ScreenshotSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScreenshotSeeder.swift"; sourceTree = "<group>"; };
+		54B5E8AA4099992446C1767B /* AutoExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AutoExporter.swift"; sourceTree = "<group>"; };
 		52593AF28494C6731EEF5169 /* ExportManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExportManager.swift"; sourceTree = "<group>"; };
+		CB9064D212923ACF14069262 /* IncidentReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IncidentReport.swift"; sourceTree = "<group>"; };
 		C7DE235D1D5A6B81E0F73A18 /* OverlayRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OverlayRenderer.swift"; sourceTree = "<group>"; };
 		89AE4EBE42399B57501F9121 /* ProofManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProofManifest.swift"; sourceTree = "<group>"; };
 		A19CCDAFF24B4B728D336A65 /* SessionComposition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionComposition.swift"; sourceTree = "<group>"; };
 		D9A0E56408A63EE3794399F7 /* BiometricGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BiometricGate.swift"; sourceTree = "<group>"; };
+		67754CDE2723EA46E1C4556C /* DriveMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DriveMap.swift"; sourceTree = "<group>"; };
 		FD15431E69D859CE8AFBA876 /* DriveThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DriveThumbnail.swift"; sourceTree = "<group>"; };
 		A59F9D875821AD44A5F7ED95 /* EventTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventTimeline.swift"; sourceTree = "<group>"; };
 		11F3964E4D08D2954FD6C8F2 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExportSheet.swift"; sourceTree = "<group>"; };
@@ -146,8 +159,10 @@
 		7975660CA6839AEB438A1334 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingView.swift"; sourceTree = "<group>"; };
 		CEB7FD6D0E9A8A53A3C95972 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallView.swift"; sourceTree = "<group>"; };
 		F7D2FDE4F9560F629A92F105 /* DiscreetScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DiscreetScreen.swift"; sourceTree = "<group>"; };
+		3962361BD0D5AD11527FA13A /* MountAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MountAssistant.swift"; sourceTree = "<group>"; };
 		2A4B4082160F60E8FDB19DD8 /* RecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingView.swift"; sourceTree = "<group>"; };
 		128876BA9CB203F0B32BD069 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView.swift"; sourceTree = "<group>"; };
+		609947873BB6ABA09F8E94A8 /* ControlCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ControlCommands.swift"; sourceTree = "<group>"; };
 		B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingIntents.swift"; sourceTree = "<group>"; };
 		97093AD977A0D3370F9EE53A /* DistanceAccumulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DistanceAccumulator.swift"; sourceTree = "<group>"; };
 		A4C7E056B15F9FDD35D5D89A /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationManager.swift"; sourceTree = "<group>"; };
@@ -218,6 +233,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		1C25C44B845A804078C60F75 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9C188D88D7961547A7173B1F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -341,7 +363,9 @@
 		8C266FA1BD69823933C81E1F /* Export */ = {
 			isa = PBXGroup;
 			children = (
+				54B5E8AA4099992446C1767B /* AutoExporter.swift */,
 				52593AF28494C6731EEF5169 /* ExportManager.swift */,
+				CB9064D212923ACF14069262 /* IncidentReport.swift */,
 				C7DE235D1D5A6B81E0F73A18 /* OverlayRenderer.swift */,
 				89AE4EBE42399B57501F9121 /* ProofManifest.swift */,
 				A19CCDAFF24B4B728D336A65 /* SessionComposition.swift */,
@@ -379,6 +403,7 @@
 			isa = PBXGroup;
 			children = (
 				D9A0E56408A63EE3794399F7 /* BiometricGate.swift */,
+				67754CDE2723EA46E1C4556C /* DriveMap.swift */,
 				FD15431E69D859CE8AFBA876 /* DriveThumbnail.swift */,
 				A59F9D875821AD44A5F7ED95 /* EventTimeline.swift */,
 				11F3964E4D08D2954FD6C8F2 /* ExportSheet.swift */,
@@ -408,6 +433,7 @@
 			isa = PBXGroup;
 			children = (
 				F7D2FDE4F9560F629A92F105 /* DiscreetScreen.swift */,
+				3962361BD0D5AD11527FA13A /* MountAssistant.swift */,
 				2A4B4082160F60E8FDB19DD8 /* RecordingView.swift */,
 			);
 			path = Recording;
@@ -444,9 +470,19 @@
 		EBCCA996553CC6370DA02F12 /* Intents */ = {
 			isa = PBXGroup;
 			children = (
+				609947873BB6ABA09F8E94A8 /* ControlCommands.swift */,
 				B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */,
 			);
 			path = Intents;
+			sourceTree = "<group>";
+		};
+		DC47B399E25E0ED3A9E9F427 /* Controls */ = {
+			isa = PBXGroup;
+			children = (
+				7592BDD574B1635BCAA504BE /* DashcamControls.swift */,
+				4EDB7A12CEA6E59121965192 /* Info.plist */,
+			);
+			path = Controls;
 			sourceTree = "<group>";
 		};
 		74C0354F987B4FC0FDE2C044 /* Tests */ = {
@@ -514,6 +550,7 @@
 			isa = PBXGroup;
 			children = (
 				996AD237BC284D463E664FFE /* Dashcam.app */,
+				F44A94D97C6F6BC4311E5C20 /* DashcamControls.appex */,
 				BD5FEB36355BB38F98691943 /* DashcamTests.xctest */,
 				AE9198967288169819E0B4CF /* DashcamUITests.xctest */,
 			);
@@ -539,6 +576,7 @@
 				EBCCA996553CC6370DA02F12 /* Intents */,
 				4541A46D5097AB86EF55A621 /* Resources */,
 				D5B807729C9161D8C6C93C82 /* Config */,
+				DC47B399E25E0ED3A9E9F427 /* Controls */,
 				74C0354F987B4FC0FDE2C044 /* Tests */,
 				055C91336A1BA92BA225F99B /* UITests */,
 				72A79544FC4DD10045022645 /* Products */,
@@ -555,10 +593,12 @@
 				C197A1D4E0DE673615AC32CB /* Sources */,
 				4FCBC29864E7C7752B7E193F /* Frameworks */,
 				8A6A452CEE30B0908A47D41D /* Resources */,
+				0C7101469354E12A6E372AEF /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B06A2840C2A6846AB17E72E4 /* PBXTargetDependency */,
 			);
 			name = Dashcam;
 			packageProductDependencies = (
@@ -603,6 +643,22 @@
 			productReference = AE9198967288169819E0B4CF /* DashcamUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		0A6C89EEC414CE2B711C0A14 /* DashcamControls */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7FB5826836ACD58A9297454A /* Build configuration list for PBXNativeTarget "DashcamControls" */;
+			buildPhases = (
+				D9D8630711101C9B0CC90726 /* Sources */,
+				9C188D88D7961547A7173B1F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DashcamControls;
+			productName = DashcamControls;
+			productReference = F44A94D97C6F6BC4311E5C20 /* DashcamControls.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -614,6 +670,9 @@
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					F01C2E624E08A72BC055B46F = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					0A6C89EEC414CE2B711C0A14 = {
 						CreatedOnToolsVersion = 16.2;
 					};
 					C706FA839F4C1F2316B35783 = {
@@ -647,6 +706,7 @@
 			projectRoot = "";
 			targets = (
 				F01C2E624E08A72BC055B46F /* Dashcam */,
+				0A6C89EEC414CE2B711C0A14 /* DashcamControls */,
 				C706FA839F4C1F2316B35783 /* DashcamTests */,
 				3A64ECAF98DFAF2BC218DB7D /* DashcamUITests */,
 			);
@@ -668,6 +728,13 @@
 			remoteGlobalIDString = F01C2E624E08A72BC055B46F;
 			remoteInfo = Dashcam;
 		};
+		8B7EE677E2ED8BE78BE53A2E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0A6C89EEC414CE2B711C0A14;
+			remoteInfo = DashcamControls;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXTargetDependency section */
@@ -680,6 +747,11 @@
 			isa = PBXTargetDependency;
 			target = F01C2E624E08A72BC055B46F /* Dashcam */;
 			targetProxy = 43D59B57D278DB0F0D7DBEC9 /* PBXContainerItemProxy */;
+		};
+		B06A2840C2A6846AB17E72E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0A6C89EEC414CE2B711C0A14 /* DashcamControls */;
+			targetProxy = 8B7EE677E2ED8BE78BE53A2E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -722,6 +794,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0C7101469354E12A6E372AEF /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				2BAAA3FA745CAAA806841E56 /* DashcamControls.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C197A1D4E0DE673615AC32CB /* Sources */ = {
@@ -766,7 +852,9 @@
 				D95A9ABB28F63F6528DF6B37 /* LocationManager.swift in Sources */,
 				AA3FA3E52553070377771D59 /* MotionManager.swift in Sources */,
 				6DF25B6C22F3B7F426DEB2E8 /* EventProtectionManager.swift in Sources */,
+				11760AD6A79A6E140EE4C8B1 /* AutoExporter.swift in Sources */,
 				E313B1899C6E56832AFC684F /* ExportManager.swift in Sources */,
+				936D321F40AFCE391B2CDA50 /* IncidentReport.swift in Sources */,
 				5AF19ADE2ECAA4228E05AD88 /* OverlayRenderer.swift in Sources */,
 				B55DAF348F28DB1F25E07400 /* ProofManifest.swift in Sources */,
 				7D9A8DA7D8037C2D653AB4B1 /* SessionComposition.swift in Sources */,
@@ -776,6 +864,7 @@
 				23391C009FE0C344E4C5376C /* NotificationManager.swift in Sources */,
 				8742A48B56CDDE96080ABA58 /* ReviewPrompter.swift in Sources */,
 				E48F021D85937D4878D1627A /* BiometricGate.swift in Sources */,
+				11937CD92DD8315A671D1C24 /* DriveMap.swift in Sources */,
 				53BB7E20EE8AED07497B36C4 /* DriveThumbnail.swift in Sources */,
 				C6AC60F6F1D8A40F8F6CFC5D /* EventTimeline.swift in Sources */,
 				FFE0F441AB1E289FF9A988CA /* ExportSheet.swift in Sources */,
@@ -784,9 +873,11 @@
 				70B69B11362F15766AEA4E06 /* OnboardingView.swift in Sources */,
 				1208F07E1DC91715A947F364 /* PaywallView.swift in Sources */,
 				269B36EA5DF9324C6C46626F /* DiscreetScreen.swift in Sources */,
+				DBF4014381EF8BF8642E8D03 /* MountAssistant.swift in Sources */,
 				1682E3A08A7007269982433E /* RecordingView.swift in Sources */,
 				AF1C33268A61D0D71F8B7837 /* SettingsView.swift in Sources */,
 				8A43384751AC0301EF15CE9F /* DesignSystem.swift in Sources */,
+				D7E130AAA5ABAAA01927A683 /* ControlCommands.swift in Sources */,
 				196A0DF6FB8889B71E3F3DE6 /* RecordingIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -828,6 +919,15 @@
 				0702A2C8EACEC761A424BD35 /* RecordingUITests.swift in Sources */,
 				719010F41B53F3D301DFDFA4 /* SettingsUITests.swift in Sources */,
 				7BFBFF0F7CE3BC3594F37231 /* UITestCase.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D9D8630711101C9B0CC90726 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C1253EA324839AE2912B2FAF /* DashcamControls.swift in Sources */,
+				485C5B8D3ECC5BD2D559BFE6 /* ControlCommands.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -910,6 +1010,40 @@
 			};
 			name = Release;
 		};
+		D1F6DD3DEC53F49A8A76F735 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Controls/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dashcam Controls";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks");
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BUNDLE_IDENTIFIER).controls";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1";
+			};
+			name = Debug;
+		};
+		7A0CBDF7432DA55C5C7311F1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Controls/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dashcam Controls";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks");
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BUNDLE_IDENTIFIER).controls";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1";
+			};
+			name = Release;
+		};
 		DD9E53A751D12837D49CD913 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -977,6 +1111,15 @@
 			buildConfigurations = (
 				0734E3BF1D7D1FE519145A53 /* Debug */,
 				A44521F7D7D0FB5F7D3840DB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7FB5826836ACD58A9297454A /* Build configuration list for PBXNativeTarget "DashcamControls" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D1F6DD3DEC53F49A8A76F735 /* Debug */,
+				7A0CBDF7432DA55C5C7311F1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -13,6 +13,7 @@ struct SettingsView: View {
     @EnvironmentObject private var storage: StorageManager
     @EnvironmentObject private var notifications: NotificationManager
     @EnvironmentObject private var capture: CaptureManager
+    @EnvironmentObject private var autoExporter: AutoExporter
     @Environment(\.openURL) private var openURL
 
     @State private var showPaywall = false
@@ -77,12 +78,38 @@ struct SettingsView: View {
                 .padding(.top, 4)
             }
 
+            Divider().background(Theme.separator)
+
+            ToggleRow(
+                titleKey: "settings.auto_export",
+                systemImage: "square.and.arrow.up.fill",
+                accent: .blue,
+                isOn: binding(\.autoExportProtected)
+            )
+            .accessibilityIdentifier("autoExportToggle")
+            SettingsNote(textKey: "settings.auto_export.footer")
+            if let outcome = autoExportNoteKey {
+                SettingsNote(textKey: outcome)
+            }
+
             Button {
                 Task { await subscriptions.restore() }
             } label: {
                 Text(key: "paywall.restore")
             }
             .buttonStyle(SoftButtonStyle(fill: Theme.violetSoft, foreground: Theme.violet, height: 48, font: .system(size: 16, weight: .bold)))
+        }
+    }
+
+    /// What the last automatic export did, when it did something worth saying. Silence
+    /// otherwise: a line reporting success after every drive would become wallpaper.
+    private var autoExportNoteKey: String? {
+        guard settingsStore.settings.autoExportProtected else { return nil }
+        switch autoExporter.lastOutcome {
+        case .skippedNoSubscription: return "settings.auto_export.needs_subscription"
+        case .skippedNoPermission: return "settings.auto_export.needs_photos"
+        case .failed: return "settings.auto_export.failed"
+        case .exported, .none: return nil
         }
     }
 
@@ -149,6 +176,17 @@ struct SettingsView: View {
                 isOn: binding(\.startOnCarPlayConnect)
             )
             .accessibilityIdentifier("carPlayAutoStart")
+
+            NavigationLink {
+                MountAssistant()
+                    .environmentObject(capture)
+            } label: {
+                SettingsRow(titleKey: "mount.title", systemImage: "car.side.and.exclamationmark", accent: .coral) {
+                    chevron
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("mountAssistant")
 
             SettingsNote(textKey: capture.status.isDual ? "settings.recording.footer" : "settings.recording.footer.single")
             SettingsNote(textKey: "settings.carplay_autostart.footer")

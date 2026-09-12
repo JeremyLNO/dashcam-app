@@ -28,6 +28,11 @@ final class RecordingManager: ObservableObject {
     /// Set briefly after a Protect action so the UI (and CarPlay) can acknowledge it.
     @Published private(set) var lastProtectionConfirmation: Date?
 
+    /// Called once a drive is closed and its index entry is final. The recorder does not
+    /// care who listens — it exists so the automatic export can run on a finished drive
+    /// rather than on one still being written to.
+    var onSessionFinished: ((UUID) -> Void)?
+
     private let capture: CaptureManager
     private let settingsStore: SettingsStore
     private let index: SessionIndex
@@ -150,6 +155,7 @@ final class RecordingManager: ObservableObject {
         retention.sweep(settings: settingsStore.settings, reason: .recordingFinished)
         storage.refresh()
         Log.recording.info("Recording stopped, session \(sessionID, privacy: .public)")
+        onSessionFinished?(sessionID)
     }
 
     func toggle() async {

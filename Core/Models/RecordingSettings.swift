@@ -239,6 +239,11 @@ struct RecordingSettings: Codable, Equatable, Sendable {
     var overlayEnabled: Bool = true
     var overlayFields: OverlayFields = .default
     var frontCameraEnabled: Bool = true
+    /// Export a protected window by itself as soon as the drive ends. Off by default:
+    /// nothing writes to someone's photo library unasked. Needs a subscription, like every
+    /// other export.
+    var autoExportProtected: Bool = false
+
     /// Face ID / Touch ID before the video library opens. Off by default: a lock the
     /// driver did not ask for is a lock between them and their own evidence.
     var requireBiometricUnlock: Bool = false

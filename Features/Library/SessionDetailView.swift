@@ -44,6 +44,10 @@ struct SessionDetailView: View {
     @State private var isPendingDeletion = false
     @State private var showExport = false
     @State private var showPaywall = false
+    @State private var isBuildingPack = false
+    @State private var packFiles: [URL] = []
+    @State private var packError: String?
+    @State private var showPackShare = false
 
     var body: some View {
         ScrollView {
@@ -52,8 +56,10 @@ struct SessionDetailView: View {
                 playerSurface
                 modePicker
                 timelineCard
+                mapCard
                 statsGrid
                 actions
+                incidentPackButton
             }
             .padding(.horizontal, 18)
             .padding(.top, 4)
@@ -83,6 +89,9 @@ struct SessionDetailView: View {
             ExportSheet(session: session)
                 .environmentObject(environment)
                 .environmentObject(subscriptions)
+        }
+        .sheet(isPresented: $showPackShare) {
+            ShareSheet(items: packFiles)
         }
         .sheet(isPresented: $showPaywall) {
             PaywallView(context: .export)
@@ -230,6 +239,101 @@ struct SessionDetailView: View {
                 let end = max(start, segment.endDate.timeIntervalSince(session.startedAt))
                 return start...end
             }
+    }
+
+    // MARK: - Map
+
+    /// Only drawn when there is a route to draw. An empty map under every drive recorded
+    /// without location permission would say nothing and take a third of the screen.
+    @ViewBuilder
+    private var mapCard: some View {
+        if locationSamples.count > 1 {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionHeader(titleKey: "detail.route")
+                DriveMap(
+                    samples: locationSamples,
+                    events: session.activeEvents,
+                    startedAt: session.startedAt,
+                    onSelectEvent: { offset in
+                        player.seek(to: CMTime(seconds: offset, preferredTimescale: 600),
+                                    toleranceBefore: .zero, toleranceAfter: .zero)
+                        playheadOffset = offset
+                    }
+                )
+            }
+            .dashcamCard()
+        }
+    }
+
+    // MARK: - Incident pack
+
+    /// One button for the whole evidence bundle: the clip around the incident, the proof
+    /// manifest, and a PDF that says what they are. It is the moment the subscription
+    /// earns itself, so a driver without one is shown the paywall rather than an error.
+    private var incidentPackButton: some View {
+        VStack(spacing: 8) {
+            Button {
+                if subscriptions.state.canExport {
+                    Task { await buildIncidentPack() }
+                } else {
+                    showPaywall = true
+                }
+            } label: {
+                HStack(spacing: 12) {
+                    if isBuildingPack {
+                        ProgressView().tint(.white)
+                    } else {
+                        Image(systemName: "doc.text.fill")
+                            .font(.system(size: 20, weight: .bold))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(key: "action.incident_pack")
+                            .font(.system(size: 18, weight: .bold))
+                        Text(key: "detail.incident_pack.subtitle")
+                            .font(.system(size: 13, weight: .regular))
+                            .opacity(0.9)
+                            .multilineTextAlignment(.leading)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(PrimaryButtonStyle(fill: Theme.textPrimary, height: 74))
+            .disabled(isBuildingPack)
+            .accessibilityIdentifier("incidentPack")
+
+            if let packError {
+                Text(verbatim: packError)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.danger)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private func buildIncidentPack() async {
+        isBuildingPack = true
+        packError = nil
+        defer { isBuildingPack = false }
+        do {
+            // The strongest event of the drive is the one a pack is about; without any,
+            // the pack covers the whole drive.
+            let event = session.activeEvents
+                .sorted { $0.magnitude > $1.magnitude }
+                .first
+            packFiles = try await environment.exporter.exportIncidentPack(session: session, event: event)
+            showPackShare = !packFiles.isEmpty
+        } catch {
+            packError = error.localizedDescription
+        }
+    }
+
+    private var locationSamples: [LocationSample] {
+        environment.index.locationSamples(
+            sessionID: session.id,
+            from: session.startedAt,
+            to: session.endedAt ?? Date()
+        )
     }
 
     // MARK: - Trip stats

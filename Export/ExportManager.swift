@@ -175,6 +175,67 @@ final class ExportManager: ObservableObject {
         }
     }
 
+    /// Everything an insurer needs, in one gesture.
+    ///
+    /// The pieces existed separately — a trimmed export, a proof manifest, the position
+    /// and speed of the moment, the file digests — and asking a shaken driver to assemble
+    /// them was asking too much. This produces the clip around the incident, the manifest,
+    /// and a one-page PDF that says what the clip is and hashes the files it travels with.
+    func exportIncidentPack(session: DriveSession, event: ProtectedEvent?) async throws -> [URL] {
+        guard subscriptions.state.canExport else { throw ExportError.subscriptionRequired }
+
+        let clip = event.flatMap { clipRange(for: $0, in: session) }
+        let mode: ExportMode = session.frontSegments.isEmpty ? .rear : .pictureInPicture
+        var urls = try await export(
+            session: session,
+            mode: mode,
+            style: .withInformation,
+            clip: clip,
+            includeProof: true
+        )
+
+        // Hashing happens on the files that are actually being handed over, not on the
+        // recordings they came from: the recipient can only verify what they receive.
+        var digests: [String: String] = [:]
+        for url in urls {
+            digests[url.lastPathComponent] = FileDigest.sha256(of: url)
+        }
+
+        let moment = event?.triggerDate ?? session.startedAt
+        let nearby = index.locationSamples(
+            sessionID: session.id,
+            from: moment.addingTimeInterval(-20),
+            to: moment.addingTimeInterval(20)
+        )
+        let sample = nearby.min { abs($0.timestamp.timeIntervalSince(moment)) < abs($1.timestamp.timeIntervalSince(moment)) }
+
+        let report = IncidentReport(
+            session: session,
+            event: event,
+            files: urls,
+            digests: digests,
+            locationAtEvent: sample,
+            speedKilometresPerHour: sample?.speedKilometresPerHour
+        )
+        let stamp = DateFormatter()
+        stamp.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+        let reportURL = StorageLocations.exportsRoot
+            .appendingPathComponent("Dashcam_incident_\(stamp.string(from: moment)).pdf")
+        try report.write(to: reportURL)
+        urls.append(reportURL)
+        return urls
+    }
+
+    /// An event's window against the drive's own clock, clamped to footage that exists.
+    private func clipRange(for event: ProtectedEvent, in session: DriveSession) -> SessionComposition.ClipRange? {
+        let duration = session.duration
+        guard duration > 0 else { return nil }
+        let start = max(0, event.windowStart.timeIntervalSince(session.startedAt))
+        let end = min(duration, event.windowEnd.timeIntervalSince(session.startedAt))
+        guard end > start else { return nil }
+        return SessionComposition.ClipRange(start: start, duration: end - start)
+    }
+
     // MARK: - Single camera
 
     private func renderSingle(

@@ -4,7 +4,9 @@ import SwiftUI
 /// The drives list, grouped by day.
 ///
 /// One row per drive, not per file: a two-hour drive is forty segments on disk and one
-/// thing in the user's head.
+/// thing in the user's head. The list is built to be scanned — the time of day is the
+/// largest thing on a card, because "the one this morning" is how anyone looks for a
+/// drive, and the badge saying why it was kept comes second.
 struct LibraryView: View {
     @EnvironmentObject private var environment: AppEnvironment
     @EnvironmentObject private var storage: StorageManager
@@ -52,9 +54,8 @@ struct LibraryView: View {
                 if !gate.isUnlocked { await gate.unlock() }
             }
             .background(Theme.background)
-            .navigationTitle(Text(key: "tab.videos"))
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar { toolbarContent }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
             .confirmationDialog(
                 Text(key: "library.delete.confirm"),
                 isPresented: $pendingDeletion,
@@ -74,31 +75,25 @@ struct LibraryView: View {
 
     // MARK: - Content
 
+    /// A `List` rather than a scroll view of cards, for one reason: swipe-to-delete and
+    /// swipe-to-protect are worth more than the few points of padding it costs. The rows
+    /// are dressed as cards instead.
     private var list: some View {
         List {
             Section {
-                Picker(selection: $shelf) {
-                    ForEach(Shelf.allCases) { shelf in
-                        Text(key: shelf.titleKey).tag(shelf)
-                    }
-                } label: {
-                    Text(key: "library.shelf")
-                }
-                .pickerStyle(.segmented)
-                .accessibilityIdentifier("libraryShelf")
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                header
+                    .plainRow(top: 6, bottom: 14)
 
-                storageSummary
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 10, trailing: 16))
+                shelfPicker
+                    .plainRow(bottom: 14)
+
+                summaryRow
+                    .plainRow(bottom: 8)
             }
 
             if visibleSessions.isEmpty {
                 Section {
-                    emptyState
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 30, leading: 16, bottom: 30, trailing: 16))
+                    emptyState.plainRow(top: 30, bottom: 30)
                 }
             }
 
@@ -106,18 +101,160 @@ struct LibraryView: View {
                 Section {
                     ForEach(group.value, id: \.id) { session in
                         row(for: session)
+                            .plainRow(top: 5, bottom: 5)
                     }
                 } header: {
-                    Text(verbatim: group.key)
-                        .font(Theme.caption)
-                        .foregroundStyle(Theme.textTertiary)
+                    dayHeader(for: group)
                 }
-                .listRowBackground(Theme.surface)
             }
         }
-        .listStyle(.insetGrouped)
+        .listStyle(.plain)
+        .listRowSpacing(0)
         .scrollContentBackground(.hidden)
         .environment(\.editMode, .constant(isSelecting ? .active : .inactive))
+    }
+
+    /// The title, and the two controls that used to live in a navigation bar this screen
+    /// no longer has: Select, and — while selecting — Delete.
+    private var header: some View {
+        PageHeader(titleKey: "tab.videos", subtitleKey: "library.subtitle") {
+            if !sessions.isEmpty {
+                HStack(spacing: 8) {
+                    if isSelecting {
+                        Button(role: .destructive) {
+                            pendingDeletion = true
+                        } label: {
+                            pill(titleKey: "library.delete.action", systemImage: "trash",
+                                 tint: Theme.danger, ground: Theme.coralSoft)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(selection.isEmpty)
+                        .opacity(selection.isEmpty ? 0.5 : 1)
+                    }
+
+                    Button {
+                        isSelecting.toggle()
+                        selection.removeAll()
+                    } label: {
+                        pill(
+                            titleKey: isSelecting ? "common.done" : "common.select",
+                            systemImage: isSelecting ? "checkmark" : "line.3.horizontal.decrease",
+                            tint: Theme.blue,
+                            ground: Theme.blueSoft
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("selectDrives")
+                }
+            }
+        }
+    }
+
+    private func pill(titleKey: String, systemImage: String, tint: Color, ground: Color) -> some View {
+        Label(
+            title: { Text(key: titleKey) },
+            icon: { Image(systemName: systemImage) }
+        )
+        .font(.system(size: 15, weight: .bold))
+        .foregroundStyle(tint)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
+        .background(Capsule().fill(ground))
+    }
+
+    /// A pill switch rather than the system segmented control: at this size the system
+    /// one reads as a form field, and this is the screen's main filter.
+    private var shelfPicker: some View {
+        HStack(spacing: 4) {
+            ForEach(Shelf.allCases) { item in
+                Button {
+                    withAnimation(.easeOut(duration: 0.18)) { shelf = item }
+                } label: {
+                    Text(key: item.titleKey)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(shelf == item ? .white : Theme.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 46)
+                        .background(
+                            Capsule().fill(shelf == item ? Theme.coral : Color.clear)
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(shelf == item ? [.isSelected, .isButton] : .isButton)
+            }
+        }
+        .padding(4)
+        .background(Capsule().fill(Theme.surfaceElevated))
+        .accessibilityIdentifier("libraryShelf")
+    }
+
+    private var summaryRow: some View {
+        HStack(spacing: 10) {
+            summaryTile(
+                titleKey: "library.summary.drives",
+                value: "\(storage.snapshot.sessionCount)",
+                systemImage: "car.fill",
+                accent: .coral
+            )
+            summaryTile(
+                titleKey: "library.summary.recorded",
+                value: Format.duration(storage.snapshot.totalRecordedDuration),
+                systemImage: "clock.fill",
+                accent: .orange
+            )
+            summaryTile(
+                titleKey: "library.summary.used",
+                value: Format.bytes(storage.snapshot.dashcamBytes),
+                systemImage: "internaldrive.fill",
+                accent: .teal
+            )
+        }
+    }
+
+    private func summaryTile(titleKey: String, value: String, systemImage: String, accent: Accent) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            IconBadge(systemImage: systemImage, accent: accent, size: 34)
+            Text(key: titleKey)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(verbatim: value)
+                .font(.system(size: 19, weight: .bold))
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .pastelCard(accent, padding: 12)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func dayHeader(for group: (key: String, value: [DriveSession])) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(verbatim: relativeDayName(for: group.value.first?.startedAt))
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(Theme.textPrimary)
+            Spacer()
+            Text(verbatim: group.key)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .textCase(nil)
+        .padding(.top, 10)
+        .padding(.bottom, 2)
+        .listRowInsets(EdgeInsets(top: 0, leading: 18, bottom: 0, trailing: 18))
+        .listRowBackground(Color.clear)
+    }
+
+    /// "Today" and "Yesterday" carry the day better than a date does; anything older is
+    /// named by its date alone, which the trailing label already shows.
+    private func relativeDayName(for date: Date?) -> String {
+        guard let date else { return "" }
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) { return L10n.t("library.day.today") }
+        if calendar.isDateInYesterday(date) { return L10n.t("library.day.yesterday") }
+        return date.formatted(.dateTime.weekday(.wide)).capitalized
     }
 
     @ViewBuilder
@@ -128,7 +265,8 @@ struct LibraryView: View {
             } label: {
                 HStack(spacing: 12) {
                     Image(systemName: selection.contains(session.id) ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(selection.contains(session.id) ? Theme.accent : Theme.textTertiary)
+                        .font(.system(size: 22))
+                        .foregroundStyle(selection.contains(session.id) ? Theme.coral : Theme.textTertiary)
                     SessionRow(session: session)
                 }
             }
@@ -140,6 +278,7 @@ struct LibraryView: View {
             } label: {
                 SessionRow(session: session)
             }
+            .buttonStyle(.plain)
             .accessibilityIdentifier("sessionRow")
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) {
@@ -158,75 +297,24 @@ struct LibraryView: View {
                         icon: { Image(systemName: session.hasProtectedContent ? "shield.slash" : "shield") }
                     )
                 }
-                .tint(Theme.warning)
+                .tint(Theme.coral)
             }
         }
-    }
-
-    private var storageSummary: some View {
-        HStack(spacing: 10) {
-            summaryTile(titleKey: "library.summary.used", value: Format.bytes(storage.snapshot.dashcamBytes))
-            summaryTile(titleKey: "library.summary.drives", value: "\(storage.snapshot.sessionCount)")
-            summaryTile(titleKey: "library.summary.recorded", value: Format.duration(storage.snapshot.totalRecordedDuration))
-        }
-    }
-
-    private func summaryTile(titleKey: String, value: String) -> some View {
-        VStack(spacing: 4) {
-            Text(verbatim: value)
-                .font(Theme.tileValue)
-                .foregroundStyle(Theme.textPrimary)
-            Text(key: titleKey)
-                .font(Theme.caption)
-                .foregroundStyle(Theme.textTertiary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(RoundedRectangle(cornerRadius: Theme.tileCorner, style: .continuous).fill(Theme.surface))
-        .accessibilityElement(children: .combine)
     }
 
     private var emptyState: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "film.stack")
-                .font(.system(size: 44, weight: .light))
-                .foregroundStyle(Theme.textTertiary)
+        VStack(spacing: 12) {
+            IconBadge(systemImage: "film.stack", accent: .blue, isFilled: false, size: 72)
             Text(key: shelf == .protected ? "library.empty.protected.title" : "library.empty.title")
-                .font(Theme.headline)
-                .foregroundStyle(Theme.textSecondary)
+                .font(Theme.cardTitle)
+                .foregroundStyle(Theme.textPrimary)
             Text(key: shelf == .protected ? "library.empty.protected.subtitle" : "library.empty.subtitle")
                 .font(Theme.body)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(Theme.textTertiary)
-                .padding(.horizontal, 40)
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.horizontal, 30)
         }
         .frame(maxWidth: .infinity)
-    }
-
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            if sessions.isEmpty {
-                EmptyView()
-            } else {
-                Button {
-                    isSelecting.toggle()
-                    selection.removeAll()
-                } label: {
-                    Text(key: isSelecting ? "common.done" : "common.select")
-                }
-            }
-        }
-        ToolbarItem(placement: .topBarLeading) {
-            if isSelecting {
-                Button(role: .destructive) {
-                    pendingDeletion = true
-                } label: {
-                    Text(key: "library.delete.action")
-                }
-                .disabled(selection.isEmpty)
-            }
-        }
     }
 
     // MARK: - Helpers
@@ -261,59 +349,77 @@ struct LibraryView: View {
     }
 }
 
-/// One drive in the list.
+private extension View {
+    /// A list row that carries no list furniture: no separator, no grey ground, no inset
+    /// of its own. Everything in this screen draws its own card.
+    func plainRow(top: CGFloat = 0, bottom: CGFloat = 0) -> some View {
+        listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: top, leading: 18, bottom: bottom, trailing: 18))
+    }
+}
+
+/// One drive in the list: a still from the road, the time it started, and the three
+/// figures that describe it.
 struct SessionRow: View {
     let session: DriveSession
 
     var body: some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
-                    Text(verbatim: Format.time(session.startedAt))
-                        .font(Theme.headline)
+            DriveThumbnail(session: session)
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(verbatim: Format.clock(session.startedAt))
+                        .font(.system(size: 19, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
-                    if session.hasProtectedContent {
-                        Image(systemName: "shield.fill")
-                            .font(.system(size: 12))
-                            .foregroundStyle(Theme.warning)
-                            .accessibilityLabel(Text(key: "a11y.protected"))
-                    }
-                    // Only the causes worth spotting from the list: a manual protect is
-                    // already implied by the shield.
-                    ForEach(distinctAutomaticOrigins, id: \.self) { origin in
-                        Image(systemName: origin.symbolName)
-                            .font(.system(size: 11))
-                            .foregroundStyle(origin == .impact ? Theme.accent : Theme.warning)
-                            .accessibilityLabel(Text(key: origin.titleKey))
+                    Spacer(minLength: 0)
+                    if let badge {
+                        Pill(text: L10n.t(badge.titleKey), accent: badge.accent, systemImage: badge.symbol)
                     }
                 }
-                Text(verbatim: subtitle)
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textTertiary)
+
+                HStack(spacing: 10) {
+                    factLabel(systemImage: "clock", text: Format.duration(session.duration))
+                    if let kilometres = session.distanceKilometres {
+                        factLabel(systemImage: "location", text: String(format: "%.1f km", kilometres))
+                    }
+                    factLabel(systemImage: "doc", text: Format.bytes(session.storageSize))
+                }
             }
-            Spacer()
-            Text(verbatim: Format.duration(session.duration))
-                .font(Theme.tileValue)
-                .foregroundStyle(Theme.textSecondary)
         }
-        .padding(.vertical, 4)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.surface)
+        )
+        .softShadow()
         .accessibilityElement(children: .combine)
     }
 
-    private var distinctAutomaticOrigins: [ProtectionOrigin] {
-        var seen: [ProtectionOrigin] = []
-        for event in session.activeEvents where event.origin == .impact || event.origin == .harshBraking {
-            if !seen.contains(event.origin) { seen.append(event.origin) }
+    private func factLabel(systemImage: String, text: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: systemImage)
+                .font(.system(size: 11, weight: .semibold))
+            Text(verbatim: text)
+                .font(.system(size: 13, weight: .medium))
+                .lineLimit(1)
         }
-        return seen
+        .foregroundStyle(Theme.textSecondary)
     }
 
-    private var subtitle: String {
-        var parts = [L10n.t("library.segments", session.segmentCount)]
-        if let kilometres = session.distanceKilometres {
-            parts.append(String(format: "%.1f km", kilometres))
+    /// One badge at most, and only when it says something the figures do not: why this
+    /// drive was kept. An impact outranks a harsh brake, which outranks a manual protect.
+    private var badge: (titleKey: String, accent: Accent, symbol: String)? {
+        let origins = session.activeEvents.map(\.origin)
+        if origins.contains(.impact) {
+            return ("event.origin.impact", .coral, "exclamationmark.triangle.fill")
         }
-        parts.append(Format.bytes(session.storageSize))
-        return parts.joined(separator: " · ")
+        if origins.contains(.harshBraking) {
+            return ("event.origin.braking", .orange, "exclamationmark.circle.fill")
+        }
+        if session.hasProtectedContent {
+            return ("library.shelf.protected", .green, "checkmark.shield.fill")
+        }
+        return nil
     }
 }

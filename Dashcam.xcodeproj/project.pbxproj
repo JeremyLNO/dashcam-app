@@ -55,6 +55,7 @@
 		23391C009FE0C344E4C5376C /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48890A4681B03AEECB35592D /* NotificationManager.swift */; };
 		8742A48B56CDDE96080ABA58 /* ReviewPrompter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD4959865B8D9D8D56B9D5D1 /* ReviewPrompter.swift */; };
 		E48F021D85937D4878D1627A /* BiometricGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A0E56408A63EE3794399F7 /* BiometricGate.swift */; };
+		53BB7E20EE8AED07497B36C4 /* DriveThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15431E69D859CE8AFBA876 /* DriveThumbnail.swift */; };
 		C6AC60F6F1D8A40F8F6CFC5D /* EventTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59F9D875821AD44A5F7ED95 /* EventTimeline.swift */; };
 		FFE0F441AB1E289FF9A988CA /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F3964E4D08D2954FD6C8F2 /* ExportSheet.swift */; };
 		44478A18CDBA1A8D363FCD2F /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58278D049C482CFBB9500259 /* LibraryView.swift */; };
@@ -137,6 +138,7 @@
 		89AE4EBE42399B57501F9121 /* ProofManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProofManifest.swift"; sourceTree = "<group>"; };
 		A19CCDAFF24B4B728D336A65 /* SessionComposition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionComposition.swift"; sourceTree = "<group>"; };
 		D9A0E56408A63EE3794399F7 /* BiometricGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BiometricGate.swift"; sourceTree = "<group>"; };
+		FD15431E69D859CE8AFBA876 /* DriveThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DriveThumbnail.swift"; sourceTree = "<group>"; };
 		A59F9D875821AD44A5F7ED95 /* EventTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventTimeline.swift"; sourceTree = "<group>"; };
 		11F3964E4D08D2954FD6C8F2 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExportSheet.swift"; sourceTree = "<group>"; };
 		58278D049C482CFBB9500259 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LibraryView.swift"; sourceTree = "<group>"; };
@@ -377,6 +379,7 @@
 			isa = PBXGroup;
 			children = (
 				D9A0E56408A63EE3794399F7 /* BiometricGate.swift */,
+				FD15431E69D859CE8AFBA876 /* DriveThumbnail.swift */,
 				A59F9D875821AD44A5F7ED95 /* EventTimeline.swift */,
 				11F3964E4D08D2954FD6C8F2 /* ExportSheet.swift */,
 				58278D049C482CFBB9500259 /* LibraryView.swift */,
@@ -773,6 +776,7 @@
 				23391C009FE0C344E4C5376C /* NotificationManager.swift in Sources */,
 				8742A48B56CDDE96080ABA58 /* ReviewPrompter.swift in Sources */,
 				E48F021D85937D4878D1627A /* BiometricGate.swift in Sources */,
+				53BB7E20EE8AED07497B36C4 /* DriveThumbnail.swift in Sources */,
 				C6AC60F6F1D8A40F8F6CFC5D /* EventTimeline.swift in Sources */,
 				FFE0F441AB1E289FF9A988CA /* ExportSheet.swift in Sources */,
 				44478A18CDBA1A8D363FCD2F /* LibraryView.swift in Sources */,

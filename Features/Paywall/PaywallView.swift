@@ -34,8 +34,9 @@ struct PaywallView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 22) {
+                VStack(spacing: 18) {
                     header
+                    benefits
                     if subscriptions.plans.isEmpty {
                         loadingOrError
                     } else {
@@ -45,8 +46,11 @@ struct PaywallView: View {
                     }
                     legalLinks
                 }
-                .padding(20)
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 26)
             }
+            .scrollIndicators(.hidden)
             .background(Theme.background)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -76,19 +80,44 @@ struct PaywallView: View {
 
     private var header: some View {
         VStack(spacing: 10) {
-            Image(systemName: "shield.lefthalf.filled")
-                .font(.system(size: 42, weight: .light))
-                .foregroundStyle(Theme.accent)
             Text(key: "paywall.title")
-                .font(Theme.title)
+                .font(.system(size: 36, weight: .heavy))
                 .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.7)
             Text(key: context.subtitleKey)
-                .font(Theme.body)
+                .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            PaywallIllustration()
+                .padding(.top, 4)
         }
-        .padding(.top, 8)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 4)
+    }
+
+    /// What the subscription is for, in three words each. Recording is free and says so
+    /// elsewhere; these are the three things the money buys.
+    private var benefits: some View {
+        HStack(spacing: 10) {
+            benefit(titleKey: "paywall.benefit.record", systemImage: "video.fill", accent: .coral)
+            benefit(titleKey: "paywall.benefit.protect", systemImage: "checkmark.shield.fill", accent: .blue)
+            benefit(titleKey: "paywall.benefit.export", systemImage: "square.and.arrow.up.fill", accent: .teal)
+        }
+    }
+
+    private func benefit(titleKey: String, systemImage: String, accent: Accent) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            IconBadge(systemImage: systemImage, accent: accent, size: 40)
+            Text(key: titleKey)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .pastelCard(accent, padding: 14)
     }
 
     private var plans: some View {
@@ -110,23 +139,26 @@ struct PaywallView: View {
            let plan = selectedPlan,
            let offer = plan.introductoryOffer,
            offer.paymentMode == .freeTrial {
-            VStack(spacing: 4) {
-                Text(verbatim: L10n.t("paywall.trial", offer.localizedPeriodDescription))
-                    .font(Theme.headline)
-                    .foregroundStyle(Theme.positive)
-                Text(verbatim: L10n.t("paywall.then_price", plan.displayPrice))
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textSecondary)
-                // Stated up front, because it is the one rule people would otherwise be
-                // surprised by after signing up.
-                Text(key: "paywall.trial.export_note")
-                    .font(Theme.caption)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(Theme.textTertiary)
-                    .padding(.top, 4)
+            HStack(alignment: .top, spacing: 12) {
+                IconBadge(systemImage: "gift.fill", accent: .blue, size: 44)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(verbatim: L10n.t("paywall.trial", offer.localizedPeriodDescription))
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(verbatim: L10n.t("paywall.then_price", plan.displayPrice))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Theme.textSecondary)
+                    // Stated up front, because it is the one rule people would otherwise
+                    // be surprised by after signing up.
+                    Text(key: "paywall.trial.export_note")
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 2)
+                }
+                Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity)
-            .dashcamCard()
+            .pastelCard(.blue, padding: 14)
         }
     }
 
@@ -141,7 +173,7 @@ struct PaywallView: View {
                     Text(key: subscriptions.isEligibleForIntroductoryOffer ? "paywall.cta.trial" : "paywall.cta")
                 }
             }
-            .buttonStyle(DriverButtonStyle(fill: Theme.accent))
+            .buttonStyle(PrimaryButtonStyle(fill: Theme.coral, height: 72))
             .disabled(isPurchasing || selectedPlan == nil)
             .accessibilityIdentifier("subscribeButton")
 
@@ -225,56 +257,118 @@ struct PaywallView: View {
     }
 }
 
-/// One selectable plan. The yearly row carries the "best value" flag as required.
+/// One selectable plan. The yearly row carries the "best value" flag as required, and
+/// the selected row is outlined in coral — the only outline in the app, because this is
+/// the one place where a choice has to be visible from across the screen.
 private struct PlanRow: View {
     let plan: SubscriptionPlan
     let isSelected: Bool
     let isBest: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
-                .font(.system(size: 20))
-                .foregroundStyle(isSelected ? Theme.accent : Theme.textTertiary)
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .strokeBorder(isSelected ? Theme.coral : Theme.separator, lineWidth: 2)
+                    .frame(width: 26, height: 26)
+                if isSelected {
+                    Circle().fill(Theme.coral).frame(width: 14, height: 14)
+                }
+            }
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 8) {
                     Text(key: plan.period.titleKey)
-                        .font(Theme.headline)
+                        .font(.system(size: 20, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                     if isBest {
                         Text(key: "paywall.best_value")
-                            .font(.system(size: 11, weight: .bold))
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
-                            .background(Capsule().fill(Theme.positive.opacity(0.2)))
-                            .foregroundStyle(Theme.positive)
+                            .font(.system(size: 11, weight: .heavy))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Capsule().fill(Theme.coral))
+                            .foregroundStyle(.white)
                     }
                 }
                 Text(verbatim: plan.product.description)
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
             }
 
-            Spacer()
+            Spacer(minLength: 8)
 
             Text(verbatim: plan.displayPrice)
-                .font(Theme.headline)
+                .font(.system(size: 20, weight: .heavy))
                 .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
-        .padding(14)
+        .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .fill(Theme.surface)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(isSelected ? Theme.coralSoft : Theme.surface)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .strokeBorder(isSelected ? Theme.accent : Color.clear, lineWidth: 2)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(isSelected ? Theme.coral : Color.clear, lineWidth: 2)
         )
+        .softShadow()
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
         .accessibilityIdentifier("plan-\(plan.period.rawValue)")
+    }
+}
+
+/// A phone in a windscreen cradle, filming. Shapes only — nothing to re-export.
+struct PaywallIllustration: View {
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Theme.orangeSoft)
+                .frame(width: 210, height: 150)
+                .blur(radius: 0.5)
+
+            VStack(spacing: 0) {
+                // The cradle arm.
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(Color(hex: 0x2C3440))
+                    .frame(width: 74, height: 18)
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(Color(hex: 0x2C3440))
+                    .frame(width: 14, height: 10)
+
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [Theme.blue.opacity(0.8), Theme.orange.opacity(0.9)],
+                                       startPoint: .top, endPoint: .bottom)
+                    )
+                    .frame(width: 200, height: 108)
+                    .overlay(alignment: .bottom) {
+                        Trapezoid().fill(Color(hex: 0x3A3F4B)).frame(height: 52)
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .overlay(alignment: .topLeading) {
+                        HStack(spacing: 5) {
+                            Circle().fill(Theme.coral).frame(width: 7, height: 7)
+                            Text(key: "rec.on")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(Color(hex: 0x08264A).opacity(0.7)))
+                        .padding(8)
+                    }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(Color(hex: 0x2C3440), lineWidth: 5)
+                    )
+                    .softShadow()
+            }
+        }
+        .frame(height: 170)
+        .accessibilityHidden(true)
     }
 }

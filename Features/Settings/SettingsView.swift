@@ -1,6 +1,10 @@
 import SwiftUI
 
 /// Everything configurable, on the phone — never in the car.
+///
+/// The screen is built as a stack of coloured blocks rather than one long grey list: a
+/// driver looking for the storage cap should find it by the colour of the block, before
+/// reading a single heading.
 struct SettingsView: View {
     @EnvironmentObject private var environment: AppEnvironment
     @EnvironmentObject private var settingsStore: SettingsStore
@@ -15,20 +19,27 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                subscriptionSection
-                recordingSection
-                storageSection
-                safetySection
-                metadataSection
-                appearanceSection
-                notificationsSection
-                supportSection
-                brandFooter
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    PageHeader(titleKey: "tab.settings", subtitleKey: "settings.subtitle")
+                        .padding(.bottom, 2)
+
+                    subscriptionSection
+                    recordingSection
+                    safetySection
+                    storageSection
+                    privacySection
+                    appSection
+                    supportSection
+                    brandFooter
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 6)
+                .padding(.bottom, 30)
             }
-            .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
             .background(Theme.background)
-            .navigationTitle(Text(key: "tab.settings"))
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showPaywall) {
                 PaywallView(context: .general)
                     .environmentObject(environment)
@@ -40,30 +51,38 @@ struct SettingsView: View {
     // MARK: - Subscription
 
     private var subscriptionSection: some View {
-        Section {
-            HStack {
-                Text(key: "settings.subscription.status")
-                Spacer()
+        SettingsSection(
+            titleKey: "settings.section.subscription",
+            subtitleKey: "settings.subscription.subtitle",
+            systemImage: "crown.fill",
+            accent: .violet
+        ) {
+            SettingsRow(titleKey: "settings.subscription.status") {
                 Text(key: subscriptionStatusKey)
-                    .foregroundStyle(subscriptions.state.canExport ? Theme.positive : Theme.textSecondary)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(subscriptions.state.canExport ? Theme.success : Theme.textSecondary)
             }
+
+            if subscriptions.state.isInIntroductoryOffer {
+                SettingsNote(textKey: "settings.subscription.trial_footer")
+            }
+
             if !subscriptions.state.canExport {
+                Divider().background(Theme.separator)
                 Button { showPaywall = true } label: {
                     Text(key: subscriptions.state.hasActiveEntitlement ? "settings.subscription.upgrade" : "settings.subscription.subscribe")
                 }
+                .buttonStyle(SoftButtonStyle(fill: Theme.violet, foreground: .white, height: 52))
                 .accessibilityIdentifier("openPaywall")
+                .padding(.top, 4)
             }
+
             Button {
                 Task { await subscriptions.restore() }
             } label: {
                 Text(key: "paywall.restore")
             }
-        } header: {
-            Text(key: "settings.section.subscription")
-        } footer: {
-            if subscriptions.state.isInIntroductoryOffer {
-                Text(key: "settings.subscription.trial_footer")
-            }
+            .buttonStyle(SoftButtonStyle(fill: Theme.violetSoft, foreground: Theme.violet, height: 48, font: .system(size: 16, weight: .bold)))
         }
     }
 
@@ -81,217 +100,280 @@ struct SettingsView: View {
     // MARK: - Recording
 
     private var recordingSection: some View {
-        Section {
-            Picker(selection: qualityBinding) {
-                ForEach(VideoQuality.allCases) { quality in
-                    VStack(alignment: .leading) {
-                        Text(key: quality.titleKey)
-                        Text(verbatim: Format.gigabytesPerHour(quality.gigabytesPerHour))
-                            .font(Theme.caption)
-                            .foregroundStyle(Theme.textTertiary)
-                    }
-                    .tag(quality)
-                }
-            } label: {
-                Text(key: "settings.quality")
-            }
-            // A menu-style picker collapses each row to its title, which would hide the
-            // GB/hour figure that makes the choice meaningful.
-            .pickerStyle(.navigationLink)
-
-            Picker(selection: binding(\.segmentDuration)) {
-                ForEach(SegmentDuration.allCases) { duration in
-                    Text(key: duration.titleKey).tag(duration)
-                }
-            } label: {
-                Text(key: "settings.segment")
-            }
-
-            Toggle(isOn: frontCameraBinding) {
-                Text(key: "settings.front_camera")
-            }
+        SettingsSection(
+            titleKey: "settings.section.recording",
+            subtitleKey: "settings.recording.subtitle",
+            systemImage: "video.fill",
+            accent: .coral
+        ) {
+            // A navigation link rather than a menu: each quality tier has to state its
+            // cost in GB per hour, and a menu collapses every option to its title.
+            OptionPickerRow(
+                titleKey: "settings.quality",
+                systemImage: "sparkles",
+                accent: .violet,
+                options: VideoQuality.allCases,
+                detail: { Format.gigabytesPerHour($0.gigabytesPerHour) },
+                selection: qualityBinding
+            )
+            OptionPickerRow(
+                titleKey: "settings.segment",
+                systemImage: "scissors",
+                accent: .orange,
+                options: SegmentDuration.allCases,
+                selection: binding(\.segmentDuration)
+            )
+            ToggleRow(
+                titleKey: "settings.front_camera",
+                systemImage: "person.fill",
+                accent: .blue,
+                isOn: frontCameraBinding
+            )
             .disabled(!capture.status.isDual && !settingsStore.settings.frontCameraEnabled)
-
-            Toggle(isOn: audioBinding) {
-                Text(key: "settings.audio")
-            }
-
-            Toggle(isOn: binding(\.autoStartOnLaunch)) {
-                Text(key: "settings.autostart")
-            }
-
-            Toggle(isOn: binding(\.startOnCarPlayConnect)) {
-                Text(key: "settings.carplay_autostart")
-            }
+            ToggleRow(
+                titleKey: "settings.audio",
+                systemImage: "mic.fill",
+                accent: .teal,
+                isOn: audioBinding
+            )
+            ToggleRow(
+                titleKey: "settings.autostart",
+                systemImage: "bolt.fill",
+                accent: .orange,
+                isOn: binding(\.autoStartOnLaunch)
+            )
+            ToggleRow(
+                titleKey: "settings.carplay_autostart",
+                systemImage: "car.fill",
+                accent: .coral,
+                isOn: binding(\.startOnCarPlayConnect)
+            )
             .accessibilityIdentifier("carPlayAutoStart")
-        } header: {
-            Text(key: "settings.section.recording")
-        } footer: {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(key: capture.status.isDual ? "settings.recording.footer" : "settings.recording.footer.single")
-                Text(key: "settings.carplay_autostart.footer")
-            }
-        }
-    }
 
-    // MARK: - Storage
-
-    private var storageSection: some View {
-        Section {
-            Picker(selection: binding(\.retention)) {
-                ForEach(RetentionPolicy.allCases) { policy in
-                    Text(key: policy.titleKey).tag(policy)
-                }
-            } label: {
-                Text(key: "settings.retention")
-            }
-
-            Picker(selection: binding(\.storageLimit)) {
-                ForEach(StorageLimit.allCases) { limit in
-                    Text(key: limit.titleKey).tag(limit)
-                }
-            } label: {
-                Text(key: "settings.storage_limit")
-            }
-
-            LabeledContent {
-                Text(verbatim: Format.bytes(storage.snapshot.dashcamBytes))
-            } label: {
-                Text(key: "settings.storage_used")
-            }
-
-            LabeledContent {
-                Text(verbatim: Format.bytes(storage.snapshot.protectedBytes))
-            } label: {
-                Text(key: "settings.storage_protected")
-            }
-
-            LabeledContent {
-                Text(verbatim: Format.bytes(storage.snapshot.freeBytes))
-            } label: {
-                Text(key: "settings.storage_free")
-            }
-        } header: {
-            Text(key: "settings.section.storage")
-        } footer: {
-            Text(key: "settings.storage.footer")
+            SettingsNote(textKey: capture.status.isDual ? "settings.recording.footer" : "settings.recording.footer.single")
+            SettingsNote(textKey: "settings.carplay_autostart.footer")
         }
     }
 
     // MARK: - Safety
 
     private var safetySection: some View {
-        Section {
-            Toggle(isOn: binding(\.impactDetectionEnabled)) {
-                Text(key: "settings.impact")
-            }
+        SettingsSection(
+            titleKey: "settings.section.safety",
+            subtitleKey: "settings.safety.subtitle",
+            systemImage: "shield.fill",
+            accent: .blue
+        ) {
+            ToggleRow(
+                titleKey: "settings.impact",
+                systemImage: "car.side.rear.and.collision.and.car.side.front",
+                accent: .coral,
+                isOn: binding(\.impactDetectionEnabled)
+            )
             if settingsStore.settings.impactDetectionEnabled {
-                Picker(selection: binding(\.shockSensitivity)) {
-                    ForEach(ShockSensitivity.allCases) { sensitivity in
-                        Text(key: sensitivity.titleKey).tag(sensitivity)
-                    }
-                } label: {
-                    Text(key: "settings.sensitivity")
-                }
-                Toggle(isOn: binding(\.harshBrakingDetectionEnabled)) {
-                    Text(key: "settings.braking")
-                }
+                OptionPickerRow(
+                    titleKey: "settings.sensitivity",
+                    systemImage: "dial.high.fill",
+                    accent: .orange,
+                    options: ShockSensitivity.allCases,
+                    selection: binding(\.shockSensitivity)
+                )
+                ToggleRow(
+                    titleKey: "settings.braking",
+                    systemImage: "exclamationmark.circle.fill",
+                    accent: .blue,
+                    isOn: binding(\.harshBrakingDetectionEnabled)
+                )
             }
-            if biometricsAvailable {
-                Toggle(isOn: binding(\.requireBiometricUnlock)) {
-                    Text(key: "settings.biometric")
-                }
-                .accessibilityIdentifier("biometricToggle")
-            }
-            Picker(selection: binding(\.discreetDelay)) {
-                ForEach(DiscreetDelay.allCases) { delay in
-                    Text(key: delay.titleKey).tag(delay)
-                }
-            } label: {
-                Text(key: "settings.discreet")
-            }
-        } header: {
-            Text(key: "settings.section.safety")
-        } footer: {
-            Text(key: "settings.safety.footer")
+            OptionPickerRow(
+                titleKey: "settings.discreet",
+                systemImage: "moon.fill",
+                accent: .violet,
+                options: DiscreetDelay.allCases,
+                selection: binding(\.discreetDelay)
+            )
+
+            SettingsNote(textKey: "settings.safety.footer")
         }
     }
 
-    // MARK: - Metadata
+    // MARK: - Storage
 
-    private var metadataSection: some View {
-        Section {
-            Toggle(isOn: locationBinding) {
-                Text(key: "settings.location")
+    private var storageSection: some View {
+        SettingsSection(
+            titleKey: "settings.section.storage",
+            subtitleKey: "settings.storage.subtitle",
+            systemImage: "internaldrive.fill",
+            accent: .teal
+        ) {
+            storageBar
+
+            OptionPickerRow(
+                titleKey: "settings.retention",
+                systemImage: "calendar",
+                accent: .orange,
+                options: RetentionPolicy.allCases,
+                selection: binding(\.retention)
+            )
+            OptionPickerRow(
+                titleKey: "settings.storage_limit",
+                systemImage: "gauge.with.dots.needle.33percent",
+                accent: .teal,
+                options: StorageLimit.allCases,
+                selection: binding(\.storageLimit)
+            )
+            SettingsRow(titleKey: "settings.storage_protected") {
+                Text(verbatim: Format.bytes(storage.snapshot.protectedBytes))
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(Theme.textPrimary)
             }
-            Toggle(isOn: binding(\.overlayEnabled)) {
-                Text(key: "settings.overlay")
+
+            SettingsNote(textKey: "settings.storage.footer")
+        }
+    }
+
+    /// How full the phone is, drawn rather than spelled out — the one figure here that is
+    /// about proportion, not about a setting.
+    private var storageBar: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(key: "settings.storage_used")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer()
+                Text(verbatim: L10n.t(
+                    "settings.storage_free_of",
+                    Format.bytes(storage.snapshot.freeBytes),
+                    Format.bytes(storage.snapshot.totalBytes)
+                ))
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
             }
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Theme.surfaceElevated)
+                    Capsule()
+                        .fill(storage.snapshot.isCriticallyLow ? Theme.danger : Theme.teal)
+                        .frame(width: max(6, proxy.size.width * usedFraction))
+                }
+            }
+            .frame(height: 10)
+
+            Text(verbatim: L10n.t("settings.storage_percent", Int((usedFraction * 100).rounded())))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .padding(.bottom, 4)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var usedFraction: Double {
+        let total = Double(storage.snapshot.totalBytes)
+        guard total > 0 else { return 0 }
+        return min(1, max(0, Double(storage.snapshot.totalBytes - storage.snapshot.freeBytes) / total))
+    }
+
+    // MARK: - Privacy & metadata
+
+    private var privacySection: some View {
+        SettingsSection(
+            titleKey: "settings.section.metadata",
+            subtitleKey: "settings.privacy.subtitle",
+            systemImage: "lock.fill",
+            accent: .orange
+        ) {
+            ToggleRow(
+                titleKey: "settings.location",
+                systemImage: "location.fill",
+                accent: .teal,
+                isOn: locationBinding
+            )
+            if biometricsAvailable {
+                ToggleRow(
+                    titleKey: "settings.biometric",
+                    systemImage: "faceid",
+                    accent: .orange,
+                    isOn: binding(\.requireBiometricUnlock)
+                )
+                .accessibilityIdentifier("biometricToggle")
+            }
+            ToggleRow(
+                titleKey: "settings.overlay",
+                systemImage: "text.below.photo.fill",
+                accent: .violet,
+                isOn: binding(\.overlayEnabled)
+            )
             if settingsStore.settings.overlayEnabled {
                 overlayToggle(.date, key: "settings.overlay.date")
                 overlayToggle(.time, key: "settings.overlay.time")
                 overlayToggle(.location, key: "settings.overlay.location")
                 overlayToggle(.speed, key: "settings.overlay.speed")
             }
-        } header: {
-            Text(key: "settings.section.metadata")
-        } footer: {
-            Text(key: "settings.metadata.footer")
+
+            SettingsNote(textKey: "settings.metadata.footer")
         }
     }
 
     private func overlayToggle(_ field: OverlayFields, key: String) -> some View {
-        Toggle(isOn: Binding(
-            get: { settingsStore.settings.overlayFields.contains(field) },
-            set: { isOn in
-                var fields = settingsStore.settings.overlayFields
-                if isOn { fields.insert(field) } else { fields.remove(field) }
-                settingsStore.settings.overlayFields = fields
-            }
-        )) {
-            Text(key: key)
-        }
-        .padding(.leading, 12)
-    }
-
-    // MARK: - Appearance / language
-
-    private var appearanceSection: some View {
-        Section {
-            Picker(selection: Binding(
-                get: { language.language },
-                set: { language.select($0) }
-            )) {
-                Text(key: "language.system").tag(AppLanguage.system)
-                ForEach(AppLanguage.concrete) { option in
-                    Text(verbatim: option.nativeName).tag(option)
-                }
-            } label: {
-                Text(key: "settings.language")
-            }
-            .accessibilityIdentifier("languagePicker")
-        } header: {
-            Text(key: "settings.section.language")
-        } footer: {
-            Text(key: "settings.language.footer")
-        }
-    }
-
-    // MARK: - Notifications
-
-    private var notificationsSection: some View {
-        Section {
-            Toggle(isOn: Binding(
-                get: { notifications.isEnabled },
+        ToggleRow(
+            titleKey: key,
+            systemImage: "checkmark",
+            accent: .violet,
+            isIndented: true,
+            isOn: Binding(
+                get: { settingsStore.settings.overlayFields.contains(field) },
                 set: { isOn in
-                    Task {
-                        if isOn { await notifications.enable() }
-                        else { notifications.disable() }
-                    }
+                    var fields = settingsStore.settings.overlayFields
+                    if isOn { fields.insert(field) } else { fields.remove(field) }
+                    settingsStore.settings.overlayFields = fields
                 }
-            )) {
-                Text(key: "settings.notifications")
+            )
+        )
+    }
+
+    // MARK: - Language & notifications
+
+    private var appSection: some View {
+        SettingsSection(
+            titleKey: "settings.section.language",
+            subtitleKey: "settings.app.subtitle",
+            systemImage: "globe",
+            accent: .blue
+        ) {
+            SettingsRow(titleKey: "settings.language", systemImage: "character.bubble.fill", accent: .blue) {
+                Picker(selection: Binding(
+                    get: { language.language },
+                    set: { language.select($0) }
+                )) {
+                    Text(key: "language.system").tag(AppLanguage.system)
+                    ForEach(AppLanguage.concrete) { option in
+                        Text(verbatim: option.nativeName).tag(option)
+                    }
+                } label: {
+                    Text(key: "settings.language")
+                }
+                .pickerStyle(.menu)
+                .tint(Theme.blue)
+                .accessibilityIdentifier("languagePicker")
             }
+
+            ToggleRow(
+                titleKey: "settings.notifications",
+                systemImage: "bell.fill",
+                accent: .orange,
+                isOn: Binding(
+                    get: { notifications.isEnabled },
+                    set: { isOn in
+                        Task {
+                            if isOn { await notifications.enable() }
+                            else { notifications.disable() }
+                        }
+                    }
+                )
+            )
             .disabled(!notifications.isPushConfigured)
 
             if let version = notifications.availableUpdateVersion {
@@ -301,76 +383,89 @@ struct SettingsView: View {
                         openURL(url)
                     }
                 } label: {
-                    LabeledContent {
-                        Text(verbatim: version).foregroundStyle(Theme.positive)
-                    } label: {
-                        Text(key: "settings.update_available")
+                    SettingsRow(titleKey: "settings.update_available", systemImage: "arrow.down.circle.fill", accent: .green) {
+                        Text(verbatim: version)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(Theme.success)
                     }
                 }
+                .buttonStyle(.plain)
             }
-        } header: {
-            Text(key: "settings.section.notifications")
-        } footer: {
-            Text(key: notifications.isPushConfigured ? "settings.notifications.footer" : "settings.notifications.unconfigured")
+
+            SettingsNote(textKey: "settings.language.footer")
         }
     }
 
     // MARK: - Support & brand
 
     private var supportSection: some View {
-        Section {
+        SettingsSection(
+            titleKey: "settings.section.support",
+            subtitleKey: "settings.support.subtitle",
+            systemImage: "lifepreserver.fill",
+            accent: .violet
+        ) {
             Button {
                 if let url = environment.configuration.supportURL { openURL(url) }
             } label: {
-                Label(
-                    title: { Text(key: "settings.support") },
-                    icon: { Image(systemName: "lightbulb.max") }
-                )
+                SettingsRow(titleKey: "settings.support", systemImage: "lightbulb.max.fill", accent: .orange) {
+                    chevron
+                }
             }
+            .buttonStyle(.plain)
             .accessibilityIdentifier("supportLink")
 
             Button {
                 if let url = environment.configuration.privacyURL { openURL(url) }
             } label: {
-                Label(title: { Text(key: "paywall.privacy") }, icon: { Image(systemName: "hand.raised") })
+                SettingsRow(titleKey: "paywall.privacy", systemImage: "hand.raised.fill", accent: .blue) {
+                    chevron
+                }
             }
+            .buttonStyle(.plain)
+
             Button {
                 if let url = environment.configuration.termsURL { openURL(url) }
             } label: {
-                Label(title: { Text(key: "paywall.terms") }, icon: { Image(systemName: "doc.text") })
+                SettingsRow(titleKey: "paywall.terms", systemImage: "doc.text.fill", accent: .teal) {
+                    chevron
+                }
             }
+            .buttonStyle(.plain)
 
-            LabeledContent {
+            SettingsRow(titleKey: "settings.version", systemImage: "number", accent: .violet) {
                 Text(verbatim: appVersion)
-            } label: {
-                Text(key: "settings.version")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Theme.textSecondary)
             }
-        } header: {
-            Text(key: "settings.section.support")
         }
     }
 
+    private var chevron: some View {
+        Image(systemName: "chevron.right")
+            .font(.system(size: 14, weight: .bold))
+            .foregroundStyle(Theme.textTertiary)
+    }
+
     private var brandFooter: some View {
-        Section {
-            Button {
-                if let url = environment.configuration.brandURL { openURL(url) }
-            } label: {
-                VStack(spacing: 8) {
-                    Image("CrazyBeeLabsLogo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 44)
-                    Text(verbatim: "crazybeelabs.com")
-                        .font(Theme.caption)
-                        .foregroundStyle(Theme.brand)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+        Button {
+            if let url = environment.configuration.brandURL { openURL(url) }
+        } label: {
+            VStack(spacing: 8) {
+                Image("CrazyBeeLabsLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 46)
+                Text(verbatim: "crazybeelabs.com")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Theme.brand)
             }
-            .accessibilityIdentifier("brandLink")
-            .accessibilityLabel(Text(key: "a11y.brand_link"))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
         }
-        .listRowBackground(Color.clear)
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("brandLink")
+        .accessibilityLabel(Text(key: "a11y.brand_link"))
     }
 
     private var appVersion: String {
@@ -438,3 +533,200 @@ struct SettingsView: View {
         )
     }
 }
+
+// MARK: - Section furniture
+
+/// A category: a coloured ground, a titled header, and a white card holding the rows.
+struct SettingsSection<Content: View>: View {
+    let titleKey: String
+    var subtitleKey: String?
+    let systemImage: String
+    let accent: Accent
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                IconBadge(systemImage: systemImage, accent: accent, size: 44)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(key: titleKey)
+                        .font(.system(size: 21, weight: .bold))
+                        .foregroundStyle(Theme.textPrimary)
+                    if let subtitleKey {
+                        Text(key: subtitleKey)
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 4)
+
+            VStack(spacing: 10) {
+                content()
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.surface)
+            )
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: Theme.cardCorner, style: .continuous).fill(accent.soft)
+        )
+    }
+}
+
+/// One line inside a section: an optional icon, a title, and whatever the setting shows
+/// on its right.
+struct SettingsRow<Trailing: View>: View {
+    let titleKey: String
+    var systemImage: String?
+    var accent: Accent = .blue
+    var isIndented: Bool = false
+    @ViewBuilder var trailing: () -> Trailing
+
+    var body: some View {
+        HStack(spacing: 12) {
+            if let systemImage {
+                IconBadge(systemImage: systemImage, accent: accent, isFilled: false, size: isIndented ? 28 : 34)
+            }
+            Text(key: titleKey)
+                .font(.system(size: isIndented ? 15 : 16, weight: isIndented ? .regular : .semibold))
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
+            Spacer(minLength: 8)
+            trailing()
+        }
+        .padding(.leading, isIndented ? 14 : 0)
+        .frame(minHeight: 40)
+    }
+}
+
+/// A switch. Green when on, because green is the app's word for "granted".
+struct ToggleRow: View {
+    let titleKey: String
+    let systemImage: String
+    var accent: Accent = .blue
+    var isIndented: Bool = false
+    @Binding var isOn: Bool
+
+    var body: some View {
+        SettingsRow(titleKey: titleKey, systemImage: systemImage, accent: accent, isIndented: isIndented) {
+            Toggle("", isOn: $isOn)
+                .labelsHidden()
+                .tint(Theme.success)
+        }
+    }
+}
+
+/// A choice that opens its own screen. The options are listed with their consequences —
+/// a quality tier is meaningless without the gigabytes per hour beside it.
+struct OptionPickerRow<Option: SettingsOption>: View {
+    let titleKey: String
+    let systemImage: String
+    var accent: Accent = .blue
+    let options: [Option]
+    var detail: ((Option) -> String)?
+    @Binding var selection: Option
+
+    var body: some View {
+        NavigationLink {
+            OptionPickerScreen(titleKey: titleKey, options: options, detail: detail, selection: $selection)
+        } label: {
+            SettingsRow(titleKey: titleKey, systemImage: systemImage, accent: accent) {
+                HStack(spacing: 6) {
+                    Text(key: selection.titleKey)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(accent.strong)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        // Combined and named after the setting: left to itself the row answers to
+        // "Quality, Standard — 1080p", which is nobody's idea of what the control is
+        // called — neither VoiceOver's nor a test's.
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(key: titleKey))
+        .accessibilityValue(Text(key: selection.titleKey))
+    }
+}
+
+/// The list of options behind an `OptionPickerRow`.
+struct OptionPickerScreen<Option: SettingsOption>: View {
+    let titleKey: String
+    let options: [Option]
+    var detail: ((Option) -> String)?
+    @Binding var selection: Option
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 10) {
+                ForEach(options) { option in
+                    Button {
+                        selection = option
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(key: option.titleKey)
+                                    .font(.system(size: 17, weight: .semibold))
+                                    .foregroundStyle(Theme.textPrimary)
+                                if let detail {
+                                    Text(verbatim: detail(option))
+                                        .font(.system(size: 14, weight: .regular))
+                                        .foregroundStyle(Theme.textSecondary)
+                                }
+                            }
+                            Spacer(minLength: 8)
+                            if option.id == selection.id {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(Theme.success)
+                            }
+                        }
+                        .dashcamCard(padding: 16, corner: 18)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(18)
+        }
+        .background(Theme.background)
+        .navigationTitle(Text(key: titleKey))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// A quiet explanatory line under a group of settings.
+struct SettingsNote: View {
+    let textKey: String
+
+    var body: some View {
+        Text(key: textKey)
+            .font(.system(size: 13, weight: .regular))
+            .foregroundStyle(Theme.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+/// What an option needs to be listed: an identity and a name.
+protocol SettingsOption: Identifiable, Hashable {
+    var titleKey: String { get }
+}
+
+extension VideoQuality: SettingsOption {}
+extension SegmentDuration: SettingsOption {}
+extension RetentionPolicy: SettingsOption {}
+extension StorageLimit: SettingsOption {}
+extension ShockSensitivity: SettingsOption {}
+extension DiscreetDelay: SettingsOption {}

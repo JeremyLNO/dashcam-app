@@ -6,22 +6,22 @@ final class OnboardingUITests: UITestCase {
     func testOnboardingWalksThroughEveryScreenBeforeAskingForTheCamera() {
         launch(skipOnboarding: false)
 
-        XCTAssertTrue(app.staticTexts["TURN YOUR IPHONE INTO A DASHCAM"].waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(app.staticTexts["Turn your iPhone into a dashcam"].waitForExistence(timeout: Self.launchTimeout))
 
         let advance = app.buttons["onboardingContinue"]
         XCTAssertTrue(advance.exists)
 
         advance.tap()
-        XCTAssertTrue(app.staticTexts["YOUR DRIVES. YOUR EVIDENCE."].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Two cameras. One drive."].waitForExistence(timeout: 3))
 
         advance.tap()
-        XCTAssertTrue(app.staticTexts["AUTOMATIC PROTECTION"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Important moments protect themselves"].waitForExistence(timeout: 3))
 
         advance.tap()
-        XCTAssertTrue(app.staticTexts["PRIVACY FIRST"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Your videos stay yours"].waitForExistence(timeout: 3))
 
         advance.tap()
-        XCTAssertTrue(app.staticTexts["CAMERA ACCESS"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["One permission to start"].waitForExistence(timeout: 3))
         // Only now is there anything that triggers a permission prompt.
         XCTAssertTrue(app.buttons["Not now"].exists)
     }
@@ -34,12 +34,12 @@ final class OnboardingUITests: UITestCase {
         for _ in 0..<4 { advance.tap() }
         app.buttons["Not now"].tap()
 
-        XCTAssertTrue(tab("Videos").waitForExistence(timeout: 5))
+        XCTAssertTrue(drivesTab.waitForExistence(timeout: 5))
     }
 
     func testOnboardingIsNotShownAgainOnceCompleted() {
         launch(skipOnboarding: true)
         waitForTabBar()
-        XCTAssertFalse(app.staticTexts["TURN YOUR IPHONE INTO A DASHCAM"].exists)
+        XCTAssertFalse(app.staticTexts["Turn your iPhone into a dashcam"].exists)
     }
 }

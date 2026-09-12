@@ -4,7 +4,7 @@ final class LibraryUITests: UITestCase {
     func testEmptyLibraryExplainsItself() {
         launch(seedLibrary: false)
         waitForTabBar()
-        tab("Videos").tap()
+        drivesTab.tap()
 
         XCTAssertTrue(app.staticTexts["No drives yet"].waitForExistence(timeout: 10))
     }
@@ -12,7 +12,7 @@ final class LibraryUITests: UITestCase {
     func testSeededDrivesAppearGroupedWithTheirSummary() {
         launch(seedLibrary: true)
         waitForTabBar()
-        tab("Videos").tap()
+        drivesTab.tap()
 
         XCTAssertTrue(app.staticTexts["Used"].waitForExistence(timeout: Self.launchTimeout))
         XCTAssertTrue(app.staticTexts["Drives"].exists)
@@ -22,13 +22,13 @@ final class LibraryUITests: UITestCase {
     func testOpeningADriveShowsItsDetailAndPlayer() {
         launch(seedLibrary: true)
         waitForTabBar()
-        tab("Videos").tap()
+        drivesTab.tap()
 
         XCTAssertTrue(firstSessionRow.waitForExistence(timeout: Self.launchTimeout))
         firstSessionRow.tap()
 
         XCTAssertTrue(app.staticTexts["Duration"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["Segments"].exists)
+        XCTAssertTrue(app.staticTexts["Trip Stats"].exists)
         XCTAssertTrue(app.buttons["exportButton"].exists)
     }
 
@@ -37,7 +37,7 @@ final class LibraryUITests: UITestCase {
     func testDeletingFromTheDetailScreenReturnsToTheList() {
         launch(seedLibrary: true)
         waitForTabBar()
-        tab("Videos").tap()
+        drivesTab.tap()
 
         XCTAssertTrue(firstSessionRow.waitForExistence(timeout: Self.launchTimeout))
         let rowsBefore = app.descendants(matching: .any).matching(identifier: "sessionRow").count
@@ -47,8 +47,9 @@ final class LibraryUITests: UITestCase {
         XCTAssertTrue(delete.waitForExistence(timeout: 10))
         delete.tap()
 
-        // Back on the library: its title is there again, and one drive fewer.
-        XCTAssertTrue(app.navigationBars["Videos"].waitForExistence(timeout: 10),
+        // Back on the library: its own title is there again, and one drive fewer. The
+        // screen draws its header itself, so there is no navigation bar to look for.
+        XCTAssertTrue(app.staticTexts["Your recorded trips and events."].waitForExistence(timeout: 10),
                       "the detail screen did not pop after deleting")
         XCTAssertFalse(delete.exists, "still on the detail screen")
 
@@ -59,7 +60,7 @@ final class LibraryUITests: UITestCase {
     func testSelectionModeEnablesMultipleDeletion() {
         launch(seedLibrary: true)
         waitForTabBar()
-        tab("Videos").tap()
+        drivesTab.tap()
 
         let select = app.buttons["Select"]
         XCTAssertTrue(select.waitForExistence(timeout: Self.launchTimeout))

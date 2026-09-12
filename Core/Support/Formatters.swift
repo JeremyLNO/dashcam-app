@@ -61,6 +61,18 @@ enum Format {
     static func date(_ date: Date) -> String { dateFormatter.string(from: date) }
     static func time(_ date: Date) -> String { timeFormatter.string(from: date) }
 
+    /// Hours and minutes only. What a drive is called in conversation — "the one at
+    /// 8:14" — where the seconds in `time(_:)` only matter to a timestamp burned into a
+    /// frame.
+    private static let clockFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
+    static func clock(_ date: Date) -> String { clockFormatter.string(from: date) }
+
     /// Compact stamp burned into an exported frame, e.g. "12/09/2026 14:03:22".
     static func overlayStamp(_ date: Date, fields: OverlayFields) -> String {
         var parts: [String] = []

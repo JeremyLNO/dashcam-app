@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Tab shell, onboarding gate, and the two things that can interrupt: the satisfaction
 /// prompt and the paywall.
@@ -12,7 +13,9 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
 
-    @State private var selectedTab = 0
+    /// Record sits in the middle, and the app opens on it: it is the only screen anyone
+    /// needs before setting off.
+    @State private var selectedTab = 1
 
     var body: some View {
         Group {
@@ -25,7 +28,12 @@ struct RootView: View {
         // Rebuilding the tree on a language change is what makes the switch immediate:
         // the strings are read at render time from the selected bundle.
         .id(language.effectiveLanguage.rawValue)
-        .tint(Theme.accent)
+        .tint(Theme.coral)
+        // The palette is a light one, top to bottom. Following the system into dark mode
+        // would leave half the app cream and the other half charcoal, and every pastel
+        // ground unreadable — so the appearance is fixed rather than inherited.
+        .preferredColorScheme(.light)
+        .onAppear { Self.applyBarAppearance() }
         .onChange(of: scenePhase) { _, phase in
             handle(phase: phase)
         }
@@ -41,21 +49,21 @@ struct RootView: View {
 
     private var tabs: some View {
         TabView(selection: $selectedTab) {
-            RecordingView()
+            LibraryView()
                 .tabItem {
-                    Label(title: { Text(key: "tab.record") }, icon: { Image(systemName: "record.circle") })
+                    Label(title: { Text(key: "tab.videos") }, icon: { Image(systemName: "folder.fill") })
                 }
                 .tag(0)
 
-            LibraryView()
+            RecordingView()
                 .tabItem {
-                    Label(title: { Text(key: "tab.videos") }, icon: { Image(systemName: "film.stack") })
+                    Label(title: { Text(key: "tab.record") }, icon: { Image(systemName: "record.circle") })
                 }
                 .tag(1)
 
             SettingsView()
                 .tabItem {
-                    Label(title: { Text(key: "tab.settings") }, icon: { Image(systemName: "gearshape") })
+                    Label(title: { Text(key: "tab.settings") }, icon: { Image(systemName: "gearshape.fill") })
                 }
                 .tag(2)
         }
@@ -86,6 +94,32 @@ struct RootView: View {
     }
 }
 
+extension RootView {
+    /// UIKit still owns the tab bar and the navigation bar. Both are repainted in the
+    /// app's cream rather than the system's translucent grey, which reads as a different
+    /// application sitting under the content.
+    static func applyBarAppearance() {
+        let ground = UIColor(Theme.background)
+
+        let tab = UITabBarAppearance()
+        tab.configureWithOpaqueBackground()
+        tab.backgroundColor = ground
+        tab.shadowColor = UIColor(Theme.separator)
+        UITabBar.appearance().standardAppearance = tab
+        UITabBar.appearance().scrollEdgeAppearance = tab
+
+        let nav = UINavigationBarAppearance()
+        nav.configureWithOpaqueBackground()
+        nav.backgroundColor = ground
+        nav.shadowColor = .clear
+        nav.titleTextAttributes = [.foregroundColor: UIColor(Theme.textPrimary)]
+        nav.largeTitleTextAttributes = [.foregroundColor: UIColor(Theme.textPrimary)]
+        UINavigationBar.appearance().standardAppearance = nav
+        UINavigationBar.appearance().scrollEdgeAppearance = nav
+        UINavigationBar.appearance().compactAppearance = nav
+    }
+}
+
 /// "Are you happy with Dashcam?" — one question, two doors.
 struct SatisfactionPrompt: View {
     let onHappy: () -> Void
@@ -94,33 +128,32 @@ struct SatisfactionPrompt: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Image(systemName: "hand.thumbsup")
-                .font(.system(size: 36, weight: .light))
-                .foregroundStyle(Theme.accent)
+            IconBadge(systemImage: "hand.thumbsup.fill", accent: .coral, size: 62)
             Text(key: "review.title")
-                .font(Theme.headline)
+                .font(.system(size: 22, weight: .bold))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 12) {
                 Button(action: onUnhappy) {
                     Text(key: "review.no")
                 }
-                .buttonStyle(DriverButtonStyle(fill: Theme.surfaceElevated, isProminent: false))
+                .buttonStyle(SoftButtonStyle(fill: Theme.surfaceElevated, foreground: Theme.textPrimary, height: 58))
                 .accessibilityIdentifier("reviewNo")
 
                 Button(action: onHappy) {
                     Text(key: "review.yes")
                 }
-                .buttonStyle(DriverButtonStyle(fill: Theme.accent))
+                .buttonStyle(SoftButtonStyle(fill: Theme.coral, foreground: .white, height: 58))
                 .accessibilityIdentifier("reviewYes")
             }
             .padding(.horizontal, 20)
 
             Button(action: onDismiss) {
                 Text(key: "review.later")
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(Theme.textSecondary)
             }
         }
         .padding(24)

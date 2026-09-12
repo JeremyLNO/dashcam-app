@@ -10,19 +10,30 @@ final class RecordingUITests: UITestCase {
         // The REC indicator is a combined accessibility element, so its spoken label —
         // not the raw "Stopped" glyph text — is what a client sees.
         XCTAssertTrue(app.staticTexts["Not recording"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.buttons["Start recording"].exists)
-        XCTAssertFalse(app.buttons["Start recording"].isEnabled, "no camera in the Simulator")
+        XCTAssertTrue(app.buttons["Start Drive"].exists)
+        XCTAssertFalse(app.buttons["Start Drive"].isEnabled, "no camera in the Simulator")
     }
 
+    /// Three hardware cards before the drive, four figures under the button. The cards
+    /// are the pre-flight check; the figures are what the screen is worth reading for
+    /// while stopped.
     func testStatusTilesAreAllPresent() {
         launch()
         waitForTabBar()
 
-        for label in ["Road camera", "Cabin camera", "GPS", "Free space", "Time left", "Quality"] {
+        for label in ["Road camera", "Cabin camera", "GPS"] {
             XCTAssertTrue(
                 app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", label)).firstMatch.exists,
-                "missing status tile: \(label)"
+                "missing hardware card: \(label)"
             )
+        }
+
+        // The drive stats are below the fold, and their grid builds lazily — so they
+        // exist only once scrolled to, which is also the only way a user meets them.
+        for label in ["Duration", "Distance", "Storage free", "Protected events"] {
+            let tile = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
+            for _ in 0..<4 where !tile.exists { app.swipeUp() }
+            XCTAssertTrue(tile.exists, "missing drive stat: \(label)")
         }
     }
 

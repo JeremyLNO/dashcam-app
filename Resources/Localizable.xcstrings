@@ -424,28 +424,28 @@
     "action.start": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aufnahme starten"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Start recording"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Iniciar"
+            "value": "Start Drive"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Démarrer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empezar"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fahrt starten"
           }
         },
         "pt": {
@@ -459,28 +459,28 @@
     "action.stop": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aufnahme stoppen"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stop recording"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Detener"
+            "value": "Stop Drive"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Arrêter"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parar"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fahrt stoppen"
           }
         },
         "pt": {
@@ -4659,34 +4659,34 @@
     "onboarding.1.body": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Straße und Innenraum, gleichzeitig aufgenommen."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "The road ahead and the cabin, recorded at the same time."
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La carretera y el interior, grabados al mismo tiempo."
-          }
-        },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "La route et l'habitacle, enregistrés simultanément."
+            "value": "La route et l'habitacle, filmés en même temps."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La carretera y el habitáculo, grabados a la vez."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Straße und der Innenraum, gleichzeitig aufgenommen."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "A estrada e o habitáculo, gravados em simultâneo."
+            "value": "A estrada e o habitáculo, gravados ao mesmo tempo."
           }
         }
       }
@@ -4694,34 +4694,34 @@
     "onboarding.1.title": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MACH DEIN IPHONE ZUR DASHCAM"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "TURN YOUR IPHONE INTO A DASHCAM"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CONVIERTE TU IPHONE EN UNA DASHCAM"
+            "value": "Turn your iPhone into a dashcam"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "TRANSFORMEZ VOTRE IPHONE EN DASHCAM"
+            "value": "Transformez votre iPhone en dashcam"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Convierte tu iPhone en una dashcam"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mach dein iPhone zur Dashcam"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "TRANSFORME O SEU IPHONE NUMA DASHCAM"
+            "value": "Transforme o seu iPhone numa dashcam"
           }
         }
       }
@@ -4729,34 +4729,34 @@
     "onboarding.2.body": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Videos bleiben lokal auf deinem iPhone gespeichert."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Videos stay stored locally on your iPhone."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Los vídeos se guardan localmente en tu iPhone."
+            "value": "Record the road ahead and the cabin at the same time."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les vidéos restent stockées localement sur votre iPhone."
+            "value": "Filmez la route devant vous et l'habitacle en même temps."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Graba la carretera y el habitáculo al mismo tiempo."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimm die Straße und den Innenraum gleichzeitig auf."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Os vídeos ficam armazenados localmente no seu iPhone."
+            "value": "Grave a estrada e o habitáculo ao mesmo tempo."
           }
         }
       }
@@ -4764,34 +4764,34 @@
     "onboarding.2.title": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DEINE FAHRTEN. DEINE BEWEISE."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "YOUR DRIVES. YOUR EVIDENCE."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "TUS TRAYECTOS. TUS PRUEBAS."
+            "value": "Two cameras. One drive."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "VOS TRAJETS. VOS PREUVES."
+            "value": "Deux caméras. Un trajet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dos cámaras. Un trayecto."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zwei Kameras. Eine Fahrt."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "AS SUAS VIAGENS. AS SUAS PROVAS."
+            "value": "Duas câmaras. Uma viagem."
           }
         }
       }
@@ -4799,34 +4799,34 @@
     "onboarding.3.body": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wichtige Momente werden automatisch behalten und nie von der Bereinigung gelöscht."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Important moments are kept automatically, and never deleted by the cleanup."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Los momentos importantes se conservan automáticamente y nunca se borran en la limpieza."
+            "value": "Collisions, hard brakes and sudden movements are saved automatically."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les moments importants sont conservés automatiquement et jamais supprimés par le nettoyage."
+            "value": "Chocs, freinages brutaux et mouvements soudains sont conservés automatiquement."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impactos, frenadas bruscas y movimientos repentinos se guardan automáticamente."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aufprälle, starkes Bremsen und plötzliche Bewegungen werden automatisch gesichert."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Os momentos importantes são mantidos automaticamente e nunca apagados pela limpeza."
+            "value": "Embates, travagens bruscas e movimentos súbitos são guardados automaticamente."
           }
         }
       }
@@ -4834,34 +4834,34 @@
     "onboarding.3.title": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "AUTOMATISCHER SCHUTZ"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "AUTOMATIC PROTECTION"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "PROTECCIÓN AUTOMÁTICA"
+            "value": "Important moments protect themselves"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "PROTECTION AUTOMATIQUE"
+            "value": "Les moments importants se protègent seuls"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los momentos importantes se protegen solos"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wichtige Momente schützen sich selbst"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "PROTEÇÃO AUTOMÁTICA"
+            "value": "Os momentos importantes protegem-se sozinhos"
           }
         }
       }
@@ -4869,34 +4869,34 @@
     "onboarding.4.body": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kein Video wird je an unsere Server gesendet. Kein Konto nötig."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No video is ever sent to our servers. No account required."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ningún vídeo se envía a nuestros servidores. No se requiere cuenta."
+            "value": "Stored on your iPhone. No uploads, no accounts, full control."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aucune vidéo n'est envoyée sur nos serveurs. Aucun compte requis."
+            "value": "Stockées sur votre iPhone. Aucun envoi, aucun compte, vous décidez."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardados en tu iPhone. Sin subidas, sin cuentas, tú decides."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPhone gespeichert. Kein Upload, kein Konto, du entscheidest."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nenhum vídeo é enviado para os nossos servidores. Sem conta obrigatória."
+            "value": "Guardados no seu iPhone. Sem envios, sem contas, você decide."
           }
         }
       }
@@ -4904,34 +4904,34 @@
     "onboarding.4.title": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DATENSCHUTZ ZUERST"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "PRIVACY FIRST"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "PRIVACIDAD ANTE TODO"
+            "value": "Your videos stay yours"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "LA CONFIDENTIALITÉ D'ABORD"
+            "value": "Vos vidéos restent les vôtres"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus vídeos siguen siendo tuyos"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Videos bleiben deine"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "PRIVACIDADE PRIMEIRO"
+            "value": "Os seus vídeos continuam seus"
           }
         }
       }
@@ -4974,34 +4974,34 @@
     "onboarding.5.title": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "KAMERAZUGRIFF"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "CAMERA ACCESS"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ACCESO A LA CÁMARA"
+            "value": "One permission to start"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "ACCÈS À LA CAMÉRA"
+            "value": "Une autorisation pour commencer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un permiso para empezar"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine Berechtigung zum Start"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "ACESSO À CÂMARA"
+            "value": "Uma permissão para começar"
           }
         }
       }
@@ -9559,34 +9559,34 @@
     "tab.videos": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Videos"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Videos"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vídeos"
+            "value": "Drives"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vidéos"
+            "value": "Trajets"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Viajes"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fahrten"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vídeos"
+            "value": "Viagens"
           }
         }
       }
@@ -9797,6 +9797,1161 @@
           "stringUnit": {
             "state": "translated",
             "value": "GB/h"
+          }
+        }
+      }
+    },
+    "app.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashcam Pocket"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashcam Pocket"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashcam Pocket"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashcam Pocket"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashcam Pocket"
+          }
+        }
+      }
+    },
+    "record.tagline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drive. Record. Be Ready."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Roulez. Filmez. Soyez prêt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conduce. Graba. Prepárate."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fahren. Aufnehmen. Bereit sein."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conduza. Grave. Esteja pronto."
+          }
+        }
+      }
+    },
+    "record.ready": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto"
+          }
+        }
+      }
+    },
+    "status.recording": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistre"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabando"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimmt auf"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A gravar"
+          }
+        }
+      }
+    },
+    "record.stats": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drive Stats"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Données du trajet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos del trayecto"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fahrtdaten"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dados da viagem"
+          }
+        }
+      }
+    },
+    "record.cta.start_hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to start recording"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touchez pour lancer l'enregistrement"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca para empezar a grabar"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippen, um aufzunehmen"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque para começar a gravar"
+          }
+        }
+      }
+    },
+    "record.cta.stop_hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to stop and save"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touchez pour arrêter et enregistrer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca para parar y guardar"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippen, um zu stoppen und zu sichern"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque para parar e guardar"
+          }
+        }
+      }
+    },
+    "stats.storage_free": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Storage free"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espace libre"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espacio libre"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Freier Speicher"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espaço livre"
+          }
+        }
+      }
+    },
+    "stats.remaining": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈ %@ left"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈ %@ restantes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈ %@ restantes"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈ %@ übrig"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈ %@ restantes"
+          }
+        }
+      }
+    },
+    "stats.quality_reduced": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quality reduced to %@ — the iPhone is warm"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qualité réduite à %@ — le téléphone chauffe"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calidad reducida a %@: el iPhone está caliente"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qualität auf %@ reduziert — das iPhone ist warm"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qualidade reduzida para %@ — o iPhone está quente"
+          }
+        }
+      }
+    },
+    "library.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your recorded trips and events."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vos trajets et vos événements."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus trayectos y tus eventos."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Fahrten und Ereignisse."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As suas viagens e eventos."
+          }
+        }
+      }
+    },
+    "library.day.today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aujourd'hui"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heute"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoje"
+          }
+        }
+      }
+    },
+    "library.day.yesterday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yesterday"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hier"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayer"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestern"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ontem"
+          }
+        }
+      }
+    },
+    "detail.timeline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timeline"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chronologie"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cronología"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeitleiste"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cronologia"
+          }
+        }
+      }
+    },
+    "detail.stats": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trip Stats"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Données du trajet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos del trayecto"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fahrtdaten"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dados da viagem"
+          }
+        }
+      }
+    },
+    "settings.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Customize your Dashcam Pocket."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réglez Dashcam Pocket à votre main."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajusta tu Dashcam Pocket."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Richte Dashcam Pocket ein."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajuste o seu Dashcam Pocket."
+          }
+        }
+      }
+    },
+    "settings.subscription.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export and everything it unlocks"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'export et ce qu'il débloque"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La exportación y lo que desbloquea"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export und was er freischaltet"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A exportação e o que desbloqueia"
+          }
+        }
+      }
+    },
+    "settings.recording.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video, audio and cameras"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vidéo, audio et caméras"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vídeo, audio y cámaras"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video, Audio und Kameras"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vídeo, áudio e câmaras"
+          }
+        }
+      }
+    },
+    "settings.safety.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detect and keep important moments"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Détecter et conserver les moments importants"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detectar y conservar los momentos importantes"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wichtige Momente erkennen und behalten"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detetar e guardar os momentos importantes"
+          }
+        }
+      }
+    },
+    "settings.storage.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How much space recordings may take"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'espace que les enregistrements peuvent prendre"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El espacio que pueden ocupar las grabaciones"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wie viel Platz Aufnahmen belegen dürfen"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O espaço que as gravações podem ocupar"
+          }
+        }
+      }
+    },
+    "settings.privacy.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What is saved with your videos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce qui est enregistré avec vos vidéos"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo que se guarda con tus vídeos"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Was mit deinen Videos gespeichert wird"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O que é guardado com os seus vídeos"
+          }
+        }
+      }
+    },
+    "settings.app.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language and notifications"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Langue et notifications"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Idioma y notificaciones"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sprache und Mitteilungen"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Idioma e notificações"
+          }
+        }
+      }
+    },
+    "settings.support.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help, legal and version"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aide, mentions légales et version"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayuda, aviso legal y versión"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hilfe, Rechtliches und Version"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajuda, aspetos legais e versão"
+          }
+        }
+      }
+    },
+    "settings.storage_free_of": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ free of %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ libres sur %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ libres de %@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ frei von %@"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ livres de %@"
+          }
+        }
+      }
+    },
+    "settings.storage_percent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d%% used"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d%% utilisés"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d%% usado"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d%% belegt"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d%% usado"
+          }
+        }
+      }
+    },
+    "onboarding.skip": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saltar"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Überspringen"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saltar"
+          }
+        }
+      }
+    },
+    "onboarding.auto_saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto-saved"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conservé"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardado"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesichert"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardado"
+          }
+        }
+      }
+    },
+    "onboarding.promise.no_cloud": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No cloud uploads"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun envoi vers le cloud"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin subidas a la nube"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Cloud-Upload"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem envios para a nuvem"
+          }
+        }
+      }
+    },
+    "onboarding.promise.no_account": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No account required"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun compte requis"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin cuenta"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Konto nötig"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem conta"
+          }
+        }
+      }
+    },
+    "onboarding.promise.on_device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Videos stay on your iPhone"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les vidéos restent sur l'iPhone"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los vídeos se quedan en tu iPhone"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Videos bleiben auf dem iPhone"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os vídeos ficam no seu iPhone"
+          }
+        }
+      }
+    },
+    "paywall.benefit.record": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlimited recording"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrement illimité"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabación ilimitada"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unbegrenzt aufnehmen"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gravação ilimitada"
+          }
+        }
+      }
+    },
+    "paywall.benefit.protect": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stay protected"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moments protégés"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Momentos protegidos"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geschützte Momente"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Momentos protegidos"
+          }
+        }
+      }
+    },
+    "paywall.benefit.export": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export anywhere"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export partout"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporta donde quieras"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Überallhin exportieren"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporte para onde quiser"
           }
         }
       }

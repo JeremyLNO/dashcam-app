@@ -47,17 +47,23 @@ struct SessionDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: Theme.spacing) {
+            VStack(alignment: .leading, spacing: 18) {
+                titleBlock
                 playerSurface
                 modePicker
-                timeline
-                metadata
+                timelineCard
+                statsGrid
                 actions
             }
-            .padding(16)
+            .padding(.horizontal, 18)
+            .padding(.top, 4)
+            .padding(.bottom, 28)
         }
+        .scrollIndicators(.hidden)
         .background(Theme.background)
-        .navigationTitle(Text(verbatim: Format.time(session.startedAt)))
+        // The screen writes the date itself, large. Repeating it in the bar would say the
+        // same thing twice, six points apart.
+        .navigationTitle(Text(verbatim: ""))
         .navigationBarTitleDisplayMode(.inline)
         .task(id: mode) { await prepare() }
         .onDisappear {
@@ -85,35 +91,90 @@ struct SessionDetailView: View {
         }
     }
 
+    // MARK: - Title
+
+    /// The date, large, then the window the drive covers. A drive is remembered by when
+    /// it happened, so that is what the screen leads with.
+    private var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(verbatim: Format.date(session.startedAt))
+                .font(Theme.pageTitle)
+                .foregroundStyle(Theme.textPrimary)
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+            Text(verbatim: "\(Format.clock(session.startedAt)) – \(Format.clock(session.endedAt ?? session.startedAt))")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+        }
+    }
+
     // MARK: - Player
 
     private var playerSurface: some View {
         ZStack {
             VideoPlayer(player: player)
                 .aspectRatio(16 / 9, contentMode: .fit)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cardCorner, style: .continuous))
                 .opacity(isPreparing || preparationFailed ? 0.15 : 1)
 
             if isPreparing {
-                ProgressView().tint(Theme.textSecondary)
+                ProgressView().tint(Theme.blue)
             } else if preparationFailed {
                 CameraUnavailableView(messageKey: "player.unavailable", systemImage: "exclamationmark.triangle")
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.cardCorner, style: .continuous))
                     .aspectRatio(16 / 9, contentMode: .fit)
             }
         }
         .frame(maxWidth: .infinity)
+        .softShadow()
     }
 
+    /// Three coloured buttons instead of a segmented control: which camera you are
+    /// watching is the screen's main choice, and it deserves to look like one. Each mode
+    /// keeps the colour it has everywhere else — road coral, cabin teal, both blue.
     private var modePicker: some View {
-        Picker(selection: $mode) {
-            ForEach(availableModes) { mode in
-                Text(key: mode.titleKey).tag(mode)
+        HStack(spacing: 8) {
+            ForEach(availableModes) { item in
+                Button {
+                    mode = item
+                } label: {
+                    HStack(spacing: 7) {
+                        Image(systemName: symbol(for: item))
+                            .font(.system(size: 14, weight: .bold))
+                        Text(key: item.titleKey)
+                            .font(.system(size: 16, weight: .bold))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .foregroundStyle(mode == item ? .white : accent(for: item).strong)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(
+                        RoundedRectangle(cornerRadius: Theme.tileCorner, style: .continuous)
+                            .fill(mode == item ? accent(for: item).strong : accent(for: item).soft)
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(mode == item ? [.isSelected, .isButton] : .isButton)
+                .accessibilityIdentifier("mode-\(item.rawValue)")
             }
-        } label: {
-            Text(key: "player.mode")
         }
-        .pickerStyle(.segmented)
+    }
+
+    private func accent(for mode: ViewMode) -> Accent {
+        switch mode {
+        case .road: return .coral
+        case .both: return .blue
+        case .cabin: return .teal
+        }
+    }
+
+    private func symbol(for mode: ViewMode) -> String {
+        switch mode {
+        case .road: return "video.fill"
+        case .both: return "rectangle.on.rectangle"
+        case .cabin: return "person.fill"
+        }
     }
 
     private var availableModes: [ViewMode] {
@@ -125,6 +186,19 @@ struct SessionDetailView: View {
     }
 
     // MARK: - Timeline
+
+    private var timelineCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                SectionHeader(titleKey: "detail.timeline")
+                Text(verbatim: Format.duration(session.duration))
+                    .font(.system(size: 15, weight: .semibold).monospacedDigit())
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            timeline
+        }
+        .dashcamCard()
+    }
 
     private var timeline: some View {
         EventTimeline(
@@ -145,7 +219,6 @@ struct SessionDetailView: View {
                 playheadOffset = offset
             }
         )
-        .dashcamCard()
     }
 
     /// Protected windows expressed against the drive's own clock, for the shaded bands.
@@ -159,91 +232,133 @@ struct SessionDetailView: View {
             }
     }
 
-    // MARK: - Info
+    // MARK: - Trip stats
 
-    private var metadata: some View {
-        VStack(spacing: 10) {
-            infoRow(titleKey: "detail.date", value: Format.date(session.startedAt))
-            infoRow(titleKey: "detail.start", value: Format.time(session.startedAt))
-            infoRow(titleKey: "detail.duration", value: Format.duration(session.duration))
-            if let kilometres = session.distanceKilometres {
-                infoRow(titleKey: "detail.distance", value: String(format: "%.1f km", kilometres))
-            }
-            if session.peakGForce > 0 {
-                infoRow(
-                    titleKey: "detail.peak_g",
-                    value: String(format: "%.2f g", session.peakGForce),
-                    tint: session.peakGForce >= ShockSensitivity.normal.thresholdG ? Theme.accent : Theme.textPrimary
-                )
-            }
-            infoRow(titleKey: "detail.size", value: Format.bytes(session.storageSize))
-            infoRow(titleKey: "detail.segments", value: "\(session.segmentCount)")
-            infoRow(
-                titleKey: "detail.cameras",
-                value: session.cameraSummary,
-                tint: session.recordedCameras.count > 1 ? Theme.textPrimary : Theme.warning
-            )
-            infoRow(titleKey: "detail.quality", value: L10n.t(session.quality.titleKey))
-            if session.hasProtectedContent {
-                infoRow(
+    /// Six figures, each on its own colour. A drive is described by numbers that mean
+    /// different things — a duration is not a file size — and giving each its own ground
+    /// is what lets the eye find the one it came for without reading the labels.
+    private var statsGrid: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(titleKey: "detail.stats")
+
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2),
+                spacing: 10
+            ) {
+                statTile(titleKey: "detail.duration", value: Format.duration(session.duration),
+                         systemImage: "clock.fill", accent: .orange)
+                if let kilometres = session.distanceKilometres {
+                    statTile(titleKey: "detail.distance", value: String(format: "%.1f km", kilometres),
+                             systemImage: "location.fill", accent: .blue)
+                }
+                if session.peakGForce > 0 {
+                    statTile(
+                        titleKey: "detail.peak_g",
+                        value: String(format: "%.2f g", session.peakGForce),
+                        systemImage: "waveform.path.ecg",
+                        // A peak past the impact threshold is the whole reason someone
+                        // opened this drive: it gets the alarm colour, not the calm one.
+                        accent: session.peakGForce >= ShockSensitivity.normal.thresholdG ? .coral : .violet
+                    )
+                }
+                statTile(titleKey: "detail.size", value: Format.bytes(session.storageSize),
+                         systemImage: "internaldrive.fill", accent: .teal)
+                statTile(titleKey: "detail.quality", value: L10n.t(session.quality.titleKey),
+                         systemImage: "sparkles", accent: .violet)
+                statTile(
                     titleKey: "detail.protected_events",
                     value: "\(session.protectedEvents.filter(\.isActive).count)",
-                    tint: Theme.warning
+                    systemImage: "checkmark.shield.fill",
+                    accent: session.hasProtectedContent ? .green : .blue
                 )
             }
+
+            // The cameras actually written to disk. Kept because it is the one line that
+            // says whether the cabin really recorded — the question three builds were
+            // spent answering by guesswork.
+            HStack(spacing: 8) {
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(session.recordedCameras.count > 1 ? Theme.textSecondary : Theme.orange)
+                Text(verbatim: session.cameraSummary)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(session.recordedCameras.count > 1 ? Theme.textSecondary : Theme.orange)
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .dashcamCard()
     }
 
-    private func infoRow(titleKey: String, value: String, tint: Color = Theme.textPrimary) -> some View {
-        HStack {
+    private func statTile(titleKey: String, value: String, systemImage: String, accent: Accent) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            IconBadge(systemImage: systemImage, accent: accent, size: 38)
             Text(key: titleKey)
-                .font(Theme.body)
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
-            Spacer()
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
             Text(verbatim: value)
-                .font(Theme.body)
-                .foregroundStyle(tint)
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .pastelCard(accent, padding: 14)
         .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(verbatim: "\(L10n.t(titleKey)): \(value)"))
     }
 
     // MARK: - Actions
 
+    /// Export leads, in blue. Protect keeps the coral it has everywhere. Delete is pale
+    /// red text on a pale red ground — reachable, never mistakable for the other two.
     private var actions: some View {
-        VStack(spacing: 10) {
+        HStack(spacing: 10) {
             Button {
                 // The paywall is opened here rather than inside the export sheet so the
                 // user never sees export options they cannot use.
                 if subscriptions.state.canExport { showExport = true } else { showPaywall = true }
             } label: {
-                Label(
-                    title: { Text(key: "action.export") },
-                    icon: { Image(systemName: subscriptions.state.canExport ? "square.and.arrow.up" : "lock.fill") }
+                actionLabel(
+                    key: "action.export",
+                    systemImage: subscriptions.state.canExport ? "square.and.arrow.up" : "lock.fill"
                 )
             }
-            .buttonStyle(DriverButtonStyle(fill: Theme.accent))
+            .buttonStyle(SoftButtonStyle(fill: Theme.blue, foreground: .white, height: 60))
             .accessibilityIdentifier("exportButton")
 
             Button {
                 environment.protection.setProtection(!session.hasProtectedContent, for: session)
             } label: {
-                Label(
-                    title: { Text(key: session.hasProtectedContent ? "action.unprotect" : "action.protect") },
-                    icon: { Image(systemName: session.hasProtectedContent ? "shield.slash" : "shield.lefthalf.filled") }
+                actionLabel(
+                    key: session.hasProtectedContent ? "action.unprotect" : "action.protect",
+                    systemImage: session.hasProtectedContent ? "shield.slash" : "checkmark.shield.fill"
                 )
             }
-            .buttonStyle(DriverButtonStyle(fill: Theme.surfaceElevated, isProminent: false))
+            .buttonStyle(SoftButtonStyle(fill: Theme.coral, foreground: .white, height: 60))
 
             Button(role: .destructive) {
                 isPendingDeletion = true
                 dismiss()
             } label: {
-                Label(title: { Text(key: "library.delete.action") }, icon: { Image(systemName: "trash") })
+                actionLabel(key: "library.delete.action", systemImage: "trash.fill")
             }
-            .buttonStyle(DriverButtonStyle(fill: Theme.surface, foreground: Theme.accent, isProminent: false))
+            .buttonStyle(SoftButtonStyle(fill: Theme.coralSoft, foreground: Theme.danger, height: 60))
             .disabled(session.hasProtectedContent)
+            .opacity(session.hasProtectedContent ? 0.5 : 1)
             .accessibilityIdentifier("deleteDrive")
+        }
+    }
+
+    private func actionLabel(key: String, systemImage: String) -> some View {
+        VStack(spacing: 4) {
+            Image(systemName: systemImage)
+                .font(.system(size: 17, weight: .bold))
+            Text(key: key)
+                .font(.system(size: 14, weight: .bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
     }
 

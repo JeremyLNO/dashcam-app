@@ -25,9 +25,9 @@ struct EventTimeline: View {
     private let trackHeight: CGFloat = 30
 
     var body: some View {
+        // No heading of its own: the card that holds it names it, and the component was
+        // printing "Timeline" directly under the card's own title.
         VStack(alignment: .leading, spacing: 8) {
-            SectionHeader(titleKey: "timeline.title")
-
             GeometryReader { proxy in
                 let width = max(1, proxy.size.width)
 

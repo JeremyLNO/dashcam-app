@@ -24,6 +24,10 @@ class UITestCase: XCTestCase {
         app.tabBars.buttons[name]
     }
 
+    /// The drives tab, named once here: it went from "Videos" to "Drives" with the
+    /// redesign, and a dozen tests should not each know that.
+    var drivesTab: XCUIElement { tab("Drives") }
+
     /// A cold launch runs recovery, a retention sweep and the first StoreKit round trip
     /// before the tab bar exists, which on a busy CI machine is comfortably more than the
     /// default five seconds.

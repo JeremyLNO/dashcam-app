@@ -6,7 +6,7 @@ final class ExportLockUITests: UITestCase {
     func testExportOpensThePaywallWhenNotSubscribed() {
         launch(seedLibrary: true)
         waitForTabBar()
-        tab("Videos").tap()
+        drivesTab.tap()
 
         XCTAssertTrue(firstSessionRow.waitForExistence(timeout: Self.launchTimeout))
         firstSessionRow.tap()

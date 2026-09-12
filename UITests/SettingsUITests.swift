@@ -42,7 +42,7 @@ final class SettingsUITests: UITestCase {
         app.buttons["Français"].tap()
 
         XCTAssertTrue(app.tabBars.buttons["Réglages"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.tabBars.buttons["Vidéos"].exists)
+        XCTAssertTrue(app.tabBars.buttons["Trajets"].exists)
     }
 
     func testQualityOptionsShowTheirStorageCost() {

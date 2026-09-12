@@ -94,6 +94,20 @@ final class PictureInPictureRenderTests: XCTestCase {
         return (totals.0 / count, totals.1 / count, totals.2 / count)
     }
 
+    /// What the staged clip itself decodes to, before any composition touches it. When an
+    /// assertion below fails, this is the number that says whether the defect is in the
+    /// layout or in the source — the two look identical from a sampled pixel.
+    private func sourceColour(of segments: [VideoSegment]) throws -> (r: Int, g: Int, b: Int) {
+        guard let first = segments.first else { return (-1, -1, -1) }
+        let url = StorageLocations.absoluteURL(forRelativePath: first.relativePath)
+        let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+        generator.appliesPreferredTrackTransform = true
+        generator.requestedTimeToleranceBefore = .zero
+        generator.requestedTimeToleranceAfter = .zero
+        let image = try generator.copyCGImage(at: CMTime(seconds: 1, preferredTimescale: 600), actualTime: nil)
+        return sample(image, x: 0.5, y: 0.5, size: 0.2)
+    }
+
     private func isReddish(_ c: (r: Int, g: Int, b: Int)) -> Bool { c.r > 120 && c.r > c.b + 40 }
     private func isBluish(_ c: (r: Int, g: Int, b: Int)) -> Bool { c.b > 100 && c.b > c.r + 40 }
 
@@ -107,14 +121,34 @@ final class PictureInPictureRenderTests: XCTestCase {
         let built = try await SessionComposition.pictureInPicture(
             rear: session.rearSegments, front: session.frontSegments, includeAudio: false
         )
-        let image = try renderFrame(built)
+        var image = try renderFrame(built)
+
+        // Decoding is checked before the layout is judged. Twice now, a full-suite run
+        // has handed this test a frame whose colours were nowhere near what was written
+        // — road and cabin both arriving as dark olive and green — while the same test
+        // passed alone. A sample of a badly decoded frame is a verdict about the decoder,
+        // not about the composition, so the source clips are read first and the render is
+        // retried rather than blamed.
+        var roadSource = try sourceColour(of: session.rearSegments)
+        var cabinSource = try sourceColour(of: session.frontSegments)
+        for attempt in 1...3 where !(isReddish(roadSource) && isBluish(cabinSource)) {
+            print("PiP: source clips decoded as \(roadSource)/\(cabinSource), attempt \(attempt)")
+            image = try renderFrame(built)
+            roadSource = try sourceColour(of: session.rearSegments)
+            cabinSource = try sourceColour(of: session.frontSegments)
+        }
+        XCTAssertTrue(
+            isReddish(roadSource) && isBluish(cabinSource),
+            "the staged clips do not decode to the colours they were written with "
+            + "(road \(roadSource), cabin \(cabinSource)) — the decoder, not the layout"
+        )
 
         let centre = sample(image, x: 0.35, y: 0.5)
-        XCTAssertTrue(isReddish(centre), "the road camera is not filling the frame: \(centre)")
+        XCTAssertTrue(isReddish(centre), "the road camera is not filling the frame: \(centre) — sources \(roadSource)/\(cabinSource)")
 
         // Top-right, where the live recording screen also puts it.
         let inset = sample(image, x: 0.86, y: 0.17)
-        XCTAssertTrue(isBluish(inset), "the cabin camera is missing from the inset: \(inset)")
+        XCTAssertTrue(isBluish(inset), "the cabin camera is missing from the inset: \(inset) — sources \(roadSource)/\(cabinSource)")
 
         // And nowhere else: the other three corners are road.
         for (label, x, y) in [("top-left", 0.14, 0.17), ("bottom-left", 0.14, 0.83),

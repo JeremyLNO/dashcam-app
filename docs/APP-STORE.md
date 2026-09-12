@@ -18,9 +18,20 @@ Two API details that cost time and are not in the docs:
 - `subscriptionIntroductoryOffers` requires a **`territory` relationship** — there is no
   "all territories" form, so it is one POST per territory per plan.
 
-⚠️ All three sit at `MISSING_METADATA`: each subscription still needs an **App Store review
-screenshot** (`appStoreReviewScreenshot`), which has to show the paywall on a real device —
-the Simulator cannot render it (see `screenshots/README.md`).
+All three reached **`READY_TO_SUBMIT`** on 2026-09-12. Two things were missing, not one:
+
+- the **App Store review screenshot** (`appStoreReviewScreenshot`), now `screenshots/08-paywall.png`
+  on all three. It does *not* need a real device: `./tools/capture-paywall.sh` takes it in the
+  Simulator through a UI test, because `xcodebuild test` applies the scheme's StoreKit
+  configuration while `simctl launch` starts the app without it;
+- **the prices of the other 174 territories.** App Store Connect's web UI derives them from a
+  base country on its own; the API sets exactly the one you post. Until every available
+  territory has a price the subscription stays `MISSING_METADATA`, and the state never says
+  which field is at fault — easy to blame the screenshot you just uploaded. The equalized
+  points come from `GET /v1/subscriptionPricePoints/{id}/equalizations`.
+
+Prices confirmed by Jeremy on 2026-09-12: 4.99 / 11.99 / 34.99 USD, i.e. 5.99 / 12.99 /
+39.99 EUR in the euro zone.
 
 The product identifiers match `Config/Base.xcconfig`:
 
@@ -41,9 +52,14 @@ fallback — at runtime the app reads the authoritative id back off a loaded pro
 
 ### 2. CarPlay entitlement
 
+**Requested on 2026-09-12**, awaiting Apple's answer.
+
 CarPlay Driving Task is granted per app by request:
-<https://developer.apple.com/contact/carplay/>. Ask for the **Driving Task** category and
-explain that the app is a dashcam whose CarPlay surface is Start / Stop / Protect only.
+<https://developer.apple.com/contact/carplay/>. The form asks nothing beyond the category
+for this branch — the description fields and screenshot uploads only appear for
+*Navigation* — so the whole request is: pick **Driving Task**, accept the CarPlay
+Entitlement Addendum, submit. The text to send if Apple asks for details is in
+`docs/CARPLAY-ENTITLEMENT.md`.
 
 Once granted, uncomment the key in `App/Dashcam.entitlements`:
 

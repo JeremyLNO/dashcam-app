@@ -63,10 +63,18 @@ struct DemoDataSeeder {
         try? FileManager.default.removeItem(at: url)
 
         guard let writer = try? AVAssetWriter(outputURL: url, fileType: .mov) else { return false }
+        // Every frame a keyframe, and no reordering. These clips exist to be decoded at an
+        // arbitrary instant — by the tests that sample their pixels, and by the library
+        // preview — and a frame that can only be reconstructed from a distant reference is
+        // what makes such a read come back half-decoded under load.
         let settings: [String: Any] = [
             AVVideoCodecKey: AVVideoCodecType.h264,
             AVVideoWidthKey: Int(size.width),
             AVVideoHeightKey: Int(size.height),
+            AVVideoCompressionPropertiesKey: [
+                AVVideoMaxKeyFrameIntervalKey: 1,
+                AVVideoAllowFrameReorderingKey: false,
+            ],
         ]
         guard writer.canApply(outputSettings: settings, forMediaType: .video) else { return false }
 

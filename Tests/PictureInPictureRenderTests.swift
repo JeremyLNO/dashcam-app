@@ -62,8 +62,10 @@ final class PictureInPictureRenderTests: XCTestCase {
         let generator = AVAssetImageGenerator(asset: built.composition)
         generator.videoComposition = built.videoComposition
         generator.appliesPreferredTrackTransform = true
+        // Both tolerances at zero: with a tolerance the generator is free to hand back a
+        // neighbouring frame, and a sample of the wrong frame is a verdict about nothing.
         generator.requestedTimeToleranceBefore = .zero
-        generator.requestedTimeToleranceAfter = CMTime(seconds: 0.5, preferredTimescale: 600)
+        generator.requestedTimeToleranceAfter = .zero
         return try generator.copyCGImage(at: CMTime(seconds: 1, preferredTimescale: 600), actualTime: nil)
     }
 

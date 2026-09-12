@@ -111,6 +111,7 @@
 		1A0031CB2C13DD9EE7BDD001 /* RemoteProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2590BCCDE50A3B33C610B /* RemoteProtocol.swift */; };
 		F41EA122E08056327819F494 /* WatchLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3350EFBBD9D592872476C81C /* WatchLink.swift */; };
 		009EF66922030428975C587E /* WatchRemoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B36CC7F4DBDA4892A4BCBED /* WatchRemoteView.swift */; };
+		BDCF1839060030D6F00BFF04 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3599C87418B0DD4C0EE44C81 /* Assets.xcassets */; };
 		D438CC9AC54FA7DF2316353E /* DashcamWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 5E99D4633A28B788BB2EEF6C /* DashcamWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2BAAA3FA745CAAA806841E56 /* DashcamControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F44A94D97C6F6BC4311E5C20 /* DashcamControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		82FD68215DD1AD9795844367 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8D7172619DB15AD08404D409 /* Assets.xcassets */; };
@@ -124,6 +125,7 @@
 		996AD237BC284D463E664FFE /* Dashcam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dashcam.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E99D4633A28B788BB2EEF6C /* DashcamWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DashcamWatch.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		66E0B01E2961E7B593C2ACF0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3599C87418B0DD4C0EE44C81 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		163F58FFBAAFDBC2CD0F02B3 /* DashcamWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DashcamWatchApp.swift"; sourceTree = "<group>"; };
 		F1E2590BCCDE50A3B33C610B /* RemoteProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RemoteProtocol.swift"; sourceTree = "<group>"; };
 		3350EFBBD9D592872476C81C /* WatchLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WatchLink.swift"; sourceTree = "<group>"; };
@@ -518,6 +520,7 @@
 				F1E2590BCCDE50A3B33C610B /* RemoteProtocol.swift */,
 				3350EFBBD9D592872476C81C /* WatchLink.swift */,
 				3B36CC7F4DBDA4892A4BCBED /* WatchRemoteView.swift */,
+				3599C87418B0DD4C0EE44C81 /* Assets.xcassets */,
 				66E0B01E2961E7B593C2ACF0 /* Info.plist */,
 			);
 			path = Watch;
@@ -720,6 +723,7 @@
 			buildPhases = (
 				20E745CEF78ED284E2173AA6 /* Sources */,
 				AC64C0A83EEDC0E95DAB25C6 /* Frameworks */,
+				96A5CEB645CE9D1B810551A7 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -869,6 +873,14 @@
 				82FD68215DD1AD9795844367 /* Assets.xcassets in Resources */,
 				1028DAF610B6A7BB2969113F /* Localizable.xcstrings in Resources */,
 				868C33FDCA12FBB82FC39BC6 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		96A5CEB645CE9D1B810551A7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BDCF1839060030D6F00BFF04 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

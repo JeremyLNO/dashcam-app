@@ -33,6 +33,10 @@ WATCH_SOURCE_DIR = "Watch"
 # a rename cannot leave the two halves speaking different dialects.
 WATCH_SHARED_SOURCES = ["Watch/RemoteProtocol.swift"]
 WATCH_INFO_PLIST = "Watch/Info.plist"
+# The watch app needs an icon of its own: App Store Connect refuses a bundle whose
+# Info.plist has no CFBundleIconName, and the key means nothing without a catalog
+# carrying the icon it names.
+WATCH_ASSETS = "Watch/Assets.xcassets"
 WATCH_TARGET = f"{PROJ}Watch"
 CONTROL_SOURCE_DIR = "Controls"
 # Compiled into the extension *and* the app: an intent must exist in both binaries for
@@ -179,6 +183,9 @@ watch_embed_phase = uid("phase.app.embedwatch")
 watch_embed_build = uid("build.embed.watch")
 watch_group = uid("group.watch")
 watch_plist_ref = uid("fileref.watch.plist")
+watch_assets_ref = uid("fileref.watch.assets")
+watch_assets_build = uid("buildfile.watch.assets")
+watch_resources_phase = uid("phase.watch.resources")
 control_prod_ref = uid("product.controls")
 control_target = uid("target.controls")
 control_sources_phase = uid("phase.control.sources")
@@ -253,6 +260,7 @@ for f in control_files:
     L(f'\t\t{control_build[f]} /* {os.path.basename(f)} in Sources */ = {{isa = PBXBuildFile; fileRef = {fileref(f)} /* {os.path.basename(f)} */; }};')
 for f in watch_files:
     L(f'\t\t{watch_build[f]} /* {os.path.basename(f)} in Sources */ = {{isa = PBXBuildFile; fileRef = {fileref(f)} /* {os.path.basename(f)} */; }};')
+L(f'\t\t{watch_assets_build} /* Assets.xcassets in Resources */ = {{isa = PBXBuildFile; fileRef = {watch_assets_ref} /* Assets.xcassets */; }};')
 L(f'\t\t{watch_embed_build} /* {WATCH_TARGET}.app in Embed Watch Content */ = {{isa = PBXBuildFile; fileRef = {watch_prod_ref} /* {WATCH_TARGET}.app */; settings = {{ATTRIBUTES = (RemoveHeadersOnCopy, ); }}; }};')
 L(f'\t\t{control_embed_build} /* {CONTROL_TARGET}.appex in Embed Foundation Extensions */ = {{isa = PBXBuildFile; fileRef = {control_prod_ref} /* {CONTROL_TARGET}.appex */; settings = {{ATTRIBUTES = (RemoveHeadersOnCopy, ); }}; }};')
 for path, _ in RESOURCE_FILES:
@@ -267,6 +275,7 @@ L("\n/* Begin PBXFileReference section */")
 L(f'\t\t{prod_ref} /* {PROJ}.app */ = {{isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "{PROJ}.app"; sourceTree = BUILT_PRODUCTS_DIR; }};')
 L(f'\t\t{watch_prod_ref} /* {WATCH_TARGET}.app */ = {{isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "{WATCH_TARGET}.app"; sourceTree = BUILT_PRODUCTS_DIR; }};')
 L(f'\t\t{watch_plist_ref} /* Info.plist */ = {{isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; }};')
+L(f'\t\t{watch_assets_ref} /* Assets.xcassets */ = {{isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; }};')
 for f in find_swift(WATCH_SOURCE_DIR):
     L(f'\t\t{fileref(f)} /* {os.path.basename(f)} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "{os.path.basename(f)}"; sourceTree = "<group>"; }};')
 L(f'\t\t{control_prod_ref} /* {CONTROL_TARGET}.appex */ = {{isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "{CONTROL_TARGET}.appex"; sourceTree = BUILT_PRODUCTS_DIR; }};')
@@ -317,6 +326,7 @@ L("\t\t\tisa = PBXGroup;")
 L("\t\t\tchildren = (")
 for f in find_swift(WATCH_SOURCE_DIR):
     L(f"\t\t\t\t{fileref(f)} /* {os.path.basename(f)} */,")
+L(f"\t\t\t\t{watch_assets_ref} /* Assets.xcassets */,")
 L(f"\t\t\t\t{watch_plist_ref} /* Info.plist */,")
 L("\t\t\t);")
 L(f"\t\t\tpath = {WATCH_SOURCE_DIR};")
@@ -461,6 +471,7 @@ L(f'\t\t\tbuildConfigurationList = {watch_cfg_list} /* Build configuration list 
 L("\t\t\tbuildPhases = (")
 L(f"\t\t\t\t{watch_sources_phase} /* Sources */,")
 L(f"\t\t\t\t{watch_frameworks_phase} /* Frameworks */,")
+L(f"\t\t\t\t{watch_resources_phase} /* Resources */,")
 L("\t\t\t);")
 L("\t\t\tbuildRules = (")
 L("\t\t\t);")
@@ -597,6 +608,14 @@ L("\t\t\tbuildActionMask = 2147483647;")
 L("\t\t\tfiles = (")
 for path, _ in RESOURCE_FILES:
     L(f"\t\t\t\t{resource_build[path]} /* {os.path.basename(path)} in Resources */,")
+L("\t\t\t);")
+L("\t\t\trunOnlyForDeploymentPostprocessing = 0;")
+L("\t\t};")
+L(f"\t\t{watch_resources_phase} /* Resources */ = {{")
+L("\t\t\tisa = PBXResourcesBuildPhase;")
+L("\t\t\tbuildActionMask = 2147483647;")
+L("\t\t\tfiles = (")
+L(f"\t\t\t\t{watch_assets_build} /* Assets.xcassets in Resources */,")
 L("\t\t\t);")
 L("\t\t\trunOnlyForDeploymentPostprocessing = 0;")
 L("\t\t};")

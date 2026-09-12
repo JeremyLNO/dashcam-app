@@ -12670,6 +12670,601 @@
           }
         }
       }
+    },
+    "settings.lens": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Road lens"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objectif route"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo carretera"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Straßenobjektiv"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetiva da estrada"
+          }
+        }
+      }
+    },
+    "lens.choice.ultrawide": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultra wide"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultra grand-angle"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultra gran angular"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultraweitwinkel"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultra grande-angular"
+          }
+        }
+      }
+    },
+    "lens.choice.ultrawide.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sees the most road. Plates further than a few metres are hard to read."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voit le plus de route. Les plaques au-delà de quelques mètres se lisent mal."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ve más carretera. Las matrículas a más de unos metros se leen mal."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sieht am meisten Straße. Kennzeichen jenseits weniger Meter sind schwer zu lesen."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vê mais estrada. As matrículas a mais de alguns metros leem-se mal."
+          }
+        }
+      }
+    },
+    "lens.choice.wide": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wide"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grand-angle"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gran angular"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weitwinkel"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grande-angular"
+          }
+        }
+      }
+    },
+    "lens.choice.wide.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Narrower view, twice the detail. Choose this to read number plates."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vue plus étroite, deux fois plus de détail. À choisir pour lire les plaques."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista más estrecha, el doble de detalle. Elígelo para leer matrículas."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engerer Blick, doppelte Detailschärfe. Für lesbare Kennzeichen."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista mais estreita, o dobro do detalhe. Escolha para ler matrículas."
+          }
+        }
+      }
+    },
+    "settings.adaptive_image": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adapt to the light"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adapter à la lumière"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adaptar a la luz"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An das Licht anpassen"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adaptar à luz"
+          }
+        }
+      }
+    },
+    "alert.resumed.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording resumed"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrement repris"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabación reanudada"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aufnahme fortgesetzt"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gravação retomada"
+          }
+        }
+      }
+    },
+    "settings.adaptive_image.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At night the camera is stopped from lengthening the shutter, which is what turns a moving number plate into a smear; on snow and in low sun it is told to expose brighter, since a light meter darkens a white scene. Video HDR is used where the format allows."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La nuit, l'appareil ne peut plus rallonger la pose — c'est elle qui transforme une plaque en mouvement en traînée ; sur la neige et au soleil rasant, l'exposition est relevée, car une cellule assombrit une scène blanche. Le HDR vidéo est utilisé quand le format le permet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De noche se impide que la cámara alargue la exposición, que es lo que convierte una matrícula en movimiento en un borrón; en nieve y con sol bajo se expone más, porque el fotómetro oscurece una escena blanca. Se usa HDR de vídeo cuando el formato lo permite."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nachts darf die Kamera die Belichtungszeit nicht mehr verlängern — genau das verschmiert ein fahrendes Kennzeichen; bei Schnee und tiefer Sonne wird heller belichtet, denn ein Belichtungsmesser dunkelt eine weiße Szene ab. Video-HDR wird genutzt, wo das Format es erlaubt."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À noite impede-se a câmara de alongar a exposição, que é o que transforma uma matrícula em movimento num borrão; na neve e com sol baixo expõe-se mais, porque o fotómetro escurece uma cena branca. Usa-se HDR de vídeo quando o formato permite."
+          }
+        }
+      }
+    },
+    "onboarding.6.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose what it does"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez ce qu'elle fait"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige lo que hace"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle, was sie tut"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha o que faz"
+          }
+        }
+      }
+    },
+    "onboarding.6.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All of this can be changed later in Settings. Nothing is on that you did not see here."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tout se change ensuite dans les réglages. Rien n'est actif que vous n'ayez vu ici."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todo se puede cambiar luego en Ajustes. Nada está activo que no hayas visto aquí."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alles lässt sich später in den Einstellungen ändern. Nichts ist aktiv, was du hier nicht gesehen hast."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tudo se pode mudar depois nos ajustes. Nada está ativo que não tenha visto aqui."
+          }
+        }
+      }
+    },
+    "onboarding.feature.cabin": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Films the inside of the car alongside the road."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filme l'habitacle en même temps que la route."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Graba el habitáculo junto con la carretera."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimmt den Innenraum zusammen mit der Straße auf."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grava o habitáculo juntamente com a estrada."
+          }
+        }
+      }
+    },
+    "onboarding.feature.audio": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Records the sound of the impact, the horn, what was said."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistre le bruit du choc, le klaxon, ce qui a été dit."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Graba el ruido del impacto, la bocina, lo que se dijo."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimmt den Aufprall, die Hupe, das Gesagte auf."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grava o som do embate, a buzina, o que foi dito."
+          }
+        }
+      }
+    },
+    "onboarding.feature.impact": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeps the ten seconds either side of a collision, by itself."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conserve seule les dix secondes autour d'un choc."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guarda sola los diez segundos alrededor de un impacto."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Behält von selbst die zehn Sekunden rund um einen Aufprall."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guarda sozinha os dez segundos à volta de um embate."
+          }
+        }
+      }
+    },
+    "onboarding.feature.location": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attaches position and speed to a recording. No navigation, ever."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associe position et vitesse à l'enregistrement. Jamais de navigation."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade posición y velocidad a la grabación. Nunca navegación."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hängt Position und Tempo an die Aufnahme. Nie Navigation."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Junta posição e velocidade à gravação. Nunca navegação."
+          }
+        }
+      }
+    },
+    "onboarding.feature.adaptive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeps plates readable at night and snow white in full sun."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garde les plaques lisibles la nuit et la neige blanche en plein soleil."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantiene las matrículas legibles de noche y la nieve blanca a pleno sol."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hält Kennzeichen nachts lesbar und Schnee in der Sonne weiß."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantém as matrículas legíveis à noite e a neve branca ao sol."
+          }
+        }
+      }
+    },
+    "onboarding.feature.auto_export": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saves a protected moment to Photos when the drive ends. Needs a subscription."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistre un moment protégé dans Photos à la fin du trajet. Abonnement requis."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guarda un momento protegido en Fotos al terminar el trayecto. Requiere suscripción."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sichert einen geschützten Moment am Fahrtende in Fotos. Abo nötig."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guarda um momento protegido em Fotos no fim da viagem. Requer subscrição."
+          }
+        }
+      }
+    },
+    "settings.replay_onboarding": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the introduction again"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoir la présentation"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver de nuevo la introducción"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einführung erneut ansehen"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rever a apresentação"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

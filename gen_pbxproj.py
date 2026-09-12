@@ -28,6 +28,12 @@ APP_SOURCE_DIRS = [
     "Protection", "Export", "Subscriptions", "CarPlay", "Notifications",
     "Features", "UI", "Intents",
 ]
+WATCH_SOURCE_DIR = "Watch"
+# Compiled into the watch app *and* the phone: one definition of the remote protocol, so
+# a rename cannot leave the two halves speaking different dialects.
+WATCH_SHARED_SOURCES = ["Watch/RemoteProtocol.swift"]
+WATCH_INFO_PLIST = "Watch/Info.plist"
+WATCH_TARGET = f"{PROJ}Watch"
 CONTROL_SOURCE_DIR = "Controls"
 # Compiled into the extension *and* the app: an intent must exist in both binaries for
 # iOS to hand it to the app once the control has opened it.
@@ -84,9 +90,11 @@ def find_swift(top):
 app_files = []
 for d in APP_SOURCE_DIRS:
     app_files += find_swift(d)
+app_files += WATCH_SHARED_SOURCES
 test_files = find_swift(TEST_SOURCE_DIR)
 uitest_files = find_swift(UITEST_SOURCE_DIR)
 control_files = find_swift(CONTROL_SOURCE_DIR) + CONTROL_SHARED_SOURCES
+watch_files = find_swift(WATCH_SOURCE_DIR)
 
 _fileref = {}
 
@@ -160,6 +168,17 @@ def emit_top_group(name, paths):
 
 # ---- UUIDs ------------------------------------------------------------------
 prod_ref = uid("product.app")
+watch_prod_ref = uid("product.watch")
+watch_target = uid("target.watch")
+watch_sources_phase = uid("phase.watch.sources")
+watch_frameworks_phase = uid("phase.watch.frameworks")
+watch_cfg_list = uid("cfglist.watch")
+watch_proxy = uid("containerproxy.watch")
+watch_dep = uid("targetdep.watch")
+watch_embed_phase = uid("phase.app.embedwatch")
+watch_embed_build = uid("build.embed.watch")
+watch_group = uid("group.watch")
+watch_plist_ref = uid("fileref.watch.plist")
 control_prod_ref = uid("product.controls")
 control_target = uid("target.controls")
 control_sources_phase = uid("phase.control.sources")
@@ -203,6 +222,7 @@ app_build = {f: uid("buildfile.app." + f) for f in app_files}
 test_build = {f: uid("buildfile.tests." + f) for f in test_files}
 uitest_build = {f: uid("buildfile.uitests." + f) for f in uitest_files}
 control_build = {f: uid("buildfile.controls." + f) for f in control_files}
+watch_build = {f: uid("buildfile.watch." + f) for f in watch_files}
 resource_build = {path: uid("buildfile.resource." + path) for path, _ in RESOURCE_FILES}
 storekit_test_build = uid("buildfile.tests.storekit")
 
@@ -231,6 +251,9 @@ for f in uitest_files:
     L(f'\t\t{uitest_build[f]} /* {os.path.basename(f)} in Sources */ = {{isa = PBXBuildFile; fileRef = {fileref(f)} /* {os.path.basename(f)} */; }};')
 for f in control_files:
     L(f'\t\t{control_build[f]} /* {os.path.basename(f)} in Sources */ = {{isa = PBXBuildFile; fileRef = {fileref(f)} /* {os.path.basename(f)} */; }};')
+for f in watch_files:
+    L(f'\t\t{watch_build[f]} /* {os.path.basename(f)} in Sources */ = {{isa = PBXBuildFile; fileRef = {fileref(f)} /* {os.path.basename(f)} */; }};')
+L(f'\t\t{watch_embed_build} /* {WATCH_TARGET}.app in Embed Watch Content */ = {{isa = PBXBuildFile; fileRef = {watch_prod_ref} /* {WATCH_TARGET}.app */; settings = {{ATTRIBUTES = (RemoveHeadersOnCopy, ); }}; }};')
 L(f'\t\t{control_embed_build} /* {CONTROL_TARGET}.appex in Embed Foundation Extensions */ = {{isa = PBXBuildFile; fileRef = {control_prod_ref} /* {CONTROL_TARGET}.appex */; settings = {{ATTRIBUTES = (RemoveHeadersOnCopy, ); }}; }};')
 for path, _ in RESOURCE_FILES:
     base = os.path.basename(path)
@@ -242,6 +265,10 @@ L("/* End PBXBuildFile section */")
 
 L("\n/* Begin PBXFileReference section */")
 L(f'\t\t{prod_ref} /* {PROJ}.app */ = {{isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "{PROJ}.app"; sourceTree = BUILT_PRODUCTS_DIR; }};')
+L(f'\t\t{watch_prod_ref} /* {WATCH_TARGET}.app */ = {{isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "{WATCH_TARGET}.app"; sourceTree = BUILT_PRODUCTS_DIR; }};')
+L(f'\t\t{watch_plist_ref} /* Info.plist */ = {{isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; }};')
+for f in find_swift(WATCH_SOURCE_DIR):
+    L(f'\t\t{fileref(f)} /* {os.path.basename(f)} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "{os.path.basename(f)}"; sourceTree = "<group>"; }};')
 L(f'\t\t{control_prod_ref} /* {CONTROL_TARGET}.appex */ = {{isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "{CONTROL_TARGET}.appex"; sourceTree = BUILT_PRODUCTS_DIR; }};')
 L(f'\t\t{control_plist_ref} /* Info.plist */ = {{isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; }};')
 # The extension's own sources are not under any app source directory, so nothing else
@@ -266,7 +293,7 @@ for f in XCCONFIGS:
 L("/* End PBXFileReference section */")
 
 L("\n/* Begin PBXFrameworksBuildPhase section */")
-for phase in [frameworks_phase, test_frameworks_phase, uitest_frameworks_phase, control_frameworks_phase]:
+for phase in [frameworks_phase, test_frameworks_phase, uitest_frameworks_phase, control_frameworks_phase, watch_frameworks_phase]:
     L(f"\t\t{phase} /* Frameworks */ = {{")
     L("\t\t\tisa = PBXFrameworksBuildPhase;")
     L("\t\t\tbuildActionMask = 2147483647;")
@@ -285,6 +312,17 @@ for d in APP_SOURCE_DIRS:
     top_groups[d] = emit_top_group(d, app_files)
 # Info.plist and the entitlements live in App/, folded into that same group so their
 # paths resolve relative to it.
+L(f"\t\t{watch_group} /* {WATCH_SOURCE_DIR} */ = {{")
+L("\t\t\tisa = PBXGroup;")
+L("\t\t\tchildren = (")
+for f in find_swift(WATCH_SOURCE_DIR):
+    L(f"\t\t\t\t{fileref(f)} /* {os.path.basename(f)} */,")
+L(f"\t\t\t\t{watch_plist_ref} /* Info.plist */,")
+L("\t\t\t);")
+L(f"\t\t\tpath = {WATCH_SOURCE_DIR};")
+L('\t\t\tsourceTree = "<group>";')
+L("\t\t};")
+
 control_swift = find_swift(CONTROL_SOURCE_DIR)
 L(f"\t\t{control_group} /* {CONTROL_SOURCE_DIR} */ = {{")
 L("\t\t\tisa = PBXGroup;")
@@ -326,6 +364,7 @@ L("\t\t\tisa = PBXGroup;")
 L("\t\t\tchildren = (")
 L(f"\t\t\t\t{prod_ref} /* {PROJ}.app */,")
 L(f"\t\t\t\t{control_prod_ref} /* {CONTROL_TARGET}.appex */,")
+L(f"\t\t\t\t{watch_prod_ref} /* {WATCH_TARGET}.app */,")
 L(f"\t\t\t\t{test_prod_ref} /* {PROJ}Tests.xctest */,")
 L(f"\t\t\t\t{uitest_prod_ref} /* {PROJ}UITests.xctest */,")
 L("\t\t\t);")
@@ -341,6 +380,7 @@ for d in APP_SOURCE_DIRS:
 L(f"\t\t\t\t{resources_group} /* Resources */,")
 L(f"\t\t\t\t{config_group} /* Config */,")
 L(f"\t\t\t\t{control_group} /* {CONTROL_SOURCE_DIR} */,")
+L(f"\t\t\t\t{watch_group} /* {WATCH_SOURCE_DIR} */,")
 L(f"\t\t\t\t{test_group} /* Tests */,")
 L(f"\t\t\t\t{uitest_group} /* UITests */,")
 L(f"\t\t\t\t{products_group} /* Products */,")
@@ -358,11 +398,13 @@ L(f"\t\t\t\t{sources_phase} /* Sources */,")
 L(f"\t\t\t\t{frameworks_phase} /* Frameworks */,")
 L(f"\t\t\t\t{resources_phase} /* Resources */,")
 L(f"\t\t\t\t{control_embed_phase} /* Embed Foundation Extensions */,")
+L(f"\t\t\t\t{watch_embed_phase} /* Embed Watch Content */,")
 L("\t\t\t);")
 L("\t\t\tbuildRules = (")
 L("\t\t\t);")
 L("\t\t\tdependencies = (")
 L(f"\t\t\t\t{control_dep} /* PBXTargetDependency */,")
+L(f"\t\t\t\t{watch_dep} /* PBXTargetDependency */,")
 L("\t\t\t);")
 L(f"\t\t\tname = {PROJ};")
 L("\t\t\tpackageProductDependencies = (")
@@ -413,6 +455,22 @@ L(f"\t\t\tproductName = {CONTROL_TARGET};")
 L(f"\t\t\tproductReference = {control_prod_ref} /* {CONTROL_TARGET}.appex */;")
 L('\t\t\tproductType = "com.apple.product-type.app-extension";')
 L("\t\t};")
+L(f"\t\t{watch_target} /* {WATCH_TARGET} */ = {{")
+L("\t\t\tisa = PBXNativeTarget;")
+L(f'\t\t\tbuildConfigurationList = {watch_cfg_list} /* Build configuration list for PBXNativeTarget "{WATCH_TARGET}" */;')
+L("\t\t\tbuildPhases = (")
+L(f"\t\t\t\t{watch_sources_phase} /* Sources */,")
+L(f"\t\t\t\t{watch_frameworks_phase} /* Frameworks */,")
+L("\t\t\t);")
+L("\t\t\tbuildRules = (")
+L("\t\t\t);")
+L("\t\t\tdependencies = (")
+L("\t\t\t);")
+L(f"\t\t\tname = {WATCH_TARGET};")
+L(f"\t\t\tproductName = {WATCH_TARGET};")
+L(f"\t\t\tproductReference = {watch_prod_ref} /* {WATCH_TARGET}.app */;")
+L('\t\t\tproductType = "com.apple.product-type.application";')
+L("\t\t};")
 L("/* End PBXNativeTarget section */")
 
 L("\n/* Begin PBXProject section */")
@@ -427,6 +485,9 @@ L(f"\t\t\t\t\t{app_target} = {{")
 L("\t\t\t\t\t\tCreatedOnToolsVersion = 16.2;")
 L("\t\t\t\t\t};")
 L(f"\t\t\t\t\t{control_target} = {{")
+L("\t\t\t\t\t\tCreatedOnToolsVersion = 16.2;")
+L("\t\t\t\t\t};")
+L(f"\t\t\t\t\t{watch_target} = {{")
 L("\t\t\t\t\t\tCreatedOnToolsVersion = 16.2;")
 L("\t\t\t\t\t};")
 for t in (test_target, uitest_target):
@@ -455,6 +516,7 @@ L('\t\t\tprojectRoot = "";')
 L("\t\t\ttargets = (")
 L(f"\t\t\t\t{app_target} /* {PROJ} */,")
 L(f"\t\t\t\t{control_target} /* {CONTROL_TARGET} */,")
+L(f"\t\t\t\t{watch_target} /* {WATCH_TARGET} */,")
 L(f"\t\t\t\t{test_target} /* {PROJ}Tests */,")
 L(f"\t\t\t\t{uitest_target} /* {PROJ}UITests */,")
 L("\t\t\t);")
@@ -477,6 +539,13 @@ L("\t\t\tproxyType = 1;")
 L(f"\t\t\tremoteGlobalIDString = {control_target};")
 L(f"\t\t\tremoteInfo = {CONTROL_TARGET};")
 L("\t\t};")
+L(f"\t\t{watch_proxy} /* PBXContainerItemProxy */ = {{")
+L("\t\t\tisa = PBXContainerItemProxy;")
+L(f"\t\t\tcontainerPortal = {project_uid} /* Project object */;")
+L("\t\t\tproxyType = 1;")
+L(f"\t\t\tremoteGlobalIDString = {watch_target};")
+L(f"\t\t\tremoteInfo = {WATCH_TARGET};")
+L("\t\t};")
 L("/* End PBXContainerItemProxy section */")
 
 L("\n/* Begin PBXTargetDependency section */")
@@ -490,6 +559,11 @@ L(f"\t\t{control_dep} /* PBXTargetDependency */ = {{")
 L("\t\t\tisa = PBXTargetDependency;")
 L(f"\t\t\ttarget = {control_target} /* {CONTROL_TARGET} */;")
 L(f"\t\t\ttargetProxy = {control_proxy} /* PBXContainerItemProxy */;")
+L("\t\t};")
+L(f"\t\t{watch_dep} /* PBXTargetDependency */ = {{")
+L("\t\t\tisa = PBXTargetDependency;")
+L(f"\t\t\ttarget = {watch_target} /* {WATCH_TARGET} */;")
+L(f"\t\t\ttargetProxy = {watch_proxy} /* PBXContainerItemProxy */;")
 L("\t\t};")
 L("/* End PBXTargetDependency section */")
 
@@ -550,12 +624,25 @@ L("\t\t\trunOnlyForDeploymentPostprocessing = 0;")
 L("\t\t};")
 L("/* End PBXCopyFilesBuildPhase section */")
 
+L(f"\t\t{watch_embed_phase} /* Embed Watch Content */ = {{")
+L("\t\t\tisa = PBXCopyFilesBuildPhase;")
+L("\t\t\tbuildActionMask = 2147483647;")
+L('\t\t\tdstPath = "$(CONTENTS_FOLDER_PATH)/Watch";')
+L("\t\t\tdstSubfolderSpec = 16;")
+L("\t\t\tfiles = (")
+L(f"\t\t\t\t{watch_embed_build} /* {WATCH_TARGET}.app in Embed Watch Content */,")
+L("\t\t\t);")
+L('\t\t\tname = "Embed Watch Content";')
+L("\t\t\trunOnlyForDeploymentPostprocessing = 0;")
+L("\t\t};")
+
 L("\n/* Begin PBXSourcesBuildPhase section */")
 for phase, files, table in [
     (sources_phase, app_files, app_build),
     (test_sources_phase, test_files, test_build),
     (uitest_sources_phase, uitest_files, uitest_build),
     (control_sources_phase, control_files, control_build),
+    (watch_sources_phase, watch_files, watch_build),
 ]:
     L(f"\t\t{phase} /* Sources */ = {{")
     L("\t\t\tisa = PBXSourcesBuildPhase;")
@@ -640,6 +727,24 @@ def control_common():
     ]
 
 
+def watch_common():
+    return [
+        "ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;",
+        "ENABLE_PREVIEWS = YES;",
+        "GENERATE_INFOPLIST_FILE = NO;",
+        f'INFOPLIST_FILE = "{WATCH_INFO_PLIST}";',
+        # The watch app is a companion: it carries no code signing identity of its own
+        # beyond the team's, and its bundle id has to sit under the phone's.
+        f'PRODUCT_BUNDLE_IDENTIFIER = "{BUNDLE_ID_VAR}.watchkitapp";',
+        'PRODUCT_NAME = "$(TARGET_NAME)";',
+        "SDKROOT = watchos;",
+        "SKIP_INSTALL = YES;",
+        'SUPPORTED_PLATFORMS = "watchsimulator watchos";',
+        "TARGETED_DEVICE_FAMILY = 4;",
+        "WATCHOS_DEPLOYMENT_TARGET = 10.0;",
+    ]
+
+
 L("\n/* Begin XCBuildConfiguration section */")
 for env, xcconfig in ENVIRONMENTS:
     cfg = uid("cfg.proj." + env)
@@ -668,6 +773,7 @@ for env, xcconfig in ENVIRONMENTS:
 for prefix, settings in [
     ("cfg.app.", app_common()),
     ("cfg.controls.", control_common()),
+    ("cfg.watch.", watch_common()),
     ("cfg.tests.", test_common()),
     ("cfg.uitests.", uitest_common()),
 ]:
@@ -701,6 +807,7 @@ def emit_cfg_list(list_uid, comment, prefix):
 emit_cfg_list(proj_cfg_list, f'Build configuration list for PBXProject "{PROJ}"', "cfg.proj.")
 emit_cfg_list(app_cfg_list, f'Build configuration list for PBXNativeTarget "{PROJ}"', "cfg.app.")
 emit_cfg_list(control_cfg_list, f'Build configuration list for PBXNativeTarget "{CONTROL_TARGET}"', "cfg.controls.")
+emit_cfg_list(watch_cfg_list, f'Build configuration list for PBXNativeTarget "{WATCH_TARGET}"', "cfg.watch.")
 emit_cfg_list(test_cfg_list, f'Build configuration list for PBXNativeTarget "{PROJ}Tests"', "cfg.tests.")
 emit_cfg_list(uitest_cfg_list, f'Build configuration list for PBXNativeTarget "{PROJ}UITests"', "cfg.uitests.")
 L("/* End XCConfigurationList section */")

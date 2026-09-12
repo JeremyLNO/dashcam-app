@@ -83,8 +83,13 @@ enum LaunchArguments {
     static func applyIfNeeded() {
         guard shouldResetState || shouldSeedScreenshots else { return }
         let defaults = UserDefaults.standard
+        // `install.` belongs in this list, and its absence cost a whole suite: the
+        // satisfaction prompt fires 24 hours after the install date, that date survived
+        // the reset, and once the simulator was a day old every UI test met a sheet
+        // covering the tab bar. The tests had been passing on the clock, not on merit.
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix("settings.")
-            || key.hasPrefix("onboarding.") || key.hasPrefix("review.") || key.hasPrefix("notifications.") {
+            || key.hasPrefix("onboarding.") || key.hasPrefix("review.")
+            || key.hasPrefix("notifications.") || key.hasPrefix("install.") {
             defaults.removeObject(forKey: key)
         }
         try? FileManager.default.removeItem(at: StorageLocations.recordingsRoot)

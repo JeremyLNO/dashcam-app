@@ -37,6 +37,7 @@ final class AppEnvironment: ObservableObject {
     let notifications: NotificationManager
     let review: ReviewPrompter
     let carPlay: CarPlayManager
+    let watchRemote: PhoneRemoteServer
     let carPlayConnection: CarPlayConnectionMonitor
 
     private var cancellables = Set<AnyCancellable>()
@@ -111,6 +112,7 @@ final class AppEnvironment: ObservableObject {
         }
 
         self.carPlay = CarPlayManager(recording: recording)
+        self.watchRemote = PhoneRemoteServer(recording: recording, index: index)
         self.carPlayConnection = CarPlayConnectionMonitor()
 
         // The export renderer needs the overlay preferences but has no business owning

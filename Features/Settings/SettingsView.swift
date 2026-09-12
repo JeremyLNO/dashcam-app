@@ -150,6 +150,21 @@ struct SettingsView: View {
                 options: SegmentDuration.allCases,
                 selection: binding(\.segmentDuration)
             )
+            OptionPickerRow(
+                titleKey: "settings.lens",
+                systemImage: "camera.aperture",
+                accent: .coral,
+                options: RearLens.allCases,
+                detail: { L10n.t($0.detailKey) },
+                selection: lensBinding
+            )
+            ToggleRow(
+                titleKey: "settings.adaptive_image",
+                systemImage: "sun.max.fill",
+                accent: .orange,
+                isOn: binding(\.adaptiveImage)
+            )
+            .accessibilityIdentifier("adaptiveImageToggle")
             ToggleRow(
                 titleKey: "settings.front_camera",
                 systemImage: "person.fill",
@@ -188,6 +203,7 @@ struct SettingsView: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("mountAssistant")
 
+            SettingsNote(textKey: "settings.adaptive_image.footer")
             SettingsNote(textKey: capture.status.isDual ? "settings.recording.footer" : "settings.recording.footer.single")
             SettingsNote(textKey: "settings.carplay_autostart.footer")
         }
@@ -515,6 +531,19 @@ struct SettingsView: View {
             }
             .buttonStyle(.plain)
 
+            Button {
+                // Nothing is undone: the pages explain and switch things on, they do not
+                // reset anything. Someone who skipped them once can walk through them
+                // without losing the settings they have since chosen.
+                settingsStore.hasCompletedOnboarding = false
+            } label: {
+                SettingsRow(titleKey: "settings.replay_onboarding", systemImage: "sparkles.rectangle.stack", accent: .coral) {
+                    chevron
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("replayOnboarding")
+
             SettingsRow(titleKey: "settings.version", systemImage: "number", accent: .violet) {
                 Text(verbatim: appVersion)
                     .font(.system(size: 16, weight: .medium))
@@ -572,6 +601,18 @@ struct SettingsView: View {
             get: { settingsStore.settings.quality },
             set: { newValue in
                 settingsStore.settings.quality = newValue
+                Task { await environment.reconfigureCapture() }
+            }
+        )
+    }
+
+    /// Changing lens means a different capture device, so the graph is rebuilt — the
+    /// same reason quality and the cabin camera do.
+    private var lensBinding: Binding<RearLens> {
+        Binding(
+            get: { settingsStore.settings.rearLens },
+            set: { newValue in
+                settingsStore.settings.rearLens = newValue
                 Task { await environment.reconfigureCapture() }
             }
         )
@@ -807,6 +848,7 @@ protocol SettingsOption: Identifiable, Hashable {
 }
 
 extension VideoQuality: SettingsOption {}
+extension RearLens: SettingsOption {}
 extension SegmentDuration: SettingsOption {}
 extension RetentionPolicy: SettingsOption {}
 extension StorageLimit: SettingsOption {}

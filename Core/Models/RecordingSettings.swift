@@ -217,6 +217,33 @@ struct OverlayFields: OptionSet, Codable, Sendable {
 
 // MARK: - Settings aggregate
 
+/// Which back lens films the road.
+///
+/// A dashcam wants to see wide — but an ultra-wide lens spreads the same sensor over
+/// twice the scene, and a number plate ten metres ahead stops being readable. That is
+/// usually the only thing anyone needs from the footage, so the choice belongs to the
+/// driver rather than to a default.
+enum RearLens: String, Codable, CaseIterable, Identifiable, Sendable {
+    case ultraWide
+    case wide
+
+    var id: String { rawValue }
+
+    var titleKey: String {
+        switch self {
+        case .ultraWide: return "lens.choice.ultrawide"
+        case .wide: return "lens.choice.wide"
+        }
+    }
+
+    var detailKey: String {
+        switch self {
+        case .ultraWide: return "lens.choice.ultrawide.detail"
+        case .wide: return "lens.choice.wide.detail"
+        }
+    }
+}
+
 /// Every user preference in one Codable value. Persisted by `SettingsStore`; the whole
 /// struct is replaced on each change, which keeps observers trivially correct.
 struct RecordingSettings: Codable, Equatable, Sendable {
@@ -242,6 +269,13 @@ struct RecordingSettings: Codable, Equatable, Sendable {
     var overlayEnabled: Bool = true
     var overlayFields: OverlayFields = .default
     var frontCameraEnabled: Bool = true
+    /// Ultra wide by default — the widest view of the road — with the wide lens offered
+    /// for anyone who would rather read a plate than see the pavement.
+    var rearLens: RearLens = .ultraWide
+    /// Steers exposure with what the sensor is already measuring: caps the shutter so a
+    /// moving plate does not smear at night, and lifts the exposure on snow and sunlight,
+    /// which a light meter reads as "too bright" and darkens.
+    var adaptiveImage: Bool = true
     /// Export a protected window by itself as soon as the drive ends. Off by default:
     /// nothing writes to someone's photo library unasked. Needs a subscription, like every
     /// other export.
@@ -282,6 +316,8 @@ struct RecordingSettings: Codable, Equatable, Sendable {
         overlayEnabled = value(.overlayEnabled, defaults.overlayEnabled)
         overlayFields = value(.overlayFields, defaults.overlayFields)
         frontCameraEnabled = value(.frontCameraEnabled, defaults.frontCameraEnabled)
+        rearLens = value(.rearLens, defaults.rearLens)
+        adaptiveImage = value(.adaptiveImage, defaults.adaptiveImage)
         autoExportProtected = value(.autoExportProtected, defaults.autoExportProtected)
         requireBiometricUnlock = value(.requireBiometricUnlock, defaults.requireBiometricUnlock)
     }

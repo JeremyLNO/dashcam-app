@@ -40,7 +40,8 @@ struct OnboardingView: View {
                     ForEach(pages) { item in
                         pageView(item).tag(item.id)
                     }
-                    permissionPage.tag(pages.count)
+                    featuresPage.tag(pages.count)
+                    permissionPage.tag(pages.count + 1)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
 
@@ -93,6 +94,92 @@ struct OnboardingView: View {
         .padding(.top, 20)
     }
 
+    /// Explaining a feature and then leaving it buried in Settings is how features go
+    /// unused. Each line here says what it does in one sentence and switches it on where
+    /// it is read — the only place the reader is already thinking about it.
+    ///
+    /// Nothing is turned on behind the driver's back: every switch shows the state it is
+    /// actually in, defaults included.
+    private var featuresPage: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(key: "onboarding.6.title")
+                    .font(.system(size: 34, weight: .heavy))
+                    .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .minimumScaleFactor(0.7)
+                Text(key: "onboarding.6.body")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                featureSwitch(
+                    icon: "person.fill", accent: .blue,
+                    titleKey: "settings.front_camera", detailKey: "onboarding.feature.cabin",
+                    isOn: binding(\.frontCameraEnabled)
+                )
+                featureSwitch(
+                    icon: "mic.fill", accent: .teal,
+                    titleKey: "settings.audio", detailKey: "onboarding.feature.audio",
+                    isOn: binding(\.recordAudio)
+                )
+                featureSwitch(
+                    icon: "car.side.rear.and.collision.and.car.side.front", accent: .coral,
+                    titleKey: "settings.impact", detailKey: "onboarding.feature.impact",
+                    isOn: binding(\.impactDetectionEnabled)
+                )
+                featureSwitch(
+                    icon: "location.fill", accent: .teal,
+                    titleKey: "settings.location", detailKey: "onboarding.feature.location",
+                    isOn: binding(\.locationMetadataEnabled)
+                )
+                featureSwitch(
+                    icon: "sun.max.fill", accent: .orange,
+                    titleKey: "settings.adaptive_image", detailKey: "onboarding.feature.adaptive",
+                    isOn: binding(\.adaptiveImage)
+                )
+                featureSwitch(
+                    icon: "square.and.arrow.up.fill", accent: .violet,
+                    titleKey: "settings.auto_export", detailKey: "onboarding.feature.auto_export",
+                    isOn: binding(\.autoExportProtected)
+                )
+            }
+            .padding(.horizontal, 22)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    private func featureSwitch(icon: String, accent: Accent, titleKey: String, detailKey: String, isOn: Binding<Bool>) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            IconBadge(systemImage: icon, accent: accent, size: 38)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(key: titleKey)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(key: detailKey)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 4)
+            Toggle("", isOn: isOn)
+                .labelsHidden()
+                .tint(Theme.success)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .dashcamCard(padding: 14, corner: 18)
+        .accessibilityElement(children: .contain)
+    }
+
+    private func binding(_ keyPath: WritableKeyPath<RecordingSettings, Bool>) -> Binding<Bool> {
+        Binding(
+            get: { settingsStore.settings[keyPath: keyPath] },
+            set: { settingsStore.settings[keyPath: keyPath] = $0 }
+        )
+    }
+
     /// The last card asks for the camera, and names the three permissions that are *not*
     /// being asked for yet — each is requested at the moment it first becomes useful.
     private var permissionPage: some View {
@@ -136,7 +223,7 @@ struct OnboardingView: View {
 
     private var pageDots: some View {
         HStack(spacing: 7) {
-            ForEach(0...pages.count, id: \.self) { index in
+            ForEach(0...(pages.count + 1), id: \.self) { index in
                 Capsule()
                     .fill(index == page ? currentAccent.strong : Theme.separator)
                     .frame(width: index == page ? 22 : 8, height: 8)
@@ -147,8 +234,13 @@ struct OnboardingView: View {
     }
 
     private var currentAccent: Accent {
-        page < pages.count ? pages[page].accent : .coral
+        if page < pages.count { return pages[page].accent }
+        return page == pages.count ? .violet : .coral
     }
+
+    /// The camera page is the last one, and the only one whose button asks the system
+    /// for something.
+    private var isOnPermissionPage: Bool { page == pages.count + 1 }
 
     private var footer: some View {
         VStack(spacing: 10) {
@@ -159,7 +251,7 @@ struct OnboardingView: View {
                     ProgressView().tint(.white)
                 } else {
                     HStack(spacing: 10) {
-                        Text(key: page == pages.count ? "onboarding.enable_camera" : "common.continue")
+                        Text(key: isOnPermissionPage ? "onboarding.enable_camera" : "common.continue")
                         Image(systemName: "arrow.right")
                             .font(.system(size: 18, weight: .bold))
                     }
@@ -168,7 +260,7 @@ struct OnboardingView: View {
             .buttonStyle(PrimaryButtonStyle(fill: currentAccent.strong, height: 66))
             .accessibilityIdentifier("onboardingContinue")
 
-            if page == pages.count {
+            if isOnPermissionPage {
                 Button {
                     finish()
                 } label: {
@@ -183,7 +275,7 @@ struct OnboardingView: View {
     }
 
     private func advance() async {
-        guard page == pages.count else {
+        guard isOnPermissionPage else {
             withAnimation { page += 1 }
             return
         }

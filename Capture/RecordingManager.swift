@@ -33,6 +33,16 @@ final class RecordingManager: ObservableObject {
     /// rather than on one still being written to.
     var onSessionFinished: ((UUID) -> Void)?
 
+    /// True while a drive is waiting for an interruption to clear.
+    ///
+    /// A phone call stops the capture — iOS gives the camera to the caller and there is
+    /// nothing an app can do about it. What the app *can* do is remember that the driver
+    /// never asked to stop, and start filming again the moment the hardware comes back.
+    /// Without this, a two-minute call ended the drive for good: the app looked normal,
+    /// the road was no longer being recorded, and the only sign was an alert already
+    /// dismissed.
+    @Published private(set) var isWaitingToResume = false
+
     private let capture: CaptureManager
     private let settingsStore: SettingsStore
     private let index: SessionIndex
@@ -136,6 +146,13 @@ final class RecordingManager: ObservableObject {
     }
 
     func stop() async {
+        await stop(keepingResumeIntent: false)
+    }
+
+    /// `keepingResumeIntent` is the difference between "the driver pressed Stop" and
+    /// "iOS took the camera away": only the second one may start again on its own.
+    func stop(keepingResumeIntent: Bool) async {
+        if !keepingResumeIntent { isWaitingToResume = false }
         guard isRecording, let sessionID = currentSessionID else { return }
         isRecording = false
         ticker?.cancel()
@@ -304,7 +321,20 @@ final class RecordingManager: ObservableObject {
                         messageKey: interruption.messageKey,
                         isCritical: true
                     )
-                    Task { await self?.stop() }
+                    self?.isWaitingToResume = interruption.isTemporary
+                    Task { await self?.stop(keepingResumeIntent: interruption.isTemporary) }
+                }
+
+                // The hardware is back. A drive that was interrupted rather than stopped
+                // starts again by itself — a new drive in the library, because the
+                // footage really is discontinuous, but no gap the driver has to notice.
+                if status.interruption == nil, self?.isWaitingToResume == true, status.isRunning {
+                    self?.isWaitingToResume = false
+                    Task { [weak self] in
+                        guard let self, !self.isRecording else { return }
+                        Log.recording.info("Resuming after an interruption")
+                        await self.start()
+                    }
                 }
             }
             .store(in: &cancellables)

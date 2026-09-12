@@ -52,6 +52,20 @@ enum CaptureInterruption: Equatable, Sendable {
         }
     }
 
+    /// Whether the camera can be expected back without the driver doing anything.
+    ///
+    /// A phone call, another app borrowing the camera, thermal pressure: all of them end.
+    /// A permission that was refused, or a device that does not exist, does not — and
+    /// waiting to resume from those would be waiting forever.
+    var isTemporary: Bool {
+        switch self {
+        case .phoneCall, .takenByAnotherApp, .videoDeviceTemporarilyUnavailable, .systemPressure:
+            return true
+        case .notRunnableInBackground, .sensitiveContentBlocked, .unknown:
+            return false
+        }
+    }
+
     init(reason: AVCaptureSession.InterruptionReason) {
         switch reason {
         case .audioDeviceInUseByAnotherClient: self = .phoneCall

@@ -106,6 +106,8 @@ final class CaptureManager: ObservableObject {
         let wantsFront = settings.frontCameraEnabled
         let wantsAudio = settings.recordAudio && AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
         let quality = settings.quality
+        let lens = settings.rearLens
+        let adaptiveImage = settings.adaptiveImage
 
         let result = await withCheckedContinuation { (continuation: CheckedContinuation<BuildResult, Never>) in
             sessionQueue.async { [weak self] in
@@ -117,7 +119,13 @@ final class CaptureManager: ObservableObject {
                     ))
                     return
                 }
-                continuation.resume(returning: self.buildSession(quality: quality, wantsFront: wantsFront, wantsAudio: wantsAudio))
+                continuation.resume(returning: self.buildSession(
+                    quality: quality,
+                    wantsFront: wantsFront,
+                    wantsAudio: wantsAudio,
+                    lens: lens,
+                    adaptiveImage: adaptiveImage
+                ))
             }
         }
 
@@ -187,14 +195,20 @@ final class CaptureManager: ObservableObject {
     // MARK: - Session construction
 
     /// Runs on `sessionQueue`. Returns the status to publish.
-    nonisolated private func buildSession(quality: VideoQuality, wantsFront: Bool, wantsAudio: Bool) -> BuildResult {
+    nonisolated private func buildSession(
+        quality: VideoQuality,
+        wantsFront: Bool,
+        wantsAudio: Bool,
+        lens: RearLens = .ultraWide,
+        adaptiveImage: Bool = true
+    ) -> BuildResult {
         tearDown()
 
-        guard let rearDevice = Self.preferredRearDevice() else {
+        guard let rearDevice = Self.preferredRearDevice(lens: lens) else {
             return BuildResult(status: CaptureStatus(mode: .unavailable, unavailability: .noCamera), rearFormat: .resolved(for: quality, codec: AVVideoCodecType.h264.rawValue), frontFormat: .resolved(for: quality, codec: AVVideoCodecType.h264.rawValue))
         }
 
-        let multiCamPair = wantsFront ? Self.multiCamPair(preferring: rearDevice) : nil
+        let multiCamPair = wantsFront ? Self.multiCamPair(preferring: rearDevice, lens: lens) : nil
         let useMultiCam = multiCamPair != nil && AVCaptureMultiCamSession.isMultiCamSupported
 
         let session: AVCaptureSession = useMultiCam ? AVCaptureMultiCamSession() : AVCaptureSession()
@@ -218,6 +232,14 @@ final class CaptureManager: ObservableObject {
         )
         _ = rearDimensions   // the writer sizes each segment from the frames it receives
         let rearFormat = VideoFormatDescriptor.resolved(for: quality, codec: codec)
+
+        // Exposure is steered after the format is chosen, because what a format supports
+        // — video HDR above all — is only knowable once it is the active one.
+        if adaptiveImage {
+            sceneOptimiser.start(on: effectiveRear)
+        } else {
+            sceneOptimiser.stop()
+        }
 
         rearOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
         // Dropping a late frame is strictly better than letting buffers pile up until the
@@ -328,7 +350,11 @@ final class CaptureManager: ObservableObject {
         return true
     }
 
+    /// Reads the scene from the rear device and steers exposure with it.
+    nonisolated private let sceneOptimiser = SceneOptimiser(queue: DispatchQueue(label: "dashcam.scene", qos: .utility))
+
     nonisolated private func tearDown() {
+        sceneOptimiser.stop()
         if let session {
             session.stopRunning()
             session.beginConfiguration()
@@ -346,9 +372,17 @@ final class CaptureManager: ObservableObject {
 
     /// Ultra wide first (a dashcam wants the widest field of view it can get), wide as a
     /// fallback on devices with no ultra-wide lens.
-    nonisolated private static func preferredRearDevice() -> AVCaptureDevice? {
-        AVCaptureDevice.default(.builtInUltraWideCamera, for: .video, position: .back)
-            ?? AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
+    nonisolated private static func preferredRearDevice(lens: RearLens) -> AVCaptureDevice? {
+        switch lens {
+        case .ultraWide:
+            return AVCaptureDevice.default(.builtInUltraWideCamera, for: .video, position: .back)
+                ?? AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
+        case .wide:
+            // No falling back to ultra-wide here: someone who asked for the readable lens
+            // would rather have the wide one than the opposite of their choice.
+            return AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
+                ?? AVCaptureDevice.default(.builtInUltraWideCamera, for: .video, position: .back)
+        }
     }
 
     /// Finds a back+front pair that the hardware actually supports running together.
@@ -356,7 +390,7 @@ final class CaptureManager: ObservableObject {
     /// Never assumes a combination: it reads `supportedMultiCamDeviceSets` and picks the
     /// first set containing both a back and a front camera, preferring the set that also
     /// contains the ultra-wide lens.
-    nonisolated private static func multiCamPair(preferring preferredRear: AVCaptureDevice) -> (rear: AVCaptureDevice, front: AVCaptureDevice)? {
+    nonisolated private static func multiCamPair(preferring preferredRear: AVCaptureDevice, lens: RearLens = .ultraWide) -> (rear: AVCaptureDevice, front: AVCaptureDevice)? {
         guard AVCaptureMultiCamSession.isMultiCamSupported else { return nil }
 
         let discovery = AVCaptureDevice.DiscoverySession(
@@ -374,8 +408,10 @@ final class CaptureManager: ObservableObject {
             if let exact = backs.first(where: { $0.uniqueID == preferredRear.uniqueID }) {
                 return (exact, front)
             }
-            if let ultraWide = backs.first(where: { $0.deviceType == .builtInUltraWideCamera }) {
-                return (ultraWide, front)
+            // Second choice is the lens the driver asked for, in whatever set offers it.
+            let wanted: AVCaptureDevice.DeviceType = lens == .wide ? .builtInWideAngleCamera : .builtInUltraWideCamera
+            if let match = backs.first(where: { $0.deviceType == wanted }) {
+                return (match, front)
             }
             if fallback == nil, let anyBack = backs.first(where: { $0.deviceType == .builtInWideAngleCamera }) ?? backs.first {
                 fallback = (anyBack, front)

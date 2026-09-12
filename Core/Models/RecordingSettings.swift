@@ -222,7 +222,10 @@ struct OverlayFields: OptionSet, Codable, Sendable {
 struct RecordingSettings: Codable, Equatable, Sendable {
     var quality: VideoQuality = .standard
     var segmentDuration: SegmentDuration = .threeMinutes
-    var recordAudio: Bool = false
+    /// On by default. A dashcam that films a collision without the sound of it captures
+    /// half the event — the impact, the horn, what was said — and the microphone is asked
+    /// for at the first recording, not behind the driver's back.
+    var recordAudio: Bool = true
     var retention: RetentionPolicy = .thirtyDays
     var storageLimit: StorageLimit = .gb10
     var autoStartOnLaunch: Bool = false
@@ -247,6 +250,41 @@ struct RecordingSettings: Codable, Equatable, Sendable {
     /// Face ID / Touch ID before the video library opens. Off by default: a lock the
     /// driver did not ask for is a lock between them and their own evidence.
     var requireBiometricUnlock: Bool = false
+
+    /// Decoding tolerates a stored blob from an older version.
+    ///
+    /// The synthesised decoder does not fall back on these defaults: one missing key and
+    /// it throws, the store catches nothing useful, and **every preference silently
+    /// returns to factory**. That is what happened to a driver who turned a setting on,
+    /// updated the app, and found it off again — the new field added by the update made
+    /// the whole blob undecodable. Reading each key on its own costs a page of code and
+    /// makes adding a setting harmless.
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = RecordingSettings()
+        func value<T: Decodable>(_ key: CodingKeys, _ fallback: T) -> T {
+            (try? container.decodeIfPresent(T.self, forKey: key)) .flatMap { $0 } ?? fallback
+        }
+        quality = value(.quality, defaults.quality)
+        segmentDuration = value(.segmentDuration, defaults.segmentDuration)
+        recordAudio = value(.recordAudio, defaults.recordAudio)
+        retention = value(.retention, defaults.retention)
+        storageLimit = value(.storageLimit, defaults.storageLimit)
+        autoStartOnLaunch = value(.autoStartOnLaunch, defaults.autoStartOnLaunch)
+        startOnCarPlayConnect = value(.startOnCarPlayConnect, defaults.startOnCarPlayConnect)
+        discreetDelay = value(.discreetDelay, defaults.discreetDelay)
+        impactDetectionEnabled = value(.impactDetectionEnabled, defaults.impactDetectionEnabled)
+        shockSensitivity = value(.shockSensitivity, defaults.shockSensitivity)
+        harshBrakingDetectionEnabled = value(.harshBrakingDetectionEnabled, defaults.harshBrakingDetectionEnabled)
+        locationMetadataEnabled = value(.locationMetadataEnabled, defaults.locationMetadataEnabled)
+        overlayEnabled = value(.overlayEnabled, defaults.overlayEnabled)
+        overlayFields = value(.overlayFields, defaults.overlayFields)
+        frontCameraEnabled = value(.frontCameraEnabled, defaults.frontCameraEnabled)
+        autoExportProtected = value(.autoExportProtected, defaults.autoExportProtected)
+        requireBiometricUnlock = value(.requireBiometricUnlock, defaults.requireBiometricUnlock)
+    }
 
     /// How far back a *manual* Protect reaches, and how far forward it holds.
     ///

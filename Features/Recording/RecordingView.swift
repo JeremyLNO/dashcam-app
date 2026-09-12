@@ -67,6 +67,15 @@ struct RecordingView: View {
     /// driver reads sits in a column on the right.
     private var isLandscape: Bool { verticalSizeClass == .compact }
 
+    /// The shape of the file being written, not a shape of the preview's own choosing.
+    /// A 16:9 recording shown in a 4:3 box either crops the road away or pads it with
+    /// bars, and in both cases the driver is not looking at what is being recorded.
+    private var previewAspect: CGFloat {
+        let format = VideoFormatDescriptor.resolved(for: thermal.effectiveQuality, codec: "")
+        guard format.outputHeight > 0 else { return 16.0 / 9.0 }
+        return CGFloat(format.outputWidth) / CGFloat(format.outputHeight)
+    }
+
     private var controlHeight: CGFloat {
         isLandscape ? Theme.compactControlHeight : Theme.controlHeight
     }
@@ -88,7 +97,7 @@ struct RecordingView: View {
             VStack(spacing: 18) {
                 header
                 previews
-                    .frame(height: 300)
+                    .aspectRatio(previewAspect, contentMode: .fit)
                 hardwareRow
                 controls
                 // While recording, the figures give way: the road and the two controls
@@ -108,6 +117,7 @@ struct RecordingView: View {
     private var landscapeContent: some View {
         HStack(alignment: .top, spacing: 14) {
             previews
+                .aspectRatio(previewAspect, contentMode: .fit)
                 .frame(maxWidth: .infinity)
                 // The tab bar floats over the content, so the preview has to stop short
                 // of it rather than disappear behind it.
@@ -183,7 +193,7 @@ struct RecordingView: View {
 
                 if capture.status.frontActive {
                     CameraPreviewView(previewLayer: capture.frontPreviewLayer)
-                        .frame(width: proxy.size.width * 0.30, height: proxy.size.width * 0.30 * 3 / 4)
+                        .frame(width: proxy.size.width * 0.30, height: proxy.size.width * 0.30 / previewAspect)
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -212,7 +222,6 @@ struct RecordingView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(minHeight: isLandscape ? 150 : 220)
         .softShadow()
     }
 
@@ -268,13 +277,23 @@ struct RecordingView: View {
                 stateKey: capture.status.frontActive ? readyStateKey : "status.off",
                 isOn: capture.status.frontActive
             )
-            hardwareCard(
-                titleKey: "status.gps",
-                systemImage: "location.fill",
-                accent: .teal,
-                stateKey: gpsStateKey,
-                isOn: location.isAuthorized
-            )
+            // GPS is the one of the three a driver can actually change from here, so it
+            // is a button rather than a lamp: tapping asks for the permission when it has
+            // never been asked, sends them to Settings when they refused it once, and
+            // otherwise turns the metadata on and off.
+            Button { toggleLocation() } label: {
+                hardwareCard(
+                    titleKey: "status.gps",
+                    systemImage: "location.fill",
+                    accent: .teal,
+                    stateKey: gpsStateKey,
+                    isOn: isLocationOn
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("gpsToggle")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint(Text(key: "a11y.gps_hint"))
         }
     }
 
@@ -301,9 +320,39 @@ struct RecordingView: View {
         recording.isRecording ? "status.recording" : "record.ready"
     }
 
+    /// On means both halves are true: the user wants position, and iOS allows it.
+    private var isLocationOn: Bool {
+        settingsStore.settings.locationMetadataEnabled && location.isAuthorized
+    }
+
     private var gpsStateKey: String {
-        guard location.isAuthorized else { return "status.off" }
+        if !location.isAuthorized {
+            return location.authorization == .denied || location.authorization == .restricted
+                ? "status.denied"
+                : "status.off"
+        }
+        if !settingsStore.settings.locationMetadataEnabled { return "status.off" }
         return location.latest == nil ? "status.searching" : readyStateKey
+    }
+
+    private func toggleLocation() {
+        noteInteraction()
+        switch location.authorization {
+        case .notDetermined:
+            settingsStore.settings.locationMetadataEnabled = true
+            environment.location.requestAuthorization()
+        case .denied, .restricted:
+            // Nothing in the app can grant this back, so the honest move is to open the
+            // one place that can.
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
+        default:
+            settingsStore.settings.locationMetadataEnabled.toggle()
+            if settingsStore.settings.locationMetadataEnabled {
+                environment.location.requestAuthorization()
+            }
+        }
     }
 
     // MARK: - Controls

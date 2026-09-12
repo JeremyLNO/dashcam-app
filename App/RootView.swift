@@ -33,7 +33,9 @@ struct RootView: View {
         // would leave half the app cream and the other half charcoal, and every pastel
         // ground unreadable — so the appearance is fixed rather than inherited.
         .preferredColorScheme(.light)
-        .onAppear { Self.applyBarAppearance() }
+        // Windows are created after the app's initialiser runs, so the style is forced
+        // again once there is something to force it on.
+        .onAppear { Self.forceLightWindows() }
         .onChange(of: scenePhase) { _, phase in
             handle(phase: phase)
         }
@@ -98,6 +100,18 @@ extension RootView {
     /// UIKit still owns the tab bar and the navigation bar. Both are repainted in the
     /// app's cream rather than the system's translucent grey, which reads as a different
     /// application sitting under the content.
+    /// `preferredColorScheme` governs SwiftUI's own drawing; it does not reach the UIKit
+    /// views underneath — the tab bar, the navigation bar, and MapKit, which renders dark
+    /// tiles the moment it believes the interface is dark.
+    static func forceLightWindows() {
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            for window in windowScene.windows {
+                window.overrideUserInterfaceStyle = .light
+            }
+        }
+    }
+
     static func applyBarAppearance() {
         let ground = UIColor(Theme.background)
 

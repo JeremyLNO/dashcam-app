@@ -112,6 +112,7 @@
 		996AD237BC284D463E664FFE /* Dashcam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dashcam.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F44A94D97C6F6BC4311E5C20 /* DashcamControls.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "DashcamControls.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4EDB7A12CEA6E59121965192 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7592BDD574B1635BCAA504BE /* DashcamControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DashcamControls.swift"; sourceTree = "<group>"; };
 		BD5FEB36355BB38F98691943 /* DashcamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DashcamTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE9198967288169819E0B4CF /* DashcamUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DashcamUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		98A98A8D12AAAE9D910CAC37 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppEnvironment.swift"; sourceTree = "<group>"; };

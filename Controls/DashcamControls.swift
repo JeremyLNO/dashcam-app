@@ -8,17 +8,17 @@ import WidgetKit
 /// its cradle: every second spent finding an app icon is a second of road not filmed.
 /// Since iOS 18 that gesture can live in Control Center, on the Lock Screen, or on the
 /// Action button — which is as close to a physical record button as an iPhone gets.
+/// The extension itself targets iOS 18, so nothing here needs an availability branch —
+/// and a `@main` whose body was wrapped in one produced a binary with no Swift entry
+/// point at all, which App Store Connect rejects outright.
 @main
 struct DashcamControlBundle: WidgetBundle {
     var body: some Widget {
-        if #available(iOS 18.0, *) {
-            StartRecordingControl()
-            ProtectFootageControl()
-        }
+        StartRecordingControl()
+        ProtectFootageControl()
     }
 }
 
-@available(iOS 18.0, *)
 struct StartRecordingControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "company.lno.dashcam.control.start") {
@@ -31,7 +31,6 @@ struct StartRecordingControl: ControlWidget {
     }
 }
 
-@available(iOS 18.0, *)
 struct ProtectFootageControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "company.lno.dashcam.control.protect") {

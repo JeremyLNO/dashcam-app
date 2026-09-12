@@ -5,6 +5,14 @@ import UIKit
 struct DashcamApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
+    /// The bar appearance has to be set before the first bar exists: `UIBar*.appearance()`
+    /// is a proxy consulted at creation time, so doing this from a view's `onAppear` —
+    /// as it was — left the tab bar wearing the system's default grey for the life of the
+    /// process.
+    init() {
+        RootView.applyBarAppearance()
+    }
+
     var body: some Scene {
         WindowGroup {
             if let environment = appDelegate.environment {

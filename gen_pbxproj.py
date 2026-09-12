@@ -244,6 +244,12 @@ L("\n/* Begin PBXFileReference section */")
 L(f'\t\t{prod_ref} /* {PROJ}.app */ = {{isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "{PROJ}.app"; sourceTree = BUILT_PRODUCTS_DIR; }};')
 L(f'\t\t{control_prod_ref} /* {CONTROL_TARGET}.appex */ = {{isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "{CONTROL_TARGET}.appex"; sourceTree = BUILT_PRODUCTS_DIR; }};')
 L(f'\t\t{control_plist_ref} /* Info.plist */ = {{isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; }};')
+# The extension's own sources are not under any app source directory, so nothing else
+# emits their file references. A reference listed in a group but never defined is not an
+# error in Xcode: the file is quietly dropped from the target, which is how the widget
+# bundle came to be missing from a binary that still built and linked.
+for f in find_swift(CONTROL_SOURCE_DIR):
+    L(f'\t\t{fileref(f)} /* {os.path.basename(f)} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "{os.path.basename(f)}"; sourceTree = "<group>"; }};')
 L(f'\t\t{test_prod_ref} /* {PROJ}Tests.xctest */ = {{isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "{PROJ}Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; }};')
 L(f'\t\t{uitest_prod_ref} /* {PROJ}UITests.xctest */ = {{isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "{PROJ}UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; }};')
 for f in sorted(set(app_files + test_files + uitest_files)):

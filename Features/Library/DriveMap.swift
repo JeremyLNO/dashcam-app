@@ -59,6 +59,9 @@ struct DriveMap: View {
             }
         }
         .mapStyle(.standard(elevation: .flat))
+        // MapKit picks its palette from the trait collection, not from the app's taste:
+        // without this the route is drawn on night-time tiles inside a cream card.
+        .environment(\.colorScheme, .light)
         .frame(height: 210)
         .clipShape(RoundedRectangle(cornerRadius: Theme.tileCorner, style: .continuous))
         .allowsHitTesting(true)

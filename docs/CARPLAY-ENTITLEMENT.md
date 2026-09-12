@@ -4,7 +4,18 @@ Apple grants `com.apple.developer.carplay-driving-task` per app, by hand, throug
 <https://developer.apple.com/contact/carplay/>. There is no API: the form sits behind an
 Apple Developer sign-in and has to be submitted by someone holding the account.
 
-Everything the form asks for is below, ready to paste.
+**Demandée le 2026-09-12** — Apple a répondu « Thank you for your submission. We'll review
+your request and contact you soon with a status update. » En attente de leur réponse.
+
+⚠️ **Le volet Driving Task ne demande aucune description.** Les champs « Tell us about your
+app » et « What specific CarPlay features do you plan to implement ? », ainsi que les trois
+téléversements de captures, n'existent que pour la catégorie **Navigation** : ils sont dans
+le DOM mais en `display:none` pour toutes les autres. La demande s'est donc résumée à
+choisir la catégorie et à accepter le **CarPlay Entitlement Addendum** (un avenant à l'Apple
+Developer Program License Agreement, qui engage le compte).
+
+Le dossier ci-dessous n'a donc pas servi au formulaire, mais il reste ce qu'il faut dire si
+Apple demande des précisions par mail.
 
 ## Identity
 

@@ -79,6 +79,7 @@ struct RootView: View {
             environment.notifications.refreshAuthorization()
             review.evaluate(isRecording: recording.isRecording)
             environment.capture.startRunning()
+            environment.applyLocationIntent(isForeground: true)
         case .inactive:
             break
         case .background:
@@ -89,6 +90,7 @@ struct RootView: View {
                 Task { await recording.stop() }
             }
             environment.capture.stopRunning()
+            environment.applyLocationIntent(isForeground: false)
             environment.index.save()
         @unknown default:
             break

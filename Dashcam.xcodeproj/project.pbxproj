@@ -44,6 +44,7 @@
 		A405F3FBA12D4A3759E5436E /* StorageLocations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CBC9DA2BA9DF3F3ADF792AF /* StorageLocations.swift */; };
 		D2A20A7520B94707BF3AA8DE /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A504B2DD910C9470D162881D /* StorageManager.swift */; };
 		5FA5560F181100EB9A15833C /* DistanceAccumulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97093AD977A0D3370F9EE53A /* DistanceAccumulator.swift */; };
+		B0C706E8DCB1D0E71279FB36 /* LocationIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47873EB782820A5DFABCB54 /* LocationIntent.swift */; };
 		D95A9ABB28F63F6528DF6B37 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C7E056B15F9FDD35D5D89A /* LocationManager.swift */; };
 		AA3FA3E52553070377771D59 /* MotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52EAEF1578E7D787F4B98E /* MotionManager.swift */; };
 		6DF25B6C22F3B7F426DEB2E8 /* EventProtectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50956EA61122B89917F75DBA /* EventProtectionManager.swift */; };
@@ -85,6 +86,7 @@
 		2DAC20DB9E7D24F4797B8F3C /* ImpactDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA9A921B3C843CAB0ECFDD0 /* ImpactDetectionTests.swift */; };
 		C5AC5FB6202CDDA845AEA68D /* InterruptionResumeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8563EFE87BCEE1A14BC6A001 /* InterruptionResumeTests.swift */; };
 		FBC8B6D256CBCB01E684CF63 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130EC405E03FC44301BC91F3 /* LocalizationTests.swift */; };
+		D72F516763238362A0B279CD /* LocationIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E771BF43EFE83BDC0C356F /* LocationIntentTests.swift */; };
 		F59CA9E56C9AD109BF17CF29 /* PictureInPictureRenderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A57C287E2DD4EFD163E888A /* PictureInPictureRenderTests.swift */; };
 		8BB60537CD5122495951D592 /* RecordingEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D52B897BCBACEE8F07C2AAC /* RecordingEngineTests.swift */; };
 		4BB0E281E23143258D8A0749 /* RemoteProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCAD3616A0C418E8C2ABDD3 /* RemoteProtocolTests.swift */; };
@@ -188,6 +190,7 @@
 		609947873BB6ABA09F8E94A8 /* ControlCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ControlCommands.swift"; sourceTree = "<group>"; };
 		B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingIntents.swift"; sourceTree = "<group>"; };
 		97093AD977A0D3370F9EE53A /* DistanceAccumulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DistanceAccumulator.swift"; sourceTree = "<group>"; };
+		D47873EB782820A5DFABCB54 /* LocationIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationIntent.swift"; sourceTree = "<group>"; };
 		A4C7E056B15F9FDD35D5D89A /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationManager.swift"; sourceTree = "<group>"; };
 		0C52EAEF1578E7D787F4B98E /* MotionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MotionManager.swift"; sourceTree = "<group>"; };
 		48890A4681B03AEECB35592D /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NotificationManager.swift"; sourceTree = "<group>"; };
@@ -211,6 +214,7 @@
 		ECA9A921B3C843CAB0ECFDD0 /* ImpactDetectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImpactDetectionTests.swift"; sourceTree = "<group>"; };
 		8563EFE87BCEE1A14BC6A001 /* InterruptionResumeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InterruptionResumeTests.swift"; sourceTree = "<group>"; };
 		130EC405E03FC44301BC91F3 /* LocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocalizationTests.swift"; sourceTree = "<group>"; };
+		75E771BF43EFE83BDC0C356F /* LocationIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationIntentTests.swift"; sourceTree = "<group>"; };
 		4A57C287E2DD4EFD163E888A /* PictureInPictureRenderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictureInPictureRenderTests.swift"; sourceTree = "<group>"; };
 		9D52B897BCBACEE8F07C2AAC /* RecordingEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingEngineTests.swift"; sourceTree = "<group>"; };
 		3BCAD3616A0C418E8C2ABDD3 /* RemoteProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RemoteProtocolTests.swift"; sourceTree = "<group>"; };
@@ -376,6 +380,7 @@
 			isa = PBXGroup;
 			children = (
 				97093AD977A0D3370F9EE53A /* DistanceAccumulator.swift */,
+				D47873EB782820A5DFABCB54 /* LocationIntent.swift */,
 				A4C7E056B15F9FDD35D5D89A /* LocationManager.swift */,
 			);
 			path = Location;
@@ -548,6 +553,7 @@
 				ECA9A921B3C843CAB0ECFDD0 /* ImpactDetectionTests.swift */,
 				8563EFE87BCEE1A14BC6A001 /* InterruptionResumeTests.swift */,
 				130EC405E03FC44301BC91F3 /* LocalizationTests.swift */,
+				75E771BF43EFE83BDC0C356F /* LocationIntentTests.swift */,
 				4A57C287E2DD4EFD163E888A /* PictureInPictureRenderTests.swift */,
 				9D52B897BCBACEE8F07C2AAC /* RecordingEngineTests.swift */,
 				3BCAD3616A0C418E8C2ABDD3 /* RemoteProtocolTests.swift */,
@@ -961,6 +967,7 @@
 				A405F3FBA12D4A3759E5436E /* StorageLocations.swift in Sources */,
 				D2A20A7520B94707BF3AA8DE /* StorageManager.swift in Sources */,
 				5FA5560F181100EB9A15833C /* DistanceAccumulator.swift in Sources */,
+				B0C706E8DCB1D0E71279FB36 /* LocationIntent.swift in Sources */,
 				D95A9ABB28F63F6528DF6B37 /* LocationManager.swift in Sources */,
 				AA3FA3E52553070377771D59 /* MotionManager.swift in Sources */,
 				6DF25B6C22F3B7F426DEB2E8 /* EventProtectionManager.swift in Sources */,
@@ -1009,6 +1016,7 @@
 				2DAC20DB9E7D24F4797B8F3C /* ImpactDetectionTests.swift in Sources */,
 				C5AC5FB6202CDDA845AEA68D /* InterruptionResumeTests.swift in Sources */,
 				FBC8B6D256CBCB01E684CF63 /* LocalizationTests.swift in Sources */,
+				D72F516763238362A0B279CD /* LocationIntentTests.swift in Sources */,
 				F59CA9E56C9AD109BF17CF29 /* PictureInPictureRenderTests.swift in Sources */,
 				8BB60537CD5122495951D592 /* RecordingEngineTests.swift in Sources */,
 				4BB0E281E23143258D8A0749 /* RemoteProtocolTests.swift in Sources */,

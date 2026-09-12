@@ -129,6 +129,28 @@ final class AppEnvironment: ObservableObject {
         observeCarPlay()
     }
 
+    /// Acts on what the driver asked for about location, whatever iOS currently allows.
+    ///
+    /// Called when the app comes to the front and when it leaves. The case that makes it
+    /// necessary: **Allow Once**. iOS returns the authorisation to *not determined* at the
+    /// next launch, so a driver who granted location yesterday finds it off today — and
+    /// the app used to accept that silently rather than ask again.
+    func applyLocationIntent(isForeground: Bool) {
+        let intent = LocationIntent.decide(
+            wantsLocation: settingsStore.settings.locationMetadataEnabled,
+            authorization: location.authorization,
+            isRecording: recording.isRecording,
+            isUpdating: location.isUpdating,
+            isForeground: isForeground
+        )
+        switch intent {
+        case .request: location.requestAuthorization()
+        case .start: location.start()
+        case .stop: location.stop()
+        case .none: break
+        }
+    }
+
     /// Starts a recording when the car is plugged in, if the driver asked for that.
     private func observeCarPlay() {
         carPlay.shouldAutoStartOnConnect = { [weak self] in

@@ -340,7 +340,7 @@ struct RecordingView: View {
         switch location.authorization {
         case .notDetermined:
             settingsStore.settings.locationMetadataEnabled = true
-            environment.location.requestAuthorization()
+            environment.applyLocationIntent(isForeground: true)
         case .denied, .restricted:
             // Nothing in the app can grant this back, so the honest move is to open the
             // one place that can.
@@ -349,9 +349,7 @@ struct RecordingView: View {
             }
         default:
             settingsStore.settings.locationMetadataEnabled.toggle()
-            if settingsStore.settings.locationMetadataEnabled {
-                environment.location.requestAuthorization()
-            }
+            environment.applyLocationIntent(isForeground: true)
         }
     }
 

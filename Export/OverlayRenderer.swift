@@ -64,10 +64,48 @@ enum OverlayRenderer {
         return result
     }
 
+    /// The mark in the opposite corner from the data: smaller, quieter, and visible for
+    /// the whole file rather than a slice of it.
+    ///
+    /// Deliberately discreet. A watermark across the middle of the frame would obscure the
+    /// very thing the recording exists to show — and it would be the first reason someone
+    /// re-encodes the file to get rid of it, taking the mark with them.
+    static func signatureLayer(text: String, renderSize: CGSize, fontSize: CGFloat) -> CATextLayer {
+        let size = fontSize * 0.78
+        let layer = CATextLayer()
+        layer.string = text
+        layer.font = UIFont.systemFont(ofSize: size, weight: .semibold)
+        layer.fontSize = size
+        layer.foregroundColor = UIColor.white.withAlphaComponent(0.85).cgColor
+        layer.alignmentMode = .right
+        layer.contentsScale = 2
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.9
+        layer.shadowRadius = 2
+        layer.shadowOffset = .zero
+        layer.name = signatureLayerName
+        layer.frame = CGRect(
+            x: renderSize.width - inset.x - size * 20,
+            y: renderSize.height - inset.y - size * 1.4,
+            width: size * 20,
+            height: size * 1.4
+        )
+        return layer
+    }
+
+    /// Named so a test can find it in the tree rather than assert on a screenshot.
+    static let signatureLayerName = "dashcam.signature"
+
     /// Assembles the parent/video layer pair an `AVVideoCompositionCoreAnimationTool`
     /// needs, with every stamp scheduled on the export timeline.
-    static func makeAnimationTool(renderSize: CGSize, stamps: [OverlayStamp]) -> (tool: AVVideoCompositionCoreAnimationTool, parent: CALayer)? {
-        guard !stamps.isEmpty else { return nil }
+    static func makeAnimationTool(
+        renderSize: CGSize,
+        stamps: [OverlayStamp],
+        signature: String? = nil
+    ) -> (tool: AVVideoCompositionCoreAnimationTool, parent: CALayer)? {
+        // A signature alone is reason enough to build the tree: someone who turned every
+        // measurement off may still want the file to say where it came from.
+        guard !stamps.isEmpty || signature != nil else { return nil }
 
         let parentLayer = CALayer()
         parentLayer.frame = CGRect(origin: .zero, size: renderSize)
@@ -82,11 +120,17 @@ enum OverlayRenderer {
         let barHeight = fontSize * 1.9
         let barWidth = renderSize.width - inset.x * 2
 
-        let background = CALayer()
-        background.frame = CGRect(x: inset.x, y: inset.y, width: barWidth, height: barHeight)
-        background.backgroundColor = UIColor.black.withAlphaComponent(0.45).cgColor
-        background.cornerRadius = barHeight / 4
-        parentLayer.addSublayer(background)
+        if !stamps.isEmpty {
+            let background = CALayer()
+            background.frame = CGRect(x: inset.x, y: inset.y, width: barWidth, height: barHeight)
+            background.backgroundColor = UIColor.black.withAlphaComponent(0.45).cgColor
+            background.cornerRadius = barHeight / 4
+            parentLayer.addSublayer(background)
+        }
+
+        if let signature {
+            parentLayer.addSublayer(signatureLayer(text: signature, renderSize: renderSize, fontSize: fontSize))
+        }
 
         for stamp in stamps {
             let textLayer = CATextLayer()

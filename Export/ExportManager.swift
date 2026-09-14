@@ -128,7 +128,8 @@ final class ExportManager: ObservableObject {
         mode: ExportMode,
         style: ExportStyle,
         clip: SessionComposition.ClipRange? = nil,
-        includeProof: Bool = false
+        includeProof: Bool = false,
+        watermark: Bool = false
     ) async throws -> [URL] {
         guard subscriptions.state.canExport else { throw ExportError.subscriptionRequired }
 
@@ -153,15 +154,15 @@ final class ExportManager: ObservableObject {
             var urls: [URL] = []
             switch mode {
             case .rear:
-                urls = [try await renderSingle(segments: rear, session: session, style: style, clip: clip, label: "road")]
+                urls = [try await renderSingle(segments: rear, session: session, style: style, clip: clip, label: "road", watermark: watermark)]
             case .front:
-                urls = [try await renderSingle(segments: front, session: session, style: style, clip: clip, label: "cabin")]
+                urls = [try await renderSingle(segments: front, session: session, style: style, clip: clip, label: "cabin", watermark: watermark)]
             case .both:
-                if !rear.isEmpty { urls.append(try await renderSingle(segments: rear, session: session, style: style, clip: clip, label: "road")) }
-                if !front.isEmpty { urls.append(try await renderSingle(segments: front, session: session, style: style, clip: clip, label: "cabin")) }
+                if !rear.isEmpty { urls.append(try await renderSingle(segments: rear, session: session, style: style, clip: clip, label: "road", watermark: watermark)) }
+                if !front.isEmpty { urls.append(try await renderSingle(segments: front, session: session, style: style, clip: clip, label: "cabin", watermark: watermark)) }
             case .pictureInPicture:
                 guard !rear.isEmpty, !front.isEmpty else { throw ExportError.noFootage }
-                urls = [try await renderPictureInPicture(rear: rear, front: front, session: session, style: style)]
+                urls = [try await renderPictureInPicture(rear: rear, front: front, session: session, style: style, watermark: watermark)]
             }
             if includeProof {
                 let manifestURL = try writeProofManifest(for: session)
@@ -287,10 +288,23 @@ final class ExportManager: ObservableObject {
         session: DriveSession,
         style: ExportStyle,
         clip: SessionComposition.ClipRange?,
-        label: String
+        label: String,
+        watermark: Bool = false
     ) async throws -> URL {
         guard !segments.isEmpty else { throw ExportError.noFootage }
         let outputURL = makeOutputURL(session: session, suffix: label, style: style)
+
+        // A watermark is drawn pixels, so it cannot ride on a passthrough copy: asking
+        // for one turns the export into a re-encode, which is the honest cost of marking
+        // an image and is stated in the sheet rather than discovered afterwards.
+        if style == .original && watermark {
+            let built = try await SessionComposition.singleWithLayout(segments: segments, includeAudio: true, clip: clip)
+            if let videoComposition = built.videoComposition {
+                attachOverlay(to: videoComposition, session: session, startDate: built.startDate, renderSize: built.renderSize, duration: built.duration.seconds, includeStamps: false, includeSignature: true)
+            }
+            try await runExport(composition: built.composition, preset: AVAssetExportPresetHighestQuality, videoComposition: built.videoComposition, outputURL: outputURL)
+            return outputURL
+        }
 
         switch style {
         case .original:
@@ -313,7 +327,7 @@ final class ExportManager: ObservableObject {
             if let videoComposition = built.videoComposition {
                 // The overlay is anchored on the clip's own first frame, not the drive's,
                 // so a trimmed export still stamps the right wall-clock time.
-                attachOverlay(to: videoComposition, session: session, startDate: built.startDate, renderSize: built.renderSize, duration: built.duration.seconds)
+                attachOverlay(to: videoComposition, session: session, startDate: built.startDate, renderSize: built.renderSize, duration: built.duration.seconds, includeStamps: true, includeSignature: watermark)
             }
             try await runExport(composition: built.composition, preset: AVAssetExportPresetHighestQuality, videoComposition: built.videoComposition, outputURL: outputURL)
         }
@@ -322,10 +336,15 @@ final class ExportManager: ObservableObject {
 
     // MARK: - Picture in picture
 
-    private func renderPictureInPicture(rear: [VideoSegment], front: [VideoSegment], session: DriveSession, style: ExportStyle) async throws -> URL {
+    private func renderPictureInPicture(rear: [VideoSegment], front: [VideoSegment], session: DriveSession, style: ExportStyle, watermark: Bool = false) async throws -> URL {
         let built = try await SessionComposition.pictureInPicture(rear: rear, front: front, includeAudio: true)
-        if style == .withInformation, let videoComposition = built.videoComposition {
-            attachOverlay(to: videoComposition, session: session, startDate: built.startDate, renderSize: built.renderSize, duration: built.duration.seconds)
+        // A two-up export is always composited, so a watermark costs nothing extra here.
+        if let videoComposition = built.videoComposition {
+            attachOverlay(
+                to: videoComposition, session: session, startDate: built.startDate,
+                renderSize: built.renderSize, duration: built.duration.seconds,
+                includeStamps: style == .withInformation, includeSignature: watermark
+            )
         }
         let outputURL = makeOutputURL(session: session, suffix: "pip", style: style)
         try await runExport(composition: built.composition, preset: AVAssetExportPresetHighestQuality, videoComposition: built.videoComposition, outputURL: outputURL)
@@ -334,9 +353,19 @@ final class ExportManager: ObservableObject {
 
     // MARK: - Overlay
 
-    private func attachOverlay(to videoComposition: AVMutableVideoComposition, session: DriveSession, startDate start: Date, renderSize: CGSize, duration: TimeInterval) {
+    private func attachOverlay(
+        to videoComposition: AVMutableVideoComposition,
+        session: DriveSession,
+        startDate start: Date,
+        renderSize: CGSize,
+        duration: TimeInterval,
+        includeStamps: Bool,
+        includeSignature: Bool
+    ) {
         let settings = SettingsSnapshotProvider.current()
-        guard settings.overlayEnabled, !settings.overlayFields.isEmpty else { return }
+        let wantsStamps = includeStamps && settings.overlayEnabled && !settings.overlayFields.isEmpty
+        guard wantsStamps || includeSignature else { return }
+
 
         let samples = index.locationSamples(sessionID: session.id, from: start, to: start.addingTimeInterval(duration))
 
@@ -350,7 +379,7 @@ final class ExportManager: ObservableObject {
             return abs(candidate.timestamp.timeIntervalSince(date)) < 10 ? candidate : nil
         }
 
-        let stamps = OverlayRenderer.stamps(
+        let stamps = wantsStamps ? OverlayRenderer.stamps(
             start: start,
             duration: duration,
             fields: settings.overlayFields,
@@ -359,9 +388,10 @@ final class ExportManager: ObservableObject {
                 guard let sample = nearest(date) else { return nil }
                 return (sample.latitude, sample.longitude)
             }
-        )
+        ) : []
 
-        if let built = OverlayRenderer.makeAnimationTool(renderSize: renderSize, stamps: stamps) {
+        let signature = includeSignature ? SegmentMetadata.softwareDescription : nil
+        if let built = OverlayRenderer.makeAnimationTool(renderSize: renderSize, stamps: stamps, signature: signature) {
             videoComposition.animationTool = built.tool
         }
     }

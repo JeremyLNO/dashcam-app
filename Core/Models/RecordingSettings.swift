@@ -211,7 +211,16 @@ struct OverlayFields: OptionSet, Codable, Sendable {
     static let time = OverlayFields(rawValue: 1 << 1)
     static let location = OverlayFields(rawValue: 1 << 2)
     static let speed = OverlayFields(rawValue: 1 << 3)
+    /// The app's name, burned into the corner of an exported file.
+    ///
+    /// Unlike everything else in this set it is not a measurement — it is the one mark
+    /// that survives what a video goes through after it leaves the phone. Metadata is
+    /// stripped by every messaging app and by any re-encode; pixels are not.
+    static let signature = OverlayFields(rawValue: 1 << 4)
 
+    /// The signature is deliberately **not** here: a watermark alters the image, and
+    /// altering the image is a decision taken once, at export, for a particular file —
+    /// never a background default applied to everything.
     static let `default`: OverlayFields = [.date, .time, .speed]
 }
 

@@ -13440,6 +13440,146 @@
           }
         }
       }
+    },
+    "settings.overlay.signature": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App name"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom de l'app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre de la app"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name der App"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome da app"
+          }
+        }
+      }
+    },
+    "export.watermark": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark with the app name"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer du nom de l'app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marcar con el nombre de la app"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit dem App-Namen markieren"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marcar com o nome da app"
+          }
+        }
+      }
+    },
+    "export.watermark.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writes “Dashcam Pocket” discreetly along the bottom of the picture. The file already names the app in its metadata — but metadata is stripped by messaging apps and by any re-encode, and a mark on the image is not."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inscrit discrètement « Dashcam Pocket » en bas de l'image. Le fichier nomme déjà l'app dans ses métadonnées — mais les métadonnées disparaissent dès qu'une messagerie ou un ré-encodage passe par là, une marque sur l'image non."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe discretamente «Dashcam Pocket» en la parte inferior de la imagen. El archivo ya nombra la app en sus metadatos, pero los metadatos desaparecen al pasar por una mensajería o una recodificación; una marca en la imagen no."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schreibt dezent „Dashcam Pocket“ an den unteren Bildrand. Die Datei nennt die App bereits in ihren Metadaten — doch Metadaten verschwinden bei jedem Messenger und jeder Neukodierung, eine Marke im Bild nicht."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escreve discretamente «Dashcam Pocket» na parte inferior da imagem. O ficheiro já nomeia a app nos metadados — mas os metadados desaparecem com qualquer mensageiro ou recodificação; uma marca na imagem não."
+          }
+        }
+      }
+    },
+    "export.watermark.footer.reencode": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marking the image means re-encoding it: this export will no longer be a bit-for-bit copy of the recording. The untouched original stays in the app."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer l'image impose de la ré-encoder : cet export ne sera plus une copie à l'octet près de l'enregistrement. L'original intact reste dans l'app."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marcar la imagen obliga a recodificarla: esta exportación ya no será una copia bit a bit de la grabación. El original intacto se queda en la app."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Bild zu markieren bedeutet, es neu zu kodieren: dieser Export ist keine bitgenaue Kopie der Aufnahme mehr. Das unberührte Original bleibt in der App."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marcar a imagem obriga a recodificá-la: esta exportação deixa de ser uma cópia bit a bit da gravação. O original intacto fica na app."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

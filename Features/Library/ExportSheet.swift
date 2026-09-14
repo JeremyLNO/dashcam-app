@@ -16,6 +16,9 @@ struct ExportSheet: View {
     @State private var mode: ExportMode = .rear
     @State private var style: ExportStyle = .original
     @State private var scope: ExportScope = .wholeDrive
+    /// Off unless asked for: a watermark changes the image, and the recording's whole
+    /// value is being an untouched original.
+    @State private var watermark = false
     @State private var customStart: Double = 0
     @State private var customDuration: Double = 60
     @State private var includeProof = false
@@ -71,6 +74,15 @@ struct ExportSheet: View {
                     Text(key: "export.style")
                 } footer: {
                     Text(key: "export.style.footer")
+                }
+
+                Section {
+                    Toggle(isOn: $watermark) {
+                        Text(key: "export.watermark")
+                    }
+                    .accessibilityIdentifier("watermarkToggle")
+                } footer: {
+                    Text(key: watermark && style == .original ? "export.watermark.footer.reencode" : "export.watermark.footer")
                 }
 
                 Section {
@@ -204,7 +216,8 @@ struct ExportSheet: View {
                 mode: mode,
                 style: style,
                 clip: scope.clip(driveDuration: session.duration, custom: customClip),
-                includeProof: includeProof
+                includeProof: includeProof,
+                watermark: watermark
             )
         } catch {
             exportedURLs = []

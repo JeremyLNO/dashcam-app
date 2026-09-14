@@ -2,11 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- CarPlay Driving Task. Apple grants this entitlement per-app on request;
-	     until it is granted this key must stay commented out or the build will
-	     fail to sign. The app is fully functional without it.
+	<!-- CarPlay Driving Task. Granted by Apple on 2026-09-14 and enabled on the App ID
+	     the same evening. Two steps, and the second is the one that is easy to miss:
+	     Apple assigns the entitlement to the *account*, then it has to be ticked on
+	     each App ID in Certificates, Identifiers & Profiles — the App Store Connect
+	     API cannot do it, its capabilityType enum has no CarPlay value at all. Until
+	     both are done, asking for the key here fails the *signature*, not the runtime. -->
 	<key>com.apple.developer.carplay-driving-task</key>
 	<true/>
-	-->
 </dict>
 </plist>

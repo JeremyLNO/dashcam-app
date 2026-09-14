@@ -399,6 +399,15 @@ struct SettingsView: View {
                 .accessibilityIdentifier("biometricToggle")
             }
             ToggleRow(
+                titleKey: "settings.certify",
+                systemImage: "checkmark.seal.fill",
+                accent: .violet,
+                isOn: binding(\.certifyExports)
+            )
+            .accessibilityIdentifier("certifyToggle")
+            SettingsNote(textKey: "settings.certify.footer")
+
+            ToggleRow(
                 titleKey: "settings.overlay",
                 systemImage: "text.below.photo.fill",
                 accent: .violet,

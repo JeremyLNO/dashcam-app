@@ -110,6 +110,7 @@ final class ExportManager: ObservableObject {
     private let index: SessionIndex
     private let subscriptions: SubscriptionManager
     private let registry: ActiveFileRegistry
+    private let attestation = AttestationService()
     private var progressTimer: Timer?
 
     init(index: SessionIndex, subscriptions: SubscriptionManager, registry: ActiveFileRegistry) {
@@ -163,7 +164,12 @@ final class ExportManager: ObservableObject {
                 urls = [try await renderPictureInPicture(rear: rear, front: front, session: session, style: style)]
             }
             if includeProof {
-                urls.append(try writeProofManifest(for: session))
+                let manifestURL = try writeProofManifest(for: session)
+                urls.append(manifestURL)
+                // The certificates cover the manifest, which is itself the thing that
+                // covers every file: signing one digest binds the whole set, and a
+                // verifier has one document to check rather than five.
+                urls.append(contentsOf: await certify(manifestURL))
             }
             return urls
         } catch let error as ExportError {
@@ -234,6 +240,44 @@ final class ExportManager: ObservableObject {
         let end = min(duration, event.windowEnd.timeIntervalSince(session.startedAt))
         guard end > start else { return nil }
         return SessionComposition.ClipRange(start: start, duration: end - start)
+    }
+
+    /// Signs and timestamps a manifest, when the driver asked for it.
+    ///
+    /// Nothing here can fail the export. A refused attestation, an authority that does not
+    /// answer, a phone with no network — each costs its own certificate and nothing else.
+    /// The alternative, an export that fails because a third party was unreachable, would
+    /// lose the evidence to protect the proof of it.
+    private func certify(_ manifestURL: URL) async -> [URL] {
+        guard SettingsSnapshotProvider.current().certifyExports else { return [] }
+        guard let digest = FileDigest.sha256(of: manifestURL),
+              let digestData = Data(hexString: digest)
+        else { return [] }
+
+        var produced: [URL] = []
+
+        do {
+            let receipt = try await attestation.sign(digest: digestData)
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            encoder.dateEncodingStrategy = .iso8601
+            let url = manifestURL.deletingPathExtension().appendingPathExtension("receipt.json")
+            try encoder.encode(receipt).write(to: url, options: .atomic)
+            produced.append(url)
+        } catch {
+            Log.export.error("Attestation unavailable: \(error.localizedDescription, privacy: .public)")
+        }
+
+        do {
+            let token = try await TimestampAuthority.stamp(digest: digestData)
+            let url = manifestURL.deletingPathExtension().appendingPathExtension("tsr")
+            try token.write(to: url, options: .atomic)
+            produced.append(url)
+        } catch {
+            Log.export.error("Timestamp unavailable: \(error.localizedDescription, privacy: .public)")
+        }
+
+        return produced
     }
 
     // MARK: - Single camera

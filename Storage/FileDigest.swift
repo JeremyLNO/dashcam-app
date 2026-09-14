@@ -24,3 +24,23 @@ enum FileDigest {
         return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }
 }
+
+extension Data {
+    /// Reads a hex digest back into bytes.
+    ///
+    /// The manifest stores digests as text because that is what a human reads and a
+    /// verifier types; signing and stamping need the bytes behind it. Returns nil on
+    /// anything that is not an even run of hex, rather than quietly signing a truncated
+    /// digest — which would produce a certificate covering nothing.
+    init?(hexString: String) {
+        let characters = Array(hexString)
+        guard characters.count % 2 == 0, !characters.isEmpty else { return nil }
+        var bytes = [UInt8]()
+        bytes.reserveCapacity(characters.count / 2)
+        for index in stride(from: 0, to: characters.count, by: 2) {
+            guard let byte = UInt8(String(characters[index...index + 1]), radix: 16) else { return nil }
+            bytes.append(byte)
+        }
+        self = Data(bytes)
+    }
+}

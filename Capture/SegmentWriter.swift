@@ -1,4 +1,5 @@
 import AVFoundation
+import CoreLocation
 import Foundation
 
 /// A finalized chunk of footage, handed back to `RecordingManager` so it can be indexed.
@@ -48,6 +49,12 @@ final class SegmentWriter {
     private var writer: AVAssetWriter?
     private var videoInput: AVAssetWriterInput?
     private var audioInput: AVAssetWriterInput?
+    /// The timed track: where the car was, second by second, inside the file itself.
+    private var metadataAdaptor: AVAssetWriterInputMetadataAdaptor?
+    /// The last position and acceleration handed over, written into the head of the next
+    /// segment so a file opened alone still says where it starts.
+    private var latestLocation: CLLocation?
+    private var latestGForce: Double?
 
     private var currentIndex = 0
     private var currentStartDate = Date()
@@ -89,6 +96,21 @@ final class SegmentWriter {
     func appendAudio(_ sampleBuffer: CMSampleBuffer) {
         guard includesAudio else { return }
         queue.async { [weak self] in self?.handleAudio(sampleBuffer) }
+    }
+
+    /// Hands over where the car is, to be written into the timed track.
+    ///
+    /// Called from the location and motion paths, a couple of times a second at most. It
+    /// never blocks them: the sample is stamped with the most recent video timestamp, so
+    /// a position always lands on footage that exists rather than on a moment the file
+    /// has not reached.
+    func appendMetadata(location: CLLocation?, gForce: Double?) {
+        queue.async { [weak self] in
+            guard let self else { return }
+            if let location { self.latestLocation = location }
+            if let gForce { self.latestGForce = gForce }
+            self.writeTimedMetadata(location: location, gForce: gForce)
+        }
     }
 
     /// Closes the current segment and calls back once everything is on disk.
@@ -147,6 +169,44 @@ final class SegmentWriter {
 
     private var segmentStartPTS: CMTime = .zero
 
+    /// Builds the metadata input, or returns nil and lets the segment be written without
+    /// one. Nothing here is allowed to cost a recording.
+    private static func makeMetadataAdaptor(for writer: AVAssetWriter) -> AVAssetWriterInputMetadataAdaptor? {
+        var formatDescription: CMFormatDescription?
+        let status = CMMetadataFormatDescriptionCreateWithMetadataSpecifications(
+            allocator: kCFAllocatorDefault,
+            metadataType: kCMMetadataFormatType_Boxed,
+            metadataSpecifications: SegmentMetadata.timedSpecifications as CFArray,
+            formatDescriptionOut: &formatDescription
+        )
+        guard status == noErr, let formatDescription else { return nil }
+
+        let input = AVAssetWriterInput(mediaType: .metadata, outputSettings: nil, sourceFormatHint: formatDescription)
+        input.expectsMediaDataInRealTime = true
+        guard writer.canAdd(input) else { return nil }
+        writer.add(input)
+        return AVAssetWriterInputMetadataAdaptor(assetWriterInput: input)
+    }
+
+    /// Appends one group of timed items at the latest video timestamp.
+    private func writeTimedMetadata(location: CLLocation?, gForce: Double?) {
+        guard let writer, writer.status == .writing,
+              let adaptor = metadataAdaptor, adaptor.assetWriterInput.isReadyForMoreMediaData,
+              lastPTS.isValid, CMTimeCompare(lastPTS, segmentStartPTS) >= 0
+        else { return }
+
+        let items = SegmentMetadata.timedItems(location: location, gForce: gForce)
+        guard !items.isEmpty else { return }
+
+        // A duration of zero would be dropped by some readers; a second matches the rate
+        // these samples arrive at and keeps the track continuous enough to scrub.
+        let group = AVTimedMetadataGroup(
+            items: items,
+            timeRange: CMTimeRange(start: lastPTS, duration: CMTime(seconds: 1, preferredTimescale: 600))
+        )
+        adaptor.append(group)
+    }
+
     private func appendToVideoInput(_ sampleBuffer: CMSampleBuffer) {
         guard let writer, writer.status == .writing,
               let videoInput, videoInput.isReadyForMoreMediaData
@@ -167,6 +227,15 @@ final class SegmentWriter {
             // killed mid-segment is often still salvageable by RecoveryManager.
             newWriter.movieFragmentInterval = CMTime(seconds: 2, preferredTimescale: 600)
             newWriter.shouldOptimizeForNetworkUse = false
+            // What the file says about itself, readable by anything that opens a .mov —
+            // an insurer's expert included, who will never have heard of this app.
+            newWriter.metadata = SegmentMetadata.fileLevel(
+                sessionID: sessionID,
+                camera: camera,
+                segmentIndex: index,
+                startedAt: wallClock(for: pts),
+                location: latestLocation
+            )
 
             let videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings())
             videoInput.expectsMediaDataInRealTime = true
@@ -189,6 +258,18 @@ final class SegmentWriter {
                 self.audioInput = nil
             }
 
+            // The timed track is added **only when there is something to put in it**.
+            // An input that is declared and never fed does not produce an empty track: it
+            // produces a movie a third of its true length, and sometimes one that will not
+            // open at all. Two tests that read the written file caught it; nothing in the
+            // writing path complained.
+            //
+            // It is also the honest behaviour: a drive recorded without location has no
+            // positions to carry, and an empty track claiming otherwise helps nobody.
+            metadataAdaptor = (latestLocation != nil || latestGForce != nil)
+                ? Self.makeMetadataAdaptor(for: newWriter)
+                : nil
+
             guard newWriter.startWriting() else {
                 throw newWriter.error ?? NSError(
                     domain: "Dashcam.SegmentWriter", code: 2,
@@ -202,6 +283,11 @@ final class SegmentWriter {
             currentRelativePath = relativePath
             segmentStartPTS = pts
             currentStartDate = wallClock(for: pts)
+            lastPTS = pts
+            // The first sample of the new segment carries what is already known, so a
+            // file opened on its own starts with a position rather than waiting for the
+            // next fix to arrive.
+            writeTimedMetadata(location: latestLocation, gForce: latestGForce)
         } catch {
             Log.recording.error("Failed to open segment \(index) for \(self.camera.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
             writer = nil
@@ -221,12 +307,16 @@ final class SegmentWriter {
         let camera = self.camera
         let onSegmentFinished = self.onSegmentFinished
 
+        let metadataInput = metadataAdaptor?.assetWriterInput
+
         self.writer = nil
         self.videoInput = nil
         self.audioInput = nil
+        self.metadataAdaptor = nil
 
         videoInput.markAsFinished()
         audioInput?.markAsFinished()
+        metadataInput?.markAsFinished()
 
         guard writer.status == .writing else {
             // Nothing usable was written; leave no zero-byte file behind.

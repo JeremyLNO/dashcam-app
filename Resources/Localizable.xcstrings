@@ -13265,6 +13265,181 @@
           }
         }
       }
+    },
+    "settings.certify": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certify exports"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certifier les exports"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificar las exportaciones"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporte zertifizieren"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificar as exportações"
+          }
+        }
+      }
+    },
+    "settings.certify.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signs an export with a key Apple vouches for, and has its fingerprint stamped by an independent time authority — so a recipient can check the file came from this app, on this iPhone, before that date. This is the only feature that uses the network, and only a fingerprint is sent: never a frame of video. Off by default."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signe un export avec une clé dont Apple se porte garant, et fait horodater son empreinte par une autorité de temps indépendante — un destinataire peut ainsi vérifier que le fichier vient de cette app, sur cet iPhone, avant cette date. C'est la seule fonction qui utilise le réseau, et seule une empreinte est transmise : jamais une image. Désactivé par défaut."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firma una exportación con una clave avalada por Apple y hace sellar su huella por una autoridad de tiempo independiente, para que quien la reciba compruebe que el archivo viene de esta app, en este iPhone, antes de esa fecha. Es la única función que usa la red, y solo se envía una huella: nunca una imagen. Desactivado por defecto."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signiert einen Export mit einem Schlüssel, für den Apple bürgt, und lässt dessen Prüfsumme von einer unabhängigen Zeitautorität stempeln — der Empfänger kann so prüfen, dass die Datei aus dieser App, von diesem iPhone und vor diesem Datum stammt. Es ist die einzige Funktion, die das Netz nutzt, und übertragen wird nur eine Prüfsumme, nie ein Bild. Standardmäßig aus."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assina uma exportação com uma chave pela qual a Apple responde e manda carimbar a sua impressão por uma autoridade de tempo independente — quem receber pode verificar que o ficheiro vem desta app, neste iPhone, antes dessa data. É a única função que usa a rede, e só é enviada uma impressão: nunca uma imagem. Desligado por omissão."
+          }
+        }
+      }
+    },
+    "attest.error.unsupported": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This iPhone cannot sign recordings: App Attest is unavailable on it."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cet iPhone ne peut pas signer les enregistrements : App Attest n'y est pas disponible."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este iPhone no puede firmar las grabaciones: App Attest no está disponible."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses iPhone kann Aufnahmen nicht signieren: App Attest ist hier nicht verfügbar."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este iPhone não pode assinar as gravações: o App Attest não está disponível."
+          }
+        }
+      }
+    },
+    "timestamp.error.http": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The time authority answered with an error (%d)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'autorité de temps a répondu par une erreur (%d)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La autoridad de tiempo respondió con un error (%d)."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Zeitautorität antwortete mit einem Fehler (%d)."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A autoridade de tempo respondeu com um erro (%d)."
+          }
+        }
+      }
+    },
+    "timestamp.error.rejected": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The time authority refused to stamp this fingerprint."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'autorité de temps a refusé d'horodater cette empreinte."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La autoridad de tiempo se negó a sellar esta huella."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Zeitautorität hat diese Prüfsumme nicht gestempelt."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A autoridade de tempo recusou carimbar esta impressão."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -272,6 +272,12 @@ struct RecordingSettings: Codable, Equatable, Sendable {
     /// Ultra wide by default — the widest view of the road — with the wide lens offered
     /// for anyone who would rather read a plate than see the pavement.
     var rearLens: RearLens = .ultraWide
+    /// Signs an export with a key Apple vouches for, and has its digest stamped by an
+    /// independent time authority. Off by default and it must stay a choice: it is the
+    /// only thing in the app that speaks to the network, and it changes what the app can
+    /// promise about staying offline. Only hashes ever leave — never a frame.
+    var certifyExports: Bool = false
+
     /// Steers exposure with what the sensor is already measuring: caps the shutter so a
     /// moving plate does not smear at night, and lifts the exposure on snow and sunlight,
     /// which a light meter reads as "too bright" and darkens.
@@ -318,6 +324,7 @@ struct RecordingSettings: Codable, Equatable, Sendable {
         frontCameraEnabled = value(.frontCameraEnabled, defaults.frontCameraEnabled)
         rearLens = value(.rearLens, defaults.rearLens)
         adaptiveImage = value(.adaptiveImage, defaults.adaptiveImage)
+        certifyExports = value(.certifyExports, defaults.certifyExports)
         autoExportProtected = value(.autoExportProtected, defaults.autoExportProtected)
         requireBiometricUnlock = value(.requireBiometricUnlock, defaults.requireBiometricUnlock)
     }

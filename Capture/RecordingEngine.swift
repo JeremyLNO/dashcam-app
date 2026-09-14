@@ -1,4 +1,5 @@
 import AVFoundation
+import CoreLocation
 import Foundation
 
 /// Routes sample buffers into the per-camera segment writers.
@@ -75,6 +76,13 @@ final class RecordingEngine: SampleSink, @unchecked Sendable {
 
     /// Stops the cabin camera without touching the road camera — what `ThermalManager`
     /// asks for when the device is too hot to keep both.
+    /// Passes a position and an acceleration to both writers, so each file carries where
+    /// the car was while it was being written — not only in the app's own database.
+    func appendMetadata(location: CLLocation?, gForce: Double?) {
+        rearWriter?.appendMetadata(location: location, gForce: gForce)
+        frontWriter?.appendMetadata(location: location, gForce: gForce)
+    }
+
     func dropFrontCamera() {
         lock.lock()
         let writer = frontWriter

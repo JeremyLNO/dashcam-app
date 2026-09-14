@@ -1,4 +1,5 @@
 import AVFoundation
+import CoreLocation
 import CoreVideo
 import UIKit
 import XCTest
@@ -263,5 +264,82 @@ private final class SegmentBox: @unchecked Sendable {
     var values: [FinishedSegment] {
         lock.lock(); defer { lock.unlock() }
         return storage.sorted { ($0.index, $0.relativePath) < ($1.index, $1.relativePath) }
+    }
+}
+
+extension SegmentWriterTests {
+    // MARK: Timed metadata
+
+    private var paris: CLLocation {
+        CLLocation(
+            coordinate: CLLocationCoordinate2D(latitude: 48.8584, longitude: 2.2945),
+            altitude: 33, horizontalAccuracy: 5, verticalAccuracy: 5,
+            course: 90, speed: 13.9, timestamp: Date()
+        )
+    }
+
+    /// A drive with positions carries them **inside** the file, as a track a stranger's
+    /// tool can read — not only in the app's own database.
+    func testPositionsAreWrittenIntoTheFileAsATimedTrack() async throws {
+        let box = SegmentBox()
+        let writer = makeWriter(onFinished: { box.append($0) })
+
+        writer.appendMetadata(location: paris, gForce: 0.2)
+        try feed(writer, frames: 30)
+        writer.appendMetadata(location: paris, gForce: 0.4)
+        stopAndWait(writer)
+
+        let segment = try XCTUnwrap(box.values.first)
+        let asset = AVURLAsset(url: StorageLocations.absoluteURL(forRelativePath: segment.relativePath))
+        let tracks = try await asset.loadTracks(withMediaType: .metadata)
+        XCTAssertEqual(tracks.count, 1, "the drive had positions, so the file must carry a metadata track")
+
+        let duration = try await asset.load(.duration)
+        XCTAssertGreaterThan(CMTimeGetSeconds(duration), 0.5, "30 frames at 30 fps is a second of video")
+    }
+
+    /// The regression this pair exists for: an input added and never fed does not make an
+    /// empty track, it makes a movie a third of its length — and sometimes one that will
+    /// not open. A drive without location must therefore carry no metadata track at all.
+    func testADriveWithoutPositionsCarriesNoEmptyTrack() async throws {
+        let box = SegmentBox()
+        let writer = makeWriter(onFinished: { box.append($0) })
+        try feed(writer, frames: 45)
+        stopAndWait(writer)
+
+        let segment = try XCTUnwrap(box.values.first)
+        let asset = AVURLAsset(url: StorageLocations.absoluteURL(forRelativePath: segment.relativePath))
+        let tracks = try await asset.loadTracks(withMediaType: .metadata)
+        XCTAssertTrue(tracks.isEmpty, "no positions, no track")
+
+        let duration = try await asset.load(.duration)
+        XCTAssertGreaterThan(CMTimeGetSeconds(duration), 0.5, "45 frames at 30 fps is 1.5 s — the length the empty track stole")
+    }
+
+    /// The file-level fields are written whatever the sensors did.
+    func testEveryFileNamesTheAppAndItsDrive() async throws {
+        let box = SegmentBox()
+        let writer = makeWriter(onFinished: { box.append($0) })
+        try feed(writer, frames: 30)
+        stopAndWait(writer)
+
+        let segment = try XCTUnwrap(box.values.first)
+        let asset = AVURLAsset(url: StorageLocations.absoluteURL(forRelativePath: segment.relativePath))
+        let items = try await asset.load(.metadata)
+
+        var software: String?
+        var session: String?
+        for item in items {
+            switch item.identifier?.rawValue {
+            case AVMetadataIdentifier.quickTimeMetadataSoftware.rawValue:
+                software = try await item.load(.stringValue)
+            case SegmentMetadata.identifier(for: "session"):
+                session = try await item.load(.stringValue)
+            default:
+                break
+            }
+        }
+        XCTAssertEqual(software?.contains("Dashcam"), true, "got \(software ?? "nil")")
+        XCTAssertEqual(session, sessionID.uuidString)
     }
 }

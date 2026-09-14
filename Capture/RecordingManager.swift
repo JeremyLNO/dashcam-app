@@ -266,6 +266,9 @@ final class RecordingManager: ObservableObject {
                 accuracy: fix.horizontalAccuracy
             )
             self.accumulateDistance(to: fix, sessionID: sessionID)
+            // The same fix, written inside the files as well as beside them: a video
+            // handed to someone else carries its own positions.
+            self.engine.appendMetadata(location: fix, gForce: nil)
         }
 
         motion.onImpact = { [weak self] event in
@@ -283,6 +286,7 @@ final class RecordingManager: ObservableObject {
         motion.onSecondElapsed = { [weak self] date, peak in
             guard let self, let sessionID = self.currentSessionID else { return }
             self.index.appendMotionSample(sessionID: sessionID, timestamp: date, peakG: peak)
+            self.engine.appendMetadata(location: nil, gForce: peak)
         }
     }
 

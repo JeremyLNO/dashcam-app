@@ -62,6 +62,19 @@ final class RecordingUITests: UITestCase {
         XCTAssertTrue(app.buttons["Start Drive"].waitForExistence(timeout: 5))
     }
 
+    /// Landscape is how this app is actually used — a phone in a windscreen cradle — and
+    /// it has a layout of its own, not a stretched portrait one. A control that exists in
+    /// only one of the two is a control half the drivers never get.
+    func testTheDimButtonIsThereInTheOrientationTheAppIsMeantForToo() {
+        launch()
+        waitForTabBar()
+        XCUIDevice.shared.orientation = .landscapeLeft
+        defer { XCUIDevice.shared.orientation = .portrait }
+
+        XCTAssertTrue(app.buttons["dimScreen"].waitForExistence(timeout: 10),
+                      "the driving orientation lost the button")
+    }
+
     /// Protect is meaningless while stopped, and the UI says so by disabling it rather
     /// than failing after the tap.
     func testProtectIsDisabledWhileNotRecording() {

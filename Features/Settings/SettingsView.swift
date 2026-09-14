@@ -734,6 +734,12 @@ struct SettingsRow<Trailing: View>: View {
         }
         .padding(.leading, isIndented ? 14 : 0)
         .frame(minHeight: 40)
+        // The row is a title, a `Spacer` and a value, and a `Spacer` takes no touches:
+        // without this, a tap that lands between the two texts hits nothing at all. It
+        // is invisible on a narrow iPhone, where the value reaches the middle of the row
+        // anyway, and plainly broken on a 6.9" one, where it does not — the middle of
+        // every picker row there was simply dead.
+        .contentShape(Rectangle())
     }
 }
 
@@ -835,6 +841,10 @@ struct OptionPickerScreen<Option: SettingsOption>: View {
         .background(Theme.background)
         .navigationTitle(Text(key: titleKey))
         .navigationBarTitleDisplayMode(.inline)
+        // Named, because the screen's own title is translated and the option titles are
+        // also written on the row that opens this screen: an identifier is the only way a
+        // test can tell "the picker is open" from "the tap did nothing".
+        .accessibilityIdentifier("optionPicker")
     }
 }
 

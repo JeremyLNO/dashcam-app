@@ -14,6 +14,11 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>$(APP_NAME)</string>
+	<!-- Le nom du produit, indépendant du libellé sous l'icône. Ce qui est écrit dans les
+	     métadonnées d'une vidéo et dans le watermark ne doit pas rétrécir parce que
+	     l'écran d'accueil manque de place. -->
+	<key>CBLProductName</key>
+	<string>$(PRODUCT_FULL_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

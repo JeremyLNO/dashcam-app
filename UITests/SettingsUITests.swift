@@ -45,6 +45,12 @@ final class SettingsUITests: UITestCase {
         XCTAssertTrue(app.tabBars.buttons["Trajets"].exists)
     }
 
+    /// Every quality tier states what an hour of it costs in storage.
+    ///
+    /// Strict about the unit on purpose: `unit.gb_per_hour` is "GB/h" in English, "Go/h"
+    /// in French and "GB/Std." in German, so an assertion that accepted all three would
+    /// go on passing with the wrong bundle loaded — which is the thing it is here to
+    /// catch. It can afford to be strict because `UITestCase` pins the language.
     func testQualityOptionsShowTheirStorageCost() {
         launch()
         waitForTabBar()
@@ -54,10 +60,16 @@ final class SettingsUITests: UITestCase {
         XCTAssertTrue(quality.waitForExistence(timeout: Self.launchTimeout))
         quality.tap()
 
-        XCTAssertTrue(app.staticTexts["Standard — 1080p"].waitForExistence(timeout: 5))
+        // The picker screen by identifier, not by one of its option titles: "Standard —
+        // 1080p" is written on the row that opens it as well, so waiting for that text
+        // proved nothing and let the test sail past a tap that had not navigated at all.
+        let picker = app.descendants(matching: .any).matching(identifier: "optionPicker").firstMatch
+        XCTAssertTrue(picker.waitForExistence(timeout: 10), "the quality picker never opened")
+
+        let costs = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", #"\d+\.\d GB/h"#))
         XCTAssertTrue(
-            app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'GB/h'")).firstMatch.exists,
-            "each quality tier must state its GB per hour"
+            costs.element(boundBy: 2).waitForExistence(timeout: 5),
+            "each quality tier must state its GB per hour; the screen reads \(app.staticTexts.allElementsBoundByIndex.map(\.label))"
         )
     }
 }

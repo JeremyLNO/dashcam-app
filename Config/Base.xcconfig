@@ -8,11 +8,18 @@
 SLASH = /
 
 // ---- Identity -------------------------------------------------------------
-APP_NAME = Dashcam Pocket
+// Le nom SOUS L'ICÔNE, et lui seul. « Dashcam Pocket » n'y tient pas : au-delà d'une
+// certaine largeur SpringBoard retire les espaces avant de tronquer, et l'icône lisait
+// « DashcamP… ». Mesuré, pas supposé — et ce n'est pas une longueur en caractères,
+// « Mileage Pocket » (14 aussi) tient très bien. L'espace insécable ne sauve rien non plus.
+APP_NAME = Dashcam
+// Le nom du produit, partout où la largeur n'est pas contrainte : la fiche App Store,
+// l'intérieur de l'app, la signature écrite dans les fichiers vidéo et le watermark.
+PRODUCT_FULL_NAME = Dashcam Pocket
 BUNDLE_IDENTIFIER = dashcam.lno.company
 DEVELOPMENT_TEAM = 2E6D4Q69QB
 MARKETING_VERSION = 1.0.0
-CURRENT_PROJECT_VERSION = 25
+CURRENT_PROJECT_VERSION = 26
 
 IPHONEOS_DEPLOYMENT_TARGET = 17.0
 SWIFT_VERSION = 5.0

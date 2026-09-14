@@ -143,4 +143,16 @@ final class SegmentMetadataTests: XCTestCase {
         )
         XCTAssertEqual(SegmentMetadata.iso6709(reykjavik), "+64.1466-021.9426+0.0/")
     }
+
+    /// The name written into a file is the product's, not the one squeezed onto the home
+    /// screen. `CFBundleDisplayName` had to be shortened to « Dashcam » because SpringBoard
+    /// drops the space at that width; a video handed to an insurer must still say what it
+    /// was made with.
+    func testTheSoftwareFieldNamesTheWholeProduct() {
+        let description = SegmentMetadata.softwareDescription
+        XCTAssertTrue(
+            description.hasPrefix("Dashcam Pocket"),
+            "the file says « \(description) » — the icon label has leaked into the metadata"
+        )
+    }
 }

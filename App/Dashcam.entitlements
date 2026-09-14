@@ -10,5 +10,11 @@
 	     both are done, asking for the key here fails the *signature*, not the runtime. -->
 	<key>com.apple.developer.carplay-driving-task</key>
 	<true/>
+	<!-- Push. `production` même en Debug : l'environnement APNs est choisi par le profil de
+	     provisionnement, pas par cette clé, et une valeur `development` dans un build
+	     distribué produit un jeton que le serveur de production refuse en silence — l'app
+	     paraît inscrite et ne reçoit jamais rien. -->
+	<key>aps-environment</key>
+	<string>production</string>
 </dict>
 </plist>

@@ -105,7 +105,11 @@ enum SegmentMetadata {
 
     static var softwareDescription: String {
         let bundle = Bundle.main
-        let name = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+        // `CBLProductName`, pas `CFBundleDisplayName` : le libellé sous l'icône est contraint
+        // par la largeur de l'écran d'accueil et vaut « Dashcam », alors que ce qui est écrit
+        // dans un fichier remis à un assureur doit nommer le produit entier.
+        let name = bundle.object(forInfoDictionaryKey: "CBLProductName") as? String
+            ?? bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
             ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
             ?? "Dashcam Pocket"
         let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"

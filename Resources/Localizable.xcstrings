@@ -13580,6 +13580,181 @@
           }
         }
       }
+    },
+    "detail.route.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap an event to jump the player there."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touchez un événement pour y amener la lecture."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca un evento para llevar la reproducción allí."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippe auf ein Ereignis, um die Wiedergabe dorthin zu bringen."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque num evento para levar a reprodução até lá."
+          }
+        }
+      }
+    },
+    "detail.route.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No route for this drive"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun itinéraire pour ce trajet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin ruta para este trayecto"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Route für diese Fahrt"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem percurso para esta viagem"
+          }
+        }
+      }
+    },
+    "detail.route.none.permission": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location is not allowed, so no position was recorded. Allow it from the GPS button on the recording screen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La position n'est pas autorisée : aucune position n'a été enregistrée. Autorisez-la depuis le bouton GPS de l'écran d'enregistrement."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La ubicación no está permitida, así que no se registró ninguna posición. Actívala desde el botón GPS de la pantalla de grabación."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Standort ist nicht erlaubt, es wurde keine Position aufgezeichnet. Erlaube ihn über die GPS-Taste im Aufnahmebildschirm."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A localização não está autorizada, por isso não foi registada nenhuma posição. Autorize-a no botão GPS do ecrã de gravação."
+          }
+        }
+      }
+    },
+    "detail.route.none.setting": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location metadata is turned off, so this drive kept no positions. The next one will, once it is on."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les métadonnées de position sont désactivées : ce trajet n'a gardé aucune position. Le prochain en gardera, une fois l'option activée."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los metadatos de ubicación están desactivados: este trayecto no guardó posiciones. El próximo sí, al activarla."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Positionsdaten sind aus, diese Fahrt hat keine Positionen behalten. Die nächste tut es, sobald es an ist."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os metadados de posição estão desligados: esta viagem não guardou posições. A próxima guardará, assim que ativar."
+          }
+        }
+      }
+    },
+    "detail.route.none.drive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This drive has no usable positions — too short, or no signal while it was recorded."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce trajet n'a pas de position exploitable — trop court, ou sans signal pendant l'enregistrement."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este trayecto no tiene posiciones utilizables: demasiado corto o sin señal durante la grabación."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Fahrt hat keine brauchbaren Positionen — zu kurz oder ohne Signal während der Aufnahme."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta viagem não tem posições utilizáveis — demasiado curta, ou sem sinal durante a gravação."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

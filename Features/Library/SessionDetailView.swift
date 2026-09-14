@@ -13,6 +13,7 @@ struct SessionDetailView: View {
     @EnvironmentObject private var environment: AppEnvironment
     @EnvironmentObject private var subscriptions: SubscriptionManager
     @EnvironmentObject private var storage: StorageManager
+    @EnvironmentObject private var settingsStore: SettingsStore
     @Environment(\.dismiss) private var dismiss
 
     enum ViewMode: String, CaseIterable, Identifiable {
@@ -243,13 +244,26 @@ struct SessionDetailView: View {
 
     // MARK: - Map
 
-    /// Only drawn when there is a route to draw. An empty map under every drive recorded
-    /// without location permission would say nothing and take a third of the screen.
+    /// The route the drive took, or a card explaining why there is none.
+    ///
+    /// It used to draw nothing at all when a drive carried no positions — which is
+    /// indistinguishable from a feature that does not exist. Jeremy asked for the route to
+    /// be saved and shown; it had been both since the map shipped, but every drive he had
+    /// recorded predated the location fix, so every drive showed an empty space where the
+    /// answer should have been. A screen that cannot show something owes the reason.
     @ViewBuilder
     private var mapCard: some View {
-        if locationSamples.count > 1 {
-            VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
                 SectionHeader(titleKey: "detail.route")
+                if let kilometres = session.distanceKilometres, kilometres > 0 {
+                    Text(verbatim: String(format: "%.1f km", kilometres))
+                        .font(.system(size: 15, weight: .semibold).monospacedDigit())
+                        .foregroundStyle(Theme.textSecondary)
+                }
+            }
+
+            if locationSamples.count > 1 {
                 DriveMap(
                     samples: locationSamples,
                     events: session.activeEvents,
@@ -260,11 +274,44 @@ struct SessionDetailView: View {
                         playheadOffset = offset
                     }
                 )
+                Text(key: "detail.route.hint")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.textSecondary)
+            } else {
+                missingRoute
             }
-            .dashcamCard()
         }
+        .dashcamCard()
     }
 
+    /// Why this drive has no line on a map — and what to do about the next one.
+    private var missingRoute: some View {
+        HStack(alignment: .top, spacing: 12) {
+            IconBadge(systemImage: "location.slash", accent: .orange, isFilled: false, size: 40)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(key: "detail.route.none")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(key: missingRouteReasonKey)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .pastelCard(.orange, padding: 14)
+    }
+
+    /// Three different silences, and they do not call for the same answer: a permission
+    /// the app cannot grant itself, a setting the driver turned off, or a drive too short
+    /// to have moved.
+    private var missingRouteReasonKey: String {
+        if !environment.location.isAuthorized { return "detail.route.none.permission" }
+        if !settingsStore.settings.locationMetadataEnabled { return "detail.route.none.setting" }
+        return "detail.route.none.drive"
+    }
+
+    // MARK: - Incident pack
     // MARK: - Incident pack
 
     /// One button for the whole evidence bundle: the clip around the incident, the proof

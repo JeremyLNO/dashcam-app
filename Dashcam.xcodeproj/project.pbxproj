@@ -30,6 +30,7 @@
 		C1CA3F829C6F5D581761B8E4 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3207B02AD3A55A22554F14 /* CameraPreviewView.swift */; };
 		792568D574D78B82A4434621 /* CaptureManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ECEAA412CB1C65A4A676BBF /* CaptureManager.swift */; };
 		F5CC8282474F3E042CCDDDEB /* CaptureTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF685DDFDB6BB647491F852 /* CaptureTypes.swift */; };
+		BBC01AAFA7182871B42CAA02 /* CaptureWatchdog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2AABCE3128F1FFF6EEA958 /* CaptureWatchdog.swift */; };
 		152A32F9DA020B7E4021111E /* PhoneRemoteServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5203AB37AFA9992CA2D2521 /* PhoneRemoteServer.swift */; };
 		747AA06597F8D84060A46893 /* RecordingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0934A3F11601A65E954EB8E8 /* RecordingEngine.swift */; };
 		84AAA0068C4385AD0850DD1D /* RecordingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C881EBD4CB2AE29BB6573E2 /* RecordingManager.swift */; };
@@ -76,6 +77,7 @@
 		D7E130AAA5ABAAA01927A683 /* ControlCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 609947873BB6ABA09F8E94A8 /* ControlCommands.swift */; };
 		196A0DF6FB8889B71E3F3DE6 /* RecordingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */; };
 		A1750838D5D7553667B33410 /* RemoteProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2590BCCDE50A3B33C610B /* RemoteProtocol.swift */; };
+		D0913E3AF31C4BE2CFC162DE /* CaptureWatchdogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */; };
 		E199FDD00CCBBB9C12B9FB20 /* CarPlayAutoStartTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D0C5D24848D735C4293345 /* CarPlayAutoStartTests.swift */; };
 		E5B259D6F221A32AFCA79CD8 /* CompositionGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */; };
 		5750DEDE63044BDDAC878EE3 /* DistanceAccumulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C42673630B54C8EE6FDC4B4A /* DistanceAccumulatorTests.swift */; };
@@ -144,6 +146,7 @@
 		0C3207B02AD3A55A22554F14 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraPreviewView.swift"; sourceTree = "<group>"; };
 		4ECEAA412CB1C65A4A676BBF /* CaptureManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaptureManager.swift"; sourceTree = "<group>"; };
 		DBF685DDFDB6BB647491F852 /* CaptureTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaptureTypes.swift"; sourceTree = "<group>"; };
+		9B2AABCE3128F1FFF6EEA958 /* CaptureWatchdog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaptureWatchdog.swift"; sourceTree = "<group>"; };
 		E5203AB37AFA9992CA2D2521 /* PhoneRemoteServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PhoneRemoteServer.swift"; sourceTree = "<group>"; };
 		0934A3F11601A65E954EB8E8 /* RecordingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingEngine.swift"; sourceTree = "<group>"; };
 		6C881EBD4CB2AE29BB6573E2 /* RecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingManager.swift"; sourceTree = "<group>"; };
@@ -204,6 +207,7 @@
 		3CBC9DA2BA9DF3F3ADF792AF /* StorageLocations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StorageLocations.swift"; sourceTree = "<group>"; };
 		A504B2DD910C9470D162881D /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StorageManager.swift"; sourceTree = "<group>"; };
 		4A0ED5D734E00333761AAFDD /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubscriptionManager.swift"; sourceTree = "<group>"; };
+		CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaptureWatchdogTests.swift"; sourceTree = "<group>"; };
 		A5D0C5D24848D735C4293345 /* CarPlayAutoStartTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CarPlayAutoStartTests.swift"; sourceTree = "<group>"; };
 		8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CompositionGeometryTests.swift"; sourceTree = "<group>"; };
 		C42673630B54C8EE6FDC4B4A /* DistanceAccumulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DistanceAccumulatorTests.swift"; sourceTree = "<group>"; };
@@ -352,6 +356,7 @@
 				0C3207B02AD3A55A22554F14 /* CameraPreviewView.swift */,
 				4ECEAA412CB1C65A4A676BBF /* CaptureManager.swift */,
 				DBF685DDFDB6BB647491F852 /* CaptureTypes.swift */,
+				9B2AABCE3128F1FFF6EEA958 /* CaptureWatchdog.swift */,
 				E5203AB37AFA9992CA2D2521 /* PhoneRemoteServer.swift */,
 				0934A3F11601A65E954EB8E8 /* RecordingEngine.swift */,
 				6C881EBD4CB2AE29BB6573E2 /* RecordingManager.swift */,
@@ -543,6 +548,7 @@
 		74C0354F987B4FC0FDE2C044 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */,
 				A5D0C5D24848D735C4293345 /* CarPlayAutoStartTests.swift */,
 				8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */,
 				C42673630B54C8EE6FDC4B4A /* DistanceAccumulatorTests.swift */,
@@ -953,6 +959,7 @@
 				C1CA3F829C6F5D581761B8E4 /* CameraPreviewView.swift in Sources */,
 				792568D574D78B82A4434621 /* CaptureManager.swift in Sources */,
 				F5CC8282474F3E042CCDDDEB /* CaptureTypes.swift in Sources */,
+				BBC01AAFA7182871B42CAA02 /* CaptureWatchdog.swift in Sources */,
 				152A32F9DA020B7E4021111E /* PhoneRemoteServer.swift in Sources */,
 				747AA06597F8D84060A46893 /* RecordingEngine.swift in Sources */,
 				84AAA0068C4385AD0850DD1D /* RecordingManager.swift in Sources */,
@@ -1006,6 +1013,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0913E3AF31C4BE2CFC162DE /* CaptureWatchdogTests.swift in Sources */,
 				E199FDD00CCBBB9C12B9FB20 /* CarPlayAutoStartTests.swift in Sources */,
 				E5B259D6F221A32AFCA79CD8 /* CompositionGeometryTests.swift in Sources */,
 				5750DEDE63044BDDAC878EE3 /* DistanceAccumulatorTests.swift in Sources */,

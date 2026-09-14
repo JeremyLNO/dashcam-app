@@ -53,6 +53,11 @@ final class SceneOptimiser {
     private static let darkISOThreshold: Float = 1_000
     private static let brightISOThreshold: Float = 60
 
+    /// Video HDR doubles what a format asks of the image pipeline. On a single camera
+    /// that is affordable; running two cameras at once, it competes with the recording
+    /// itself for a hardware budget that is already spoken for.
+    var allowsHDR = true
+
     private weak var device: AVCaptureDevice?
     private var timer: DispatchSourceTimer?
     private let queue: DispatchQueue
@@ -95,7 +100,7 @@ final class SceneOptimiser {
         guard (try? device.lockForConfiguration()) != nil else { return }
         defer { device.unlockForConfiguration() }
 
-        if device.activeFormat.isVideoHDRSupported {
+        if allowsHDR, device.activeFormat.isVideoHDRSupported {
             // Left to its own judgement the camera turns HDR on and off mid-drive, which
             // shows up as a visible exposure jump at every tunnel mouth.
             device.automaticallyAdjustsVideoHDREnabled = false
@@ -123,6 +128,17 @@ final class SceneOptimiser {
         Log.capture.debug("Scene now \(newScene.rawValue, privacy: .public) (ISO \(Int(iso)), \(shutterSeconds, privacy: .public)s)")
     }
 
+    /// Keeps a requested cap inside the range the format allows. Out of bounds is not a
+    /// wrong picture, it is an exception thrown at the camera.
+    static func cap(_ requested: CMTime, within format: AVCaptureDevice.Format) -> CMTime {
+        let shortest = CMTimeGetSeconds(format.minExposureDuration)
+        let longest = CMTimeGetSeconds(format.maxExposureDuration)
+        let wanted = CMTimeGetSeconds(requested)
+        guard shortest > 0, longest > 0 else { return requested }
+        let clamped = min(max(wanted, shortest), longest)
+        return CMTime(seconds: clamped, preferredTimescale: 1_000_000)
+    }
+
     /// Internal rather than private: the boundaries between the three scenes are the
     /// part worth testing, and they are pure arithmetic on two numbers.
     func classify(iso: Float, shutterSeconds: Double) -> Scene {
@@ -140,8 +156,13 @@ final class SceneOptimiser {
 
         // The cap is only worth paying for in the dark; in daylight the shutter is
         // already far shorter than the cap and forcing it changes nothing but noise.
+        //
+        // Clamped to what the active format accepts: AVFoundation throws an
+        // NSRangeException for a duration outside it, and a format whose shortest
+        // exposure is longer than the cap exists — on a lens with a fixed low frame rate,
+        // for one.
         if scene == .dark {
-            device.activeMaxExposureDuration = Self.darkShutterCap
+            device.activeMaxExposureDuration = Self.cap(Self.darkShutterCap, within: device.activeFormat)
         } else {
             device.activeMaxExposureDuration = Self.uncappedExposureDuration
         }

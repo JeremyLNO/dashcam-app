@@ -143,14 +143,23 @@ final class CaptureManager: ObservableObject {
 
     func startRunning() {
         sessionQueue.async { [weak self] in
-            guard let session = self?.session, !session.isRunning else { return }
+            guard let self, let session = self.session, !session.isRunning else { return }
             session.startRunning()
+            // Only once the session is actually running: exposure settings applied to a
+            // camera that has not started yet are applied to a camera that will reset
+            // them, and the attempt costs a device lock nobody needed.
+            if let device = self.pendingOptimiserDevice {
+                self.sceneOptimiser.start(on: device)
+            }
+            self.startedRunningAt = Date()
+            self.startWatchdog()
             Task { @MainActor [weak self] in self?.status.isRunning = true }
         }
     }
 
     func stopRunning() {
         sessionQueue.async { [weak self] in
+            self?.stopWatchdog()
             guard let session = self?.session, session.isRunning else { return }
             session.stopRunning()
             Task { @MainActor [weak self] in self?.status.isRunning = false }
@@ -233,13 +242,14 @@ final class CaptureManager: ObservableObject {
         _ = rearDimensions   // the writer sizes each segment from the frames it receives
         let rearFormat = VideoFormatDescriptor.resolved(for: quality, codec: codec)
 
-        // Exposure is steered after the format is chosen, because what a format supports
-        // — video HDR above all — is only knowable once it is the active one.
-        if adaptiveImage {
-            sceneOptimiser.start(on: effectiveRear)
-        } else {
-            sceneOptimiser.stop()
-        }
+        // The device is *not* touched here. Locking a camera for configuration inside a
+        // session's own `beginConfiguration`/`commitConfiguration` block means two things
+        // reconfiguring the same hardware at once, and what came back was a preview frozen
+        // on its first frame. The optimiser is started once the session is running, from
+        // `startRunning()`, where the camera belongs to nobody else.
+        pendingOptimiserDevice = adaptiveImage ? effectiveRear : nil
+        sceneOptimiser.allowsHDR = !useMultiCam
+        sceneOptimiser.stop()
 
         rearOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
         // Dropping a late frame is strictly better than letting buffers pile up until the
@@ -352,9 +362,54 @@ final class CaptureManager: ObservableObject {
 
     /// Reads the scene from the rear device and steers exposure with it.
     nonisolated private let sceneOptimiser = SceneOptimiser(queue: DispatchQueue(label: "dashcam.scene", qos: .utility))
+    /// The camera the optimiser will steer, once the session is running. Written on
+    /// `sessionQueue` while building, read on the same queue when starting.
+    nonisolated(unsafe) private var pendingOptimiserDevice: AVCaptureDevice?
+    /// When the session was last told to run, and the timer that checks it kept its word.
+    nonisolated(unsafe) private var startedRunningAt: Date?
+    nonisolated(unsafe) private var watchdogTimer: DispatchSourceTimer?
+    /// One rebuild per stall: a camera that freezes again immediately is a broken device,
+    /// and looping on it would burn the battery without ever showing a picture.
+    nonisolated(unsafe) private var hasRecoveredFromStall = false
+
+    /// Watches for a session that says it is running and shows a still picture.
+    ///
+    /// `isRunning` is the session's opinion of itself; frames are the evidence. When the
+    /// two disagree the app rebuilds the capture graph, because a dashcam filming its own
+    /// first frame for an hour is worse than one that admits it failed.
+    nonisolated private func startWatchdog() {
+        stopWatchdog()
+        let timer = DispatchSource.makeTimerSource(queue: sessionQueue)
+        timer.schedule(deadline: .now() + CaptureWatchdog.stallTolerance, repeating: 2)
+        timer.setEventHandler { [weak self] in
+            guard let self, let session = self.session else { return }
+            let verdict = CaptureWatchdog.assess(
+                isRunning: session.isRunning,
+                lastFrame: self.router.lastVideoFrame,
+                startedRunningAt: self.startedRunningAt
+            )
+            guard verdict == .stalled, !self.hasRecoveredFromStall else { return }
+            self.hasRecoveredFromStall = true
+            Log.capture.error("Capture stalled: running with no frame for \(CaptureWatchdog.stallTolerance, privacy: .public)s — rebuilding")
+            self.stopWatchdog()
+            Task { @MainActor in
+                await AppEnvironment.shared?.reconfigureCapture()
+            }
+        }
+        timer.resume()
+        watchdogTimer = timer
+    }
+
+    nonisolated private func stopWatchdog() {
+        watchdogTimer?.cancel()
+        watchdogTimer = nil
+    }
 
     nonisolated private func tearDown() {
+        stopWatchdog()
+        startedRunningAt = nil
         sceneOptimiser.stop()
+        pendingOptimiserDevice = nil
         if let session {
             session.stopRunning()
             session.beginConfiguration()
@@ -635,6 +690,10 @@ final class CaptureManager: ObservableObject {
 final class SampleRouter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
     weak var sink: SampleSink?
 
+    /// When a video frame last arrived, whatever the camera. Read by the watchdog, which
+    /// is the only thing that can tell a frozen preview from a working one.
+    private(set) var lastVideoFrame: Date?
+
     private var sources: [ObjectIdentifier: SampleSource] = [:]
     private let lock = NSLock()
 
@@ -652,6 +711,11 @@ final class SampleRouter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let source = source(for: output) else { return }
+        if source != .audio {
+            lock.lock()
+            lastVideoFrame = Date()
+            lock.unlock()
+        }
         sink?.consume(sampleBuffer, from: source)
     }
 

@@ -19,7 +19,7 @@ PRODUCT_FULL_NAME = Dashcam Pocket
 BUNDLE_IDENTIFIER = dashcam.lno.company
 DEVELOPMENT_TEAM = 2E6D4Q69QB
 MARKETING_VERSION = 1.0.0
-CURRENT_PROJECT_VERSION = 26
+CURRENT_PROJECT_VERSION = 27
 
 IPHONEOS_DEPLOYMENT_TARGET = 17.0
 SWIFT_VERSION = 5.0
@@ -52,4 +52,6 @@ APPSTORE_APP_ID = 6811080566
 
 // ---- Push (OneSignal) -----------------------------------------------------
 // Empty = notifications stay disabled and the SDK is never initialised.
-ONESIGNAL_APP_ID =
+// App « Dashcam Pocket », organisation **Crazy Bee Labs** — surtout pas l'organisation LNO,
+// qui vit sur le même compte OneSignal et ne doit jamais se mélanger à celle-ci.
+ONESIGNAL_APP_ID = 386ceb76-981e-44cd-88bb-99b9742218f3

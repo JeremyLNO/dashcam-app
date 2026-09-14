@@ -4,6 +4,13 @@ import CoreLocation
 import Foundation
 import UIKit
 
+/// Something the sensors decided, with enough of it to react to.
+struct DetectedEvent: Equatable, Sendable {
+    let origin: ProtectionOrigin
+    let magnitude: Double
+    let at: Date
+}
+
 /// A message the recording screen (and CarPlay) should show the driver.
 struct RecordingAlert: Identifiable, Equatable, Sendable {
     let id = UUID()
@@ -27,6 +34,13 @@ final class RecordingManager: ObservableObject {
     @Published var alert: RecordingAlert?
     /// Set briefly after a Protect action so the UI (and CarPlay) can acknowledge it.
     @Published private(set) var lastProtectionConfirmation: Date?
+
+    /// The last event the *car* produced, as opposed to the driver.
+    ///
+    /// Published separately from `lastProtectionConfirmation`, which a manual Protect
+    /// also sets: a driver who presses Protect from the discreet screen wants to stay
+    /// discreet, and a collision is precisely the moment that decision stops holding.
+    @Published private(set) var lastDetectedEvent: DetectedEvent?
 
     /// Called once a drive is closed and its index entry is final. The recorder does not
     /// care who listens — it exists so the automatic export can run on a finished drive
@@ -274,12 +288,14 @@ final class RecordingManager: ObservableObject {
         motion.onImpact = { [weak self] event in
             guard let self, self.isRecording else { return }
             self.protectNow(origin: .impact, magnitude: event.magnitude)
+            self.lastDetectedEvent = DetectedEvent(origin: .impact, magnitude: event.magnitude, at: Date())
             self.alert = RecordingAlert(titleKey: "alert.impact.title", messageKey: "alert.impact.message")
         }
 
         motion.onHarshBraking = { [weak self] event in
             guard let self, self.isRecording else { return }
             self.protectNow(origin: .harshBraking, magnitude: event.magnitude)
+            self.lastDetectedEvent = DetectedEvent(origin: .harshBraking, magnitude: event.magnitude, at: Date())
             self.alert = RecordingAlert(titleKey: "alert.braking.title", messageKey: "alert.braking.message")
         }
 

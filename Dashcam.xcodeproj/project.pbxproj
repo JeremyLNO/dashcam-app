@@ -77,6 +77,7 @@
 		1682E3A08A7007269982433E /* RecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4B4082160F60E8FDB19DD8 /* RecordingView.swift */; };
 		AF1C33268A61D0D71F8B7837 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128876BA9CB203F0B32BD069 /* SettingsView.swift */; };
 		8A43384751AC0301EF15CE9F /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D4CDF1A6D9A6D5E667005F /* DesignSystem.swift */; };
+		F183D678342FF4E65C5B755C /* ScreenDimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8392222D7D3D467D2B7E119 /* ScreenDimmer.swift */; };
 		D7E130AAA5ABAAA01927A683 /* ControlCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 609947873BB6ABA09F8E94A8 /* ControlCommands.swift */; };
 		196A0DF6FB8889B71E3F3DE6 /* RecordingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */; };
 		A1750838D5D7553667B33410 /* RemoteProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2590BCCDE50A3B33C610B /* RemoteProtocol.swift */; };
@@ -98,6 +99,7 @@
 		4BB0E281E23143258D8A0749 /* RemoteProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCAD3616A0C418E8C2ABDD3 /* RemoteProtocolTests.swift */; };
 		C8C0946635FF83FB831C56AF /* RetentionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCCCF422AFBE0B1628DBF3FA /* RetentionManagerTests.swift */; };
 		32E71694271CFAAE0D2B3273 /* SceneOptimiserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100B2C6A6A422D4EA37E99D5 /* SceneOptimiserTests.swift */; };
+		D0A12B62F53184C763F3725E /* ScreenDimmerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D911BD218AFBE2C8BF4EE36 /* ScreenDimmerTests.swift */; };
 		64EBA2A886AA12E4C005F439 /* SegmentMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3404361ED6DE486D06E1B4 /* SegmentMetadataTests.swift */; };
 		24700D9B94F5234A391893DF /* SegmentWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4CC5FF2DEC320EB820BE788 /* SegmentWriterTests.swift */; };
 		99241248499DDF1B5B0799D1 /* SettingsDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9015265BDAB9E0DADE08DEB /* SettingsDecodingTests.swift */; };
@@ -234,6 +236,7 @@
 		3BCAD3616A0C418E8C2ABDD3 /* RemoteProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RemoteProtocolTests.swift"; sourceTree = "<group>"; };
 		FCCCF422AFBE0B1628DBF3FA /* RetentionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RetentionManagerTests.swift"; sourceTree = "<group>"; };
 		100B2C6A6A422D4EA37E99D5 /* SceneOptimiserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SceneOptimiserTests.swift"; sourceTree = "<group>"; };
+		2D911BD218AFBE2C8BF4EE36 /* ScreenDimmerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScreenDimmerTests.swift"; sourceTree = "<group>"; };
 		9F3404361ED6DE486D06E1B4 /* SegmentMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SegmentMetadataTests.swift"; sourceTree = "<group>"; };
 		F4CC5FF2DEC320EB820BE788 /* SegmentWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SegmentWriterTests.swift"; sourceTree = "<group>"; };
 		E9015265BDAB9E0DADE08DEB /* SettingsDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsDecodingTests.swift"; sourceTree = "<group>"; };
@@ -245,6 +248,7 @@
 		9AA4A941307F6B66830ADDE2 /* TestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TestSupport.swift"; sourceTree = "<group>"; };
 		6D4D925F885DC58F3A346D8F /* TimestampAuthorityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimestampAuthorityTests.swift"; sourceTree = "<group>"; };
 		81D4CDF1A6D9A6D5E667005F /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem.swift"; sourceTree = "<group>"; };
+		D8392222D7D3D467D2B7E119 /* ScreenDimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScreenDimmer.swift"; sourceTree = "<group>"; };
 		3814C877D590D39F3D860494 /* ExportLockUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExportLockUITests.swift"; sourceTree = "<group>"; };
 		F29EA80C00EB7794EFD38B65 /* LibraryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LibraryUITests.swift"; sourceTree = "<group>"; };
 		0A446A57319C69E9F7C6476F /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingUITests.swift"; sourceTree = "<group>"; };
@@ -525,6 +529,7 @@
 			isa = PBXGroup;
 			children = (
 				81D4CDF1A6D9A6D5E667005F /* DesignSystem.swift */,
+				D8392222D7D3D467D2B7E119 /* ScreenDimmer.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -581,6 +586,7 @@
 				3BCAD3616A0C418E8C2ABDD3 /* RemoteProtocolTests.swift */,
 				FCCCF422AFBE0B1628DBF3FA /* RetentionManagerTests.swift */,
 				100B2C6A6A422D4EA37E99D5 /* SceneOptimiserTests.swift */,
+				2D911BD218AFBE2C8BF4EE36 /* ScreenDimmerTests.swift */,
 				9F3404361ED6DE486D06E1B4 /* SegmentMetadataTests.swift */,
 				F4CC5FF2DEC320EB820BE788 /* SegmentWriterTests.swift */,
 				E9015265BDAB9E0DADE08DEB /* SettingsDecodingTests.swift */,
@@ -1024,6 +1030,7 @@
 				1682E3A08A7007269982433E /* RecordingView.swift in Sources */,
 				AF1C33268A61D0D71F8B7837 /* SettingsView.swift in Sources */,
 				8A43384751AC0301EF15CE9F /* DesignSystem.swift in Sources */,
+				F183D678342FF4E65C5B755C /* ScreenDimmer.swift in Sources */,
 				D7E130AAA5ABAAA01927A683 /* ControlCommands.swift in Sources */,
 				196A0DF6FB8889B71E3F3DE6 /* RecordingIntents.swift in Sources */,
 				A1750838D5D7553667B33410 /* RemoteProtocol.swift in Sources */,
@@ -1052,6 +1059,7 @@
 				4BB0E281E23143258D8A0749 /* RemoteProtocolTests.swift in Sources */,
 				C8C0946635FF83FB831C56AF /* RetentionManagerTests.swift in Sources */,
 				32E71694271CFAAE0D2B3273 /* SceneOptimiserTests.swift in Sources */,
+				D0A12B62F53184C763F3725E /* ScreenDimmerTests.swift in Sources */,
 				64EBA2A886AA12E4C005F439 /* SegmentMetadataTests.swift in Sources */,
 				24700D9B94F5234A391893DF /* SegmentWriterTests.swift in Sources */,
 				99241248499DDF1B5B0799D1 /* SettingsDecodingTests.swift in Sources */,

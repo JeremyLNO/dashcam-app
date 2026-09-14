@@ -88,6 +88,25 @@ Cannot be simulated meaningfully. On a real drive, with sensitivity on **Normal*
 Every trigger creates a protected event covering the five minutes before and the two after.
 Check the library afterwards.
 
+## 5b. The discreet screen and the backlight
+
+The Simulator has no backlight, so nothing below can be checked anywhere but on a phone.
+
+* Start a drive, tap the **moon** on the preview: the cameras disappear *and* the screen
+  visibly dims. The timer must keep running — the capture is untouched, only the display
+  changed.
+* Leave it discreet for a minute, then tap anywhere: the cameras come back **and the
+  brightness returns to exactly what it was before**, not to some default.
+* Repeat twice in a row without leaving the screen in between. A dimmer that re-reads the
+  brightness while already dimmed hands the phone back at 5 % — the one failure here that
+  follows the user out of the app.
+* While discreet, switch to the Drives tab, then to another app, then lock the phone: in
+  all three cases the brightness must already be back.
+* While discreet and recording, slap the cradle: the screen must come back on its own,
+  lit, with the impact alert readable.
+* While discreet, press **Protect**: the screen must stay dark. That gesture is the reason
+  the button is there.
+
 ## 6. Thermal pressure
 
 * Record at **High** quality with both cameras, in sunlight, while charging.

@@ -33,7 +33,12 @@ struct DashcamApp: App {
                     .environmentObject(environment.protection)
                     .environmentObject(environment.permissions)
                     .modelContainer(environment.container)
-                    .preferredColorScheme(.dark)
+                    // Left over from the dark interface this app used to have. It is
+                    // overruled twice below — by `RootView`'s own modifier and by the
+                    // window's `overrideUserInterfaceStyle` — so it changes nothing on
+                    // screen, and a contradiction sitting in the entry point is a trap
+                    // for whoever reads it next.
+                    .preferredColorScheme(.light)
             }
         }
     }

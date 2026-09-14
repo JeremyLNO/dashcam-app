@@ -14,6 +14,10 @@ struct DiscreetScreen: View {
     let elapsed: TimeInterval
     let status: CaptureStatus
     let freeSpace: Int64
+    /// Said out loud, because a driver cannot be expected to trust a dark screen on
+    /// faith: the one moment they would want it back is the one moment they should not
+    /// have to ask for it.
+    let wakesOnImpact: Bool
     let onProtect: () -> Void
     let onExit: () -> Void
 
@@ -58,10 +62,17 @@ struct DiscreetScreen: View {
                 .disabled(!isRecording)
                 .padding(.horizontal, 32)
 
-                Text(key: "discreet.tap_to_exit")
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textTertiary.opacity(0.7))
-                    .padding(.bottom, 18)
+                VStack(spacing: 6) {
+                    Text(key: "discreet.tap_to_exit")
+                    if wakesOnImpact {
+                        Text(key: "discreet.wakes_on_impact")
+                    }
+                }
+                .font(Theme.caption)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Theme.textTertiary.opacity(0.7))
+                .padding(.horizontal, 24)
+                .padding(.bottom, 18)
             }
         }
         // The whole surface exits, except the Protect button which handles its own tap.

@@ -23,10 +23,16 @@ struct RecordingView: View {
     /// and a SwiftData query is what keeps them current while a recording runs.
     @Query(sort: \DriveSession.startedAt, order: .reverse) private var sessions: [DriveSession]
 
+    @Environment(\.scenePhase) private var scenePhase
+
     @State private var isDiscreet = false
     @State private var lastInteraction = Date()
     @State private var discreetTimer: Timer?
     @State private var protectFlash = false
+
+    /// Owned by this screen because this screen is the only one entitled to turn the
+    /// display down, and the only one that can be sure to put it back.
+    @StateObject private var dimmer = ScreenDimmer()
 
     var body: some View {
         ZStack {
@@ -38,6 +44,7 @@ struct RecordingView: View {
                     elapsed: recording.elapsed,
                     status: capture.status,
                     freeSpace: storage.snapshot.freeBytes,
+                    wakesOnImpact: recording.isRecording && settingsStore.settings.impactDetectionEnabled,
                     onProtect: protect,
                     onExit: exitDiscreet
                 )
@@ -48,8 +55,32 @@ struct RecordingView: View {
         }
         .animation(.easeInOut(duration: 0.25), value: isDiscreet)
         .onAppear { scheduleDiscreet() }
-        .onDisappear { discreetTimer?.invalidate() }
+        .onDisappear {
+            discreetTimer?.invalidate()
+            // Leaving this tab with the display at 5 % would hand the rest of the app —
+            // and then the rest of the phone — a screen nobody can read.
+            exitDiscreet()
+        }
         .onChange(of: settingsStore.settings.discreetDelay) { _, _ in scheduleDiscreet() }
+        // A collision is not a moment to be looking at a black screen: the app has
+        // something to say, and it cannot say it in the dark.
+        .onChange(of: recording.lastDetectedEvent) { _, event in
+            guard let event, ScreenDimmer.wakes(event.origin) else { return }
+            exitDiscreet()
+        }
+        // The end of a drive ends the reason to be dark.
+        .onChange(of: recording.isRecording) { _, isRecording in
+            if !isRecording { exitDiscreet() }
+        }
+        // The brightness belongs to the whole phone, not to this app: whatever takes the
+        // foreground next gets it back, and dimming resumes when this screen returns.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                if isDiscreet { dimmer.dim() }
+            } else {
+                dimmer.restore()
+            }
+        }
         .alert(item: $recording.alert) { alert in
             Alert(
                 title: Text(key: alert.titleKey),
@@ -216,6 +247,7 @@ struct RecordingView: View {
                     HStack {
                         previewCaption(key: "camera.rear", dotColour: nil)
                         Spacer()
+                        dimButton
                     }
                 }
                 .padding(14)
@@ -223,6 +255,27 @@ struct RecordingView: View {
         }
         .frame(maxWidth: .infinity)
         .softShadow()
+    }
+
+    /// Turning the screen down is a driver's gesture, so it sits on the road itself,
+    /// opposite the camera label and away from Start and Protect — a thumb reaching for
+    /// it cannot land on either by accident.
+    ///
+    /// Deliberately small and unlabelled. It is the one control on this screen that
+    /// changes nothing about the recording, and a full-width button would claim an
+    /// importance it does not have.
+    private var dimButton: some View {
+        Button { enterDiscreet() } label: {
+            Image(systemName: "moon.fill")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 38, height: 38)
+                .background(Circle().fill(Color(hex: 0x08264A).opacity(0.72)))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("dimScreen")
+        .accessibilityLabel(Text(key: "discreet.dim"))
+        .accessibilityHint(Text(key: "a11y.dim_hint"))
     }
 
     /// "Ready" before the drive, "REC" during it. Dark capsule so it survives whatever
@@ -509,12 +562,26 @@ struct RecordingView: View {
         discreetTimer?.invalidate()
         guard let interval = settingsStore.settings.discreetDelay.interval else { return }
         discreetTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
-            Task { @MainActor in isDiscreet = true }
+            Task { @MainActor in enterDiscreet() }
         }
+    }
+
+    /// Going dark is two things, and the second one is the point: the cameras stop being
+    /// drawn *and* the backlight comes down. Removing the picture alone still leaves a
+    /// lamp on the windscreen at night.
+    ///
+    /// Neither touches the capture. The session keeps running, the writers keep writing,
+    /// and the only thing that changed is what the glass emits.
+    private func enterDiscreet() {
+        guard !isDiscreet else { return }
+        isDiscreet = true
+        dimmer.dim()
+        discreetTimer?.invalidate()
     }
 
     private func exitDiscreet() {
         isDiscreet = false
+        dimmer.restore()
         noteInteraction()
     }
 }

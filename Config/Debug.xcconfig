@@ -1,6 +1,10 @@
 #include "Base.xcconfig"
 
-APP_NAME = Dashcam Pocket Dev
+// 11 caractères. « Dashcam Pocket Dev » en fait 18, et au-delà d'environ 14 SpringBoard
+// RETIRE LES ESPACES avant de tronquer : l'icône affichait « DashcamPocke… », ce qui ressemble
+// à un défaut de build alors que l'Info.plist compilé est correct. Le nom de production,
+// « Dashcam Pocket », fait exactement 14 et garde son espace.
+APP_NAME = Dashcam Dev
 BUNDLE_IDENTIFIER = dashcam.lno.company.dev
 // Automatic signing picks the identity itself. Pinning CODE_SIGN_IDENTITY here
 // makes `xcodebuild archive` refuse with "conflicting provisioning settings".

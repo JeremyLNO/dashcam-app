@@ -7,3 +7,13 @@ xcuserdata/
 Dashcam.xcodeproj/project.xcworkspace/
 Dashcam.xcodeproj/xcuserdata/
 *.xcarchive
+
+# Secrets — ce dépôt est public (2026-09-15). Rien de ce qui suit n'y entre.
+*.p8
+*.p12
+*.pem
+*.mobileprovision
+*.cer
+.env
+.env.*
+issuer_id

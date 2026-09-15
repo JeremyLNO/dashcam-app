@@ -10,7 +10,8 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 KEY_ID="${ASC_KEY_ID:-88BAZ9XND3}"
-ISSUER="${ASC_ISSUER_ID:-***ASC-ISSUER-ID-RETIRE***}"
+ISSUER="${ASC_ISSUER_ID:-$( [ -f "$HOME/.appstoreconnect/issuer_id" ] && cat "$HOME/.appstoreconnect/issuer_id" )}"
+[ -n "$ISSUER" ] || { echo "ASC_ISSUER_ID absent : exporter la variable, ou écrire l'issuer ID dans ~/.appstoreconnect/issuer_id (chmod 600). Ce dépôt est public, il n'y revient pas." >&2; exit 1; }
 APP_ID="6811080566"
 # Minutes écoulées depuis le 2023-11-14 : strictement croissant (~525 000/an) et partagé
 # avec .github/workflows/testflight.yml, donc un build local et un build CI ne se croisent

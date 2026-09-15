@@ -60,6 +60,9 @@ final class CaptureManager: ObservableObject {
     private var observers: [NSObjectProtocol] = []
     private var systemPressureObservation: NSKeyValueObservation?
     private var isConfigured = false
+    /// The frame rate the last build actually applied to the cameras, which is the driver's
+    /// choice until the hardware budget says otherwise. Read by the budget walk.
+    nonisolated(unsafe) private var appliedFrameRate = 30
 
     /// Latest resolved encoding parameters, read by `RecordingManager` when it starts.
     private(set) var rearFormat = VideoFormatDescriptor.resolved(for: .standard, codec: AVVideoCodecType.hevc.rawValue)
@@ -119,13 +122,31 @@ final class CaptureManager: ObservableObject {
                     ))
                     return
                 }
-                continuation.resume(returning: self.buildSession(
+                self.appliedFrameRate = quality.frameRate
+                var build = self.buildSession(
                     quality: quality,
                     wantsFront: wantsFront,
                     wantsAudio: wantsAudio,
                     lens: lens,
                     adaptiveImage: adaptiveImage
-                ))
+                )
+                // A two-camera graph that costs more than the hardware allows starts, says
+                // it is running, and delivers nothing. Walk it down until it fits — and if
+                // nothing fits, rebuild with one camera rather than hand back a frozen
+                // picture. Cf. `MultiCamBudget`.
+                if build.status.mode == .dual, !self.fitWithinHardwareBudget(quality: quality) {
+                    build = self.buildSession(
+                        quality: quality, wantsFront: false, wantsAudio: wantsAudio,
+                        lens: lens, adaptiveImage: adaptiveImage
+                    )
+                }
+                if let multiCam = self.session as? AVCaptureMultiCamSession {
+                    build.status.hardwareCost = multiCam.hardwareCost
+                    build.status.systemPressureCost = multiCam.systemPressureCost
+                }
+                build.rearFormat.fps = self.appliedFrameRate
+                build.frontFormat.fps = self.appliedFrameRate
+                continuation.resume(returning: build)
             }
         }
 
@@ -373,9 +394,16 @@ final class CaptureManager: ObservableObject {
     var lastVideoFrame: Date? { router.lastVideoFrame }
 
     nonisolated(unsafe) private var watchdogTimer: DispatchSourceTimer?
-    /// One rebuild per stall: a camera that freezes again immediately is a broken device,
-    /// and looping on it would burn the battery without ever showing a picture.
-    nonisolated(unsafe) private var hasRecoveredFromStall = false
+    /// How many rebuilds a stall is allowed to trigger.
+    ///
+    /// It used to be one, which is one too few at launch: the first build is the one most
+    /// likely to be wrong — an over-budget multi-cam graph, a camera another app has not
+    /// finished handing back — and a single retry that lands in the same state leaves the
+    /// driver with a frozen picture and no further attempt for the life of the process.
+    /// Two, and no more: a camera that freezes twice is a broken device, and looping on it
+    /// would burn the battery without ever showing a picture.
+    nonisolated(unsafe) private static let stallRecoveryLimit = 2
+    nonisolated(unsafe) private var stallRecoveries = 0
 
     /// Watches for a session that says it is running and shows a still picture.
     ///
@@ -385,7 +413,7 @@ final class CaptureManager: ObservableObject {
     nonisolated private func startWatchdog() {
         stopWatchdog()
         let timer = DispatchSource.makeTimerSource(queue: sessionQueue)
-        timer.schedule(deadline: .now() + CaptureWatchdog.stallTolerance, repeating: 2)
+        timer.schedule(deadline: .now() + CaptureWatchdog.firstFrameTolerance, repeating: 1)
         timer.setEventHandler { [weak self] in
             guard let self, let session = self.session else { return }
             let verdict = CaptureWatchdog.assess(
@@ -393,9 +421,9 @@ final class CaptureManager: ObservableObject {
                 lastFrame: self.router.lastVideoFrame,
                 startedRunningAt: self.startedRunningAt
             )
-            guard verdict == .stalled, !self.hasRecoveredFromStall else { return }
-            self.hasRecoveredFromStall = true
-            Log.capture.error("Capture stalled: running with no frame for \(CaptureWatchdog.stallTolerance, privacy: .public)s — rebuilding")
+            guard verdict == .stalled, self.stallRecoveries < Self.stallRecoveryLimit else { return }
+            self.stallRecoveries += 1
+            Log.capture.error("Capture stalled with no frame — rebuild \(self.stallRecoveries, privacy: .public) of \(Self.stallRecoveryLimit, privacy: .public)")
             self.stopWatchdog()
             Task { @MainActor in
                 await AppEnvironment.shared?.reconfigureCapture()
@@ -484,9 +512,12 @@ final class CaptureManager: ObservableObject {
     /// capable when it needs to be, and can sustain the target frame rate. Returns the
     /// dimensions that were actually locked in.
     @discardableResult
-    nonisolated private static func configureFormat(on device: AVCaptureDevice, quality: VideoQuality, multiCam: Bool) -> (width: Int, height: Int) {
+    nonisolated private static func configureFormat(
+        on device: AVCaptureDevice, quality: VideoQuality, multiCam: Bool, frameRate: Int? = nil
+    ) -> (width: Int, height: Int) {
         let target = quality.dimensions
-        let fps = Double(quality.frameRate)
+        let requestedRate = frameRate ?? quality.frameRate
+        let fps = Double(requestedRate)
 
         let candidates = device.formats.filter { format in
             if multiCam && !format.isMultiCamSupported { return false }
@@ -516,7 +547,7 @@ final class CaptureManager: ObservableObject {
         do {
             try device.lockForConfiguration()
             device.activeFormat = format
-            let duration = CMTime(value: 1, timescale: CMTimeScale(quality.frameRate))
+            let duration = CMTime(value: 1, timescale: CMTimeScale(requestedRate))
             device.activeVideoMinFrameDuration = duration
             device.activeVideoMaxFrameDuration = duration
             if device.isFocusModeSupported(.continuousAutoFocus) { device.focusMode = .continuousAutoFocus }
@@ -629,6 +660,45 @@ final class CaptureManager: ObservableObject {
             connection.videoRotationAngle = angle
         }
         if camera == .rear { captureRotationAngle = angle }
+    }
+
+    // MARK: - Hardware budget
+
+    /// Walks the configuration down until `hardwareCost` fits, and says whether the cabin
+    /// camera had to go.
+    ///
+    /// Runs on `sessionQueue`, after the graph is built and before it is started —
+    /// `hardwareCost` is only meaningful once the connections exist, and a session started
+    /// over budget is a session that delivers nothing.
+    nonisolated private func fitWithinHardwareBudget(quality: VideoQuality) -> Bool {
+        guard let session = session as? AVCaptureMultiCamSession else { return true }
+
+        var rate = appliedFrameRate
+        // Bounded: the ladder is four rungs, and a loop around a live capture graph is not
+        // somewhere to discover an off-by-one.
+        for _ in 0..<MultiCamBudget.frameRateLadder.count {
+            let cost = session.hardwareCost
+            switch MultiCamBudget.nextStep(cost: cost, currentFrameRate: rate) {
+            case .accept:
+                if rate != appliedFrameRate {
+                    Log.capture.info("Multi-cam cost \(cost, privacy: .public) — settled at \(rate, privacy: .public) fps")
+                }
+                appliedFrameRate = rate
+                return true
+            case .lowerFrameRate(let next):
+                Log.capture.info("Multi-cam cost \(cost, privacy: .public) over budget — trying \(next, privacy: .public) fps")
+                rate = next
+                session.beginConfiguration()
+                for device in [rearInput?.device, frontInput?.device].compactMap({ $0 }) {
+                    Self.configureFormat(on: device, quality: quality, multiCam: true, frameRate: next)
+                }
+                session.commitConfiguration()
+            case .dropCabinCamera:
+                Log.capture.error("Multi-cam cost \(cost, privacy: .public) over budget at every frame rate — one camera")
+                return false
+            }
+        }
+        return MultiCamBudget.fits(session.hardwareCost)
     }
 
     // MARK: - Observers

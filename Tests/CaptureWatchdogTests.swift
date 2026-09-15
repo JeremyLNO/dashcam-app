@@ -11,6 +11,11 @@ import XCTest
 final class CaptureWatchdogTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 1_700_000_000)
     private var tolerance: TimeInterval { CaptureWatchdog.stallTolerance }
+    /// The two questions have two tolerances: a camera that has *never* delivered is
+    /// misconfigured, not slow, and waits less. Each test below uses the one that governs
+    /// the case it describes — a threshold tested against the wrong constant proves
+    /// nothing at all.
+    private var firstFrame: TimeInterval { CaptureWatchdog.firstFrameTolerance }
 
     func testAStoppedSessionIsNeverStalled() {
         XCTAssertEqual(
@@ -30,7 +35,7 @@ final class CaptureWatchdogTests: XCTestCase {
     /// The failure this exists for: running, and not one frame since it started.
     func testASessionThatNeverDeliveredAFrameIsStalled() {
         XCTAssertEqual(
-            CaptureWatchdog.assess(isRunning: true, lastFrame: nil, startedRunningAt: now.addingTimeInterval(-tolerance - 0.1), now: now),
+            CaptureWatchdog.assess(isRunning: true, lastFrame: nil, startedRunningAt: now.addingTimeInterval(-firstFrame - 0.1), now: now),
             .stalled
         )
     }
@@ -38,12 +43,12 @@ final class CaptureWatchdogTests: XCTestCase {
     /// Tested on the boundary itself, not comfortably past it.
     func testTheToleranceIsExclusiveAtItsBoundary() {
         XCTAssertEqual(
-            CaptureWatchdog.assess(isRunning: true, lastFrame: nil, startedRunningAt: now.addingTimeInterval(-tolerance), now: now),
+            CaptureWatchdog.assess(isRunning: true, lastFrame: nil, startedRunningAt: now.addingTimeInterval(-firstFrame), now: now),
             .healthy,
             "exactly at the tolerance is still healthy"
         )
         XCTAssertEqual(
-            CaptureWatchdog.assess(isRunning: true, lastFrame: nil, startedRunningAt: now.addingTimeInterval(-tolerance - 0.01), now: now),
+            CaptureWatchdog.assess(isRunning: true, lastFrame: nil, startedRunningAt: now.addingTimeInterval(-firstFrame - 0.01), now: now),
             .stalled
         )
     }
@@ -75,5 +80,48 @@ final class CaptureWatchdogTests: XCTestCase {
         let clamped = SceneOptimiser.cap(CMTime(value: 1, timescale: 60), within: device.activeFormat)
         XCTAssertGreaterThanOrEqual(CMTimeGetSeconds(clamped), CMTimeGetSeconds(device.activeFormat.minExposureDuration))
         XCTAssertLessThanOrEqual(CMTimeGetSeconds(clamped), CMTimeGetSeconds(device.activeFormat.maxExposureDuration))
+    }
+
+    // MARK: - The first frame is its own question
+
+    /// A camera that has never produced a frame is not hesitating — it is misconfigured,
+    /// and no frame is on the way. Giving it the same four seconds as a session that *was*
+    /// delivering is four seconds of frozen picture at every launch.
+    func testASessionThatHasNeverDeliveredIsJudgedSooner() {
+        let started = Date(timeIntervalSince1970: 1_700_000_000)
+        XCTAssertEqual(
+            CaptureWatchdog.assess(isRunning: true, lastFrame: nil, startedRunningAt: started,
+                                   now: started.addingTimeInterval(CaptureWatchdog.firstFrameTolerance + 0.1)),
+            .stalled
+        )
+        XCTAssertEqual(
+            CaptureWatchdog.assess(isRunning: true, lastFrame: nil, startedRunningAt: started,
+                                   now: started.addingTimeInterval(CaptureWatchdog.firstFrameTolerance - 0.1)),
+            .healthy,
+            "a genuinely slow first frame must not be mistaken for a dead camera"
+        )
+    }
+
+    /// And a session that has been delivering keeps the longer rope: a thermal hiccup is
+    /// not a freeze, and rebuilding the graph mid-drive costs real footage.
+    func testASessionThatWasDeliveringKeepsTheLongerTolerance() {
+        let started = Date(timeIntervalSince1970: 1_700_000_000)
+        let lastFrame = started.addingTimeInterval(10)
+        XCTAssertEqual(
+            CaptureWatchdog.assess(isRunning: true, lastFrame: lastFrame, startedRunningAt: started,
+                                   now: lastFrame.addingTimeInterval(CaptureWatchdog.stallTolerance - 0.1)),
+            .healthy
+        )
+        XCTAssertEqual(
+            CaptureWatchdog.assess(isRunning: true, lastFrame: lastFrame, startedRunningAt: started,
+                                   now: lastFrame.addingTimeInterval(CaptureWatchdog.stallTolerance + 0.1)),
+            .stalled
+        )
+    }
+
+    func testTheFirstFrameIsGivenLessRopeThanARunningSession() {
+        XCTAssertLessThan(CaptureWatchdog.firstFrameTolerance, CaptureWatchdog.stallTolerance)
+        XCTAssertGreaterThan(CaptureWatchdog.firstFrameTolerance, 0.5,
+                             "below this, an ordinary cold start would be rebuilt for nothing")
     }
 }

@@ -135,6 +135,29 @@ final class AppEnvironment: ObservableObject {
     /// necessary: **Allow Once**. iOS returns the authorisation to *not determined* at the
     /// next launch, so a driver who granted location yesterday finds it off today — and
     /// the app used to accept that silently rather than ask again.
+    /// Raises the *Always* prompt, once, and remembers that it was raised.
+    ///
+    /// iOS shows it a single time per install and says nothing on the second call. Without
+    /// this memory the settings row would stay there offering a prompt that no longer
+    /// appears — a control that does nothing is worse than no control, and at the wheel it
+    /// is worse still.
+    func requestAlwaysLocation() {
+        guard LocationUpgrade.decide(
+            authorization: location.authorization,
+            wantsLocation: settingsStore.settings.locationMetadataEnabled,
+            hasAlreadyAsked: hasAskedForAlwaysLocation
+        ) == .ask else { return }
+        hasAskedForAlwaysLocation = true
+        location.requestAlwaysAuthorization()
+    }
+
+    /// Persisted rather than held in memory: the prompt's one shot is spent for the life of
+    /// the install, not for the life of the process.
+    private(set) var hasAskedForAlwaysLocation: Bool {
+        get { UserDefaults.standard.bool(forKey: "location.askedAlways") }
+        set { UserDefaults.standard.set(newValue, forKey: "location.askedAlways") }
+    }
+
     func applyLocationIntent(isForeground: Bool) {
         let intent = LocationIntent.decide(
             wantsLocation: settingsStore.settings.locationMetadataEnabled,

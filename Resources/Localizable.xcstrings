@@ -10746,6 +10746,76 @@
         }
       }
     },
+    "settings.location.always": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ort immer erlauben"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always allow location"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir la ubicación «Siempre»"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autoriser la position « Toujours »"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir a localização «Sempre»"
+          }
+        }
+      }
+    },
+    "settings.location.always.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine Fahrt braucht diese App auf dem Bildschirm – sonst schaltet iOS die Kameras ab –, „Immer“ ändert an der Aufnahme also nichts. Es ändert die Position: Sie wird weiter geschrieben, während Sie auf den Bildschirm des Autos statt auf den des iPhones schauen. iOS fragt einmal; danach geht es in den Einstellungen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A drive needs this app on screen — iOS stops the cameras otherwise — so Always changes nothing about recording. What it changes is the position: it keeps being written while you are looking at the car's screen rather than the phone's. iOS asks once; after that it is in Settings ▸ Dashcam Pocket."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un trayecto necesita esta app en pantalla —iOS apaga las cámaras si no—, así que «Siempre» no cambia nada de la grabación. Lo que cambia es la ubicación: se sigue escribiendo mientras miras la pantalla del coche en lugar de la del teléfono. iOS lo pregunta una vez; después se hace en Ajustes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un trajet exige cette app à l'écran — iOS coupe les caméras sinon — donc « Toujours » ne change rien à l'enregistrement. Ce que ça change, c'est la position : elle continue d'être écrite pendant que vous regardez l'écran de la voiture plutôt que celui du téléphone. iOS ne le demande qu'une fois ; ensuite ça se passe dans Réglages ▸ Dashcam Pocket."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma viagem precisa desta app no ecrã — caso contrário o iOS desliga as câmaras —, por isso «Sempre» não muda nada na gravação. O que muda é a localização: continua a ser escrita enquanto olha para o ecrã do carro em vez do telemóvel. O iOS pergunta uma vez; depois é nos Ajustes."
+          }
+        }
+      }
+    },
     "settings.metadata.footer": {
       "extractionState": "manual",
       "localizations": {

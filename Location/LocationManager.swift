@@ -40,6 +40,22 @@ final class LocationManager: NSObject, ObservableObject {
         manager.requestWhenInUseAuthorization()
     }
 
+    /// Asks to raise *When In Use* to *Always*.
+    ///
+    /// Two iOS rules make this awkward, and both are silent when broken: the prompt only
+    /// exists for an app that already holds When In Use, and it is shown **once** for the
+    /// life of the install. Calling it in any other state does nothing whatsoever — which
+    /// is why the decision lives in `LocationUpgrade`, tested, rather than in a call site
+    /// that would quietly do nothing.
+    ///
+    /// `NSLocationAlwaysAndWhenInUseUsageDescription` must be in the Info.plist or the
+    /// prompt never appears either. That one is not even a runtime failure: it is a plist
+    /// key nobody notices is missing.
+    func requestAlwaysAuthorization() {
+        guard manager.authorizationStatus == .authorizedWhenInUse else { return }
+        manager.requestAlwaysAuthorization()
+    }
+
     func start() {
         guard isAuthorized else { return }
         manager.startUpdatingLocation()

@@ -60,6 +60,8 @@
 	<string>Optional. Turn audio on to record sound alongside your driving footage. It is off by default.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Optional. Location is only attached to your recordings as metadata (position, speed). Dashcam provides no navigation and never uploads your location.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Allow Always so a drive keeps its position while you are looking at the car's screen rather than the phone's. It is still only written beside your own recordings, never uploaded.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Optional. Motion data is used on-device to detect a possible impact and automatically protect the surrounding footage.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

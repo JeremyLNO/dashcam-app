@@ -389,6 +389,28 @@ struct SettingsView: View {
                 accent: .teal,
                 isOn: locationBinding
             )
+            // Offered only while it can do something: iOS raises the Always prompt for an
+            // app that already holds When In Use, once. Asking anywhere else raises nothing
+            // at all, which is the kind of silence a driver reads as a refusal.
+            if LocationUpgrade.isOfferable(
+                authorization: environment.location.authorization,
+                wantsLocation: settingsStore.settings.locationMetadataEnabled
+            ) {
+                Button {
+                    environment.requestAlwaysLocation()
+                } label: {
+                    SettingsRow(
+                        titleKey: "settings.location.always",
+                        systemImage: "location.circle.fill",
+                        accent: .teal
+                    ) {
+                        chevron
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("alwaysLocationRow")
+                SettingsNote(textKey: "settings.location.always.footer")
+            }
             if biometricsAvailable {
                 ToggleRow(
                     titleKey: "settings.biometric",

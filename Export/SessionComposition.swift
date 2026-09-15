@@ -99,6 +99,7 @@ enum SessionComposition {
             return instruction
         }
 
+        report(videoComposition, duration: built.duration, layout: "single")
         return BuiltComposition(
             composition: built.composition,
             videoComposition: videoComposition,
@@ -226,6 +227,7 @@ enum SessionComposition {
             return instruction
         }
 
+        report(videoComposition, duration: rearCursor, layout: "two-up")
         return BuiltComposition(
             composition: composition,
             videoComposition: videoComposition,
@@ -318,6 +320,20 @@ enum SessionComposition {
         return CMTimeRange(
             start: CMTime(seconds: from - sourceStart, preferredTimescale: 600),
             duration: CMTime(seconds: to - from, preferredTimescale: 600)
+        )
+    }
+
+    /// Says out loud what a black frame would otherwise keep to itself.
+    ///
+    /// An instruction list that does not cover the whole timeline is not an error to
+    /// AVFoundation: the instants nobody claims render as the instruction background,
+    /// which is black, and the player's status stays `readyToPlay` throughout. There is no
+    /// other moment at which this can be noticed from inside the app.
+    private static func report(_ videoComposition: AVVideoComposition, duration: CMTime, layout: String) {
+        let problems = CompositionDiagnostics.problems(in: videoComposition, duration: duration)
+        guard !problems.isEmpty else { return }
+        Log.export.error(
+            "\(layout, privacy: .public) layout does not cover its timeline: \(problems.map(\.description).joined(separator: "; "), privacy: .public)"
         )
     }
 

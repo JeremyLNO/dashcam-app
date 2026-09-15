@@ -1,5 +1,6 @@
 import AVFoundation
 import AVKit
+import Combine
 import SwiftUI
 
 /// One drive, played back.
@@ -552,6 +553,27 @@ struct SessionDetailView: View {
             player.replaceCurrentItem(with: item)
             installPlayheadObserver()
             isPreparing = false
+
+            // Nothing used to look at this, and a player item that fails is invisible: the
+            // surface stays exactly the black it shows before the first frame, the mode
+            // buttons still respond, and no error is raised anywhere the app can see it.
+            // "The video is black" was the only symptom available. This task lives as long
+            // as the mode does — `.task(id: mode)` cancels it — so waiting here costs
+            // nothing and turns that black into a sentence.
+            for await status in item.publisher(for: \.status).values {
+                switch status {
+                case .failed:
+                    Log.export.error(
+                        "Player item failed (\(effectiveMode.rawValue, privacy: .public)): \(item.error?.localizedDescription ?? "no reason given", privacy: .public)"
+                    )
+                    preparationFailed = true
+                    return
+                case .readyToPlay:
+                    return
+                default:
+                    continue
+                }
+            }
         } catch {
             Log.export.error("Playback preparation failed: \(error.localizedDescription, privacy: .public)")
             preparationFailed = true

@@ -58,7 +58,13 @@ struct DemoDataSeeder {
     /// Encodes a few seconds of a flat colour. Returns false if the encoder is
     /// unavailable, so a seeding failure degrades to "no demo footage" rather than
     /// crashing the harness.
-    static func writeSolidColourMovie(to url: URL, colour: UIColor, size: CGSize, seconds: Int) async -> Bool {
+    /// `frameRate` and `extraFrames` exist for the tests: together they produce a clip
+    /// whose duration is deliberately *not* a round number of timeline ticks, which is the
+    /// shape real footage has and the shape that catches arithmetic done in seconds.
+    static func writeSolidColourMovie(
+        to url: URL, colour: UIColor, size: CGSize, seconds: Int,
+        frameRate: Int = 15, extraFrames: Int = 0
+    ) async -> Bool {
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? FileManager.default.removeItem(at: url)
 
@@ -98,8 +104,8 @@ struct DemoDataSeeder {
             return false
         }
 
-        let fps = 15
-        let frames = seconds * fps
+        let fps = frameRate
+        let frames = seconds * fps + extraFrames
         for frame in 0..<frames {
             while !input.isReadyForMoreMediaData {
                 try? await Task.sleep(nanoseconds: 2_000_000)

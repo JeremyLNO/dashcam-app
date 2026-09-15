@@ -34,18 +34,44 @@ concurrency:
 jobs:
   release:
     name: Archive & upload to TestFlight
-    runs-on: xcode-27
+    runs-on: macos-15
     timeout-minutes: 45
     if: ${{ vars.SKIP_TESTFLIGHT != 'true' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select latest available Xcode
+      - name: Select Xcode
+        # App Store Connect refuse un binaire construit avec une bêta :
+        # « Unsupported SDK or Xcode version [...] you need to use the latest Release
+        # Candidates (RC) ». L'image xcode-27 ne contient QU'UNE bêta (27A5252f),
+        # exposée sous quatre noms — Xcode.app, Xcode_27.0.app, Xcode_27.0.0.app,
+        # Xcode_27_beta_6.app — donc choisir « celui dont le nom ne dit pas beta »
+        # retombe sur le même binaire. D'où l'inventaire par identifiant de build
+        # ci-dessous, et non par nom de dossier : un alias ne trompe pas un build id.
         run: |
-          latest=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
-          echo "Using $latest"
-          sudo xcode-select -s "$latest"
+          set -euo pipefail
+          echo "Xcode installés (chemin → build) :"
+          for x in $(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V); do
+            b=$(/usr/libexec/PlistBuddy -c 'Print :ProductBuildVersion' "$x/Contents/version.plist" 2>/dev/null || echo '?')
+            echo "  $x → $b"
+          done
+          # Les identifiants de build des bêtas installées, pour écarter aussi leurs alias.
+          betas=$(for x in $(ls -d /Applications/Xcode*beta*.app 2>/dev/null); do
+                    /usr/libexec/PlistBuddy -c 'Print :ProductBuildVersion' "$x/Contents/version.plist" 2>/dev/null || true
+                  done | sort -u)
+          chosen=""
+          for x in $(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V); do
+            b=$(/usr/libexec/PlistBuddy -c 'Print :ProductBuildVersion' "$x/Contents/version.plist" 2>/dev/null || echo '?')
+            if [ -n "$betas" ] && echo "$betas" | grep -qx "$b"; then continue; fi
+            chosen="$x"
+          done
+          if [ -z "$chosen" ]; then
+            echo "::error::Cette image ne contient que des Xcode bêta — App Store Connect refusera l'upload."
+            exit 1
+          fi
+          echo "Retenu : $chosen"
+          sudo xcode-select -s "$chosen"
           xcodebuild -version
 
       - name: Regenerate Xcode project

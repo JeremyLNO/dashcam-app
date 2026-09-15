@@ -360,6 +360,14 @@ final class RecordingManager: ObservableObject {
             .store(in: &cancellables)
     }
 
+    /// Switches on everything that records *beside* the video: position and motion.
+    ///
+    /// ⚠️ **Every origin passes through here**, and that is the guarantee, not a detail: the
+    /// button on the driving screen, the CarPlay template, the Apple Watch, a Shortcut, the
+    /// automatic start when the car connects, the resume after an interruption — all of them
+    /// call `start()`, so none of them can produce a drive without its positions. Anything
+    /// that ever reaches the capture engine by another road would record a journey with no
+    /// coordinates, and nothing on screen would say so. See `CarPlayLocationTests`.
     private func startSensors() {
         if settingsStore.settings.locationMetadataEnabled {
             // The setting is on by default, but nothing had ever triggered the system
@@ -379,6 +387,10 @@ final class RecordingManager: ObservableObject {
         }
     }
 
+    /// The mirror, and the same rule: whoever ends the drive — CarPlay included — releases
+    /// the receiver. The save is what makes the fixes gathered since the last segment
+    /// survive the end of the session; a position inserted and never written is
+    /// indistinguishable from a position that was recorded, until the next launch.
     private func stopSensors() {
         location.stop()
         motion.stop()

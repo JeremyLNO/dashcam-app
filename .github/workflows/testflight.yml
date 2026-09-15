@@ -145,10 +145,18 @@ jobs:
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        # ExportOptions.plist du dépôt porte destination=export : c'est ce dont
+        # release.sh a besoin (il récupère l'ipa puis le téléverse avec altool).
+        # exportArchive exige alors -exportPath, et la CI n'a rien à faire d'un
+        # ipa sur disque. On travaille donc sur une copie en destination=upload
+        # plutôt que de dupliquer le plist — un second fichier finirait par
+        # diverger du premier sans que rien ne le signale.
         run: |
+          cp ExportOptions.plist "$RUNNER_TEMP/ExportOptions-upload.plist"
+          /usr/libexec/PlistBuddy -c "Set :destination upload" "$RUNNER_TEMP/ExportOptions-upload.plist"
           xcodebuild -exportArchive \
             -archivePath build/Dashcam.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions-upload.plist" \
             -allowProvisioningUpdates \
             -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
             -authenticationKeyID "$ASC_KEY_ID" \

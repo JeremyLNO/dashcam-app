@@ -1,25 +1,25 @@
 #if canImport(CarPlay)
 import CarPlay
+import UIKit
 #endif
 import Combine
 import Foundation
 
-/// The CarPlay screen: a remote control and a dashboard, and nothing else.
+/// The CarPlay screen: one question, answered in under a second — **what can I do now?**
 ///
-/// There is no navigation here and there never will be — the driver keeps using Maps, Waze
-/// or Google Maps. What the car's screen is for is the handful of things a driver must be
-/// able to do without reaching for the phone, and the handful of facts they must be able to
-/// read without looking twice.
+/// Three screens, never more. No settings, no library, no camera preview: a driving-task
+/// app on CarPlay is a remote control, and everything it offers is something a driver can
+/// press without reading. START and STOP are never on screen together.
 ///
-/// **What is on the screen is what the app can prove.** The first version reported
-/// `RECORDING` and a ticking duration for a drive that was writing nothing at all, because
-/// nothing on that screen came from the footage — it came from a flag. So the status line
-/// now answers to the camera, the clip counter is the number of files actually closed on
-/// disk, and when the cameras cannot run the screen says which gesture fixes it instead of
-/// offering a button that cannot work.
+/// ⚠️ **CarPlay does not allow a custom-drawn interface here.** Only navigation apps get a
+/// surface to draw on; a `carplay-driving-task` app composes system templates, whose
+/// layout, type sizes and spacing belong to the car. So the hierarchy asked for is built
+/// out of the largest thing available — `CPGridTemplate`, whose buttons are big tiles —
+/// with the secondary facts pushed into the title bar where they cannot compete.
 ///
-/// The whole feature is optional. Without the `carplay-driving-task` entitlement the
-/// template scene is simply never created by iOS, and nothing in the phone app notices.
+/// And because none of it can be tried on this machine, every root template is set with a
+/// completion handler: if the car refuses a grid, the information template takes over
+/// rather than leaving the driver a blank screen.
 @MainActor
 final class CarPlayManager: ObservableObject {
     @Published private(set) var isConnected = false
@@ -33,9 +33,18 @@ final class CarPlayManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var refreshTimer: Timer?
 
+    /// Shown for a moment instead of the title, then gone on its own.
+    private var confirmation: CarPlayConfirmation?
+    private var confirmationTimer: Timer?
+
     #if canImport(CarPlay)
     private var interfaceController: CPInterfaceController?
-    private var template: CPInformationTemplate?
+    private var currentScreen: CarPlayScreen?
+    private var gridTemplate: CPGridTemplate?
+    private var informationTemplate: CPInformationTemplate?
+    /// Set once the car has refused a grid. Nothing tries again afterwards: a second
+    /// refusal per state change would be a flicker between two layouts.
+    private var gridIsUnavailable = false
     #endif
 
     init(
@@ -56,12 +65,9 @@ final class CarPlayManager: ObservableObject {
     func connect(_ interfaceController: CPInterfaceController) {
         self.interfaceController = interfaceController
         isConnected = true
-
-        let template = makeTemplate()
-        self.template = template
-        interfaceController.setRootTemplate(template, animated: false, completion: nil)
-
+        currentScreen = nil
         observeState()
+        present(screen())
         Log.carplay.info("CarPlay connected")
 
         if shouldAutoStartOnConnect(), !recording.isRecording {
@@ -72,136 +78,268 @@ final class CarPlayManager: ObservableObject {
     func disconnect() {
         refreshTimer?.invalidate()
         refreshTimer = nil
+        confirmationTimer?.invalidate()
+        confirmationTimer = nil
+        confirmation = nil
         cancellables.removeAll()
         interfaceController = nil
-        template = nil
+        gridTemplate = nil
+        informationTemplate = nil
+        currentScreen = nil
         isConnected = false
         Log.carplay.info("CarPlay disconnected")
     }
 
-    // MARK: - Template
+    // MARK: - Which screen
 
-    private func makeTemplate() -> CPInformationTemplate {
-        CPInformationTemplate(
-            title: L10n.t("carplay.title"),
-            // Two columns rather than one: the single column left two thirds of a very wide
-            // screen empty and pushed every figure into a narrow strip on the left.
-            layout: .twoColumn,
-            items: currentItems(),
-            actions: currentActions()
+    private func screen() -> CarPlayScreen {
+        CarPlayScreen.decide(
+            isRecording: recording.isRecording,
+            readiness: RecordingReadiness.assess(capture.status),
+            camerasKey: CarPlayDashboard.camerasKey(status: capture.status),
+            isDiscreet: dimmer.isDiscreet
         )
     }
 
-    // MARK: - What the screen says
-
-    /// The status line, which is the one thing a driver reads at a glance — so it is the
-    /// one line that must never be a guess.
-    private func statusItem() -> CPInformationItem {
-        if recording.isRecording {
-            return CPInformationItem(title: L10n.t("carplay.status"), detail: L10n.t("carplay.recording"))
+    /// The title bar carries everything that is not the action: the state, the elapsed
+    /// time, and — only when there is room to spare — the two facts worth a glance.
+    private func title(for screen: CarPlayScreen) -> String {
+        if let confirmation { return L10n.t(confirmation.titleKey) }
+        switch screen {
+        case .blocked:
+            return L10n.t("carplay.blocked.title")
+        case .ready(let camerasKey):
+            return "\(L10n.t("carplay.ready")) · \(L10n.t(camerasKey)) · \(Format.bytes(storage.snapshot.freeBytes))"
+        case .recording:
+            return "\(L10n.t("carplay.recording"))  \(Format.duration(recording.elapsed))"
         }
-        let detail = CarPlayDashboard.stoppedStatusKey(readiness: RecordingReadiness.assess(capture.status),
-                                                       interruption: capture.status.interruption)
-        return CPInformationItem(title: L10n.t("carplay.status"), detail: L10n.t(detail))
     }
 
-    private func currentItems() -> [CPInformationItem] {
-        var items = [statusItem()]
+    // MARK: - Presenting
 
-        if recording.isRecording {
-            items.append(CPInformationItem(title: L10n.t("carplay.duration"), detail: Format.duration(recording.elapsed)))
-            // The count of files actually closed on disk. It is the only figure here that
-            // footage has to exist for — a drive writing nothing sits at zero while the
-            // duration climbs, and that disagreement is the whole point of showing it.
-            items.append(CPInformationItem(
-                title: L10n.t("carplay.clips"),
-                detail: "\(recording.segmentCount)"
-            ))
+    /// Swaps the root template when the screen *changes*, and only then. Re-rooting on
+    /// every tick would reset the car's own animations once a second.
+    private func present(_ screen: CarPlayScreen) {
+        guard let interfaceController else { return }
+        let isSameShape = currentScreen.map { Self.sameShape($0, screen) } ?? false
+        if isSameShape {
+            refreshInPlace(screen)
+            return
+        }
+        currentScreen = screen
+
+        if screen.actions.isEmpty || gridIsUnavailable {
+            let template = makeInformationTemplate(screen)
+            informationTemplate = template
+            gridTemplate = nil
+            interfaceController.setRootTemplate(template, animated: false, completion: nil)
+            return
         }
 
-        items.append(CPInformationItem(
-            title: L10n.t("carplay.cameras"),
-            detail: L10n.t(CarPlayDashboard.camerasKey(status: capture.status))
-        ))
-        items.append(CPInformationItem(
-            title: L10n.t("carplay.storage"),
-            detail: Format.bytes(storage.snapshot.freeBytes)
-        ))
-
-        if recording.isRecording,
-           let confirmation = recording.lastProtectionConfirmation,
-           Date().timeIntervalSince(confirmation) < 6 {
-            items.append(CPInformationItem(title: L10n.t("carplay.protected"), detail: L10n.t("carplay.protected.detail")))
-        }
-        return items
-    }
-
-    /// At most three, which is the template's limit and also as many as anyone should be
-    /// asked to choose between while driving.
-    private func currentActions() -> [CPTextButton] {
-        guard recording.isRecording else {
-            // No Start button when starting cannot work: a button that does nothing is
-            // worse than none, because the driver presses it and believes it worked. The
-            // screen is watching the camera, so it comes back on its own.
-            guard RecordingReadiness.assess(capture.status).isReady else { return [] }
-            return [
-                CPTextButton(title: L10n.t("carplay.start"), textStyle: .confirm) { [weak self] _ in
-                    Task { @MainActor in await self?.recording.start() }
+        let grid = makeGridTemplate(screen)
+        interfaceController.setRootTemplate(grid, animated: false) { [weak self] success, error in
+            Task { @MainActor in
+                guard let self else { return }
+                guard success else {
+                    // The car would not take a grid. Fall back once, for good, rather than
+                    // leave the driver looking at nothing.
+                    Log.carplay.error("Grid refused: \(error?.localizedDescription ?? "no reason", privacy: .public) — falling back")
+                    self.gridIsUnavailable = true
+                    self.currentScreen = nil
+                    self.present(self.screen())
+                    return
                 }
+                self.gridTemplate = grid
+                self.informationTemplate = nil
+            }
+        }
+    }
+
+    /// Two screens have the same *shape* when they need the same buttons — only then can
+    /// the title and the tiles be updated without re-rooting.
+    private static func sameShape(_ lhs: CarPlayScreen, _ rhs: CarPlayScreen) -> Bool {
+        lhs.actions == rhs.actions
+    }
+
+    private func refreshInPlace(_ screen: CarPlayScreen) {
+        currentScreen = screen
+        if let gridTemplate {
+            gridTemplate.updateTitle(title(for: screen))
+            gridTemplate.updateGridButtons(buttons(for: screen))
+        }
+        if let informationTemplate {
+            informationTemplate.title = title(for: screen)
+            informationTemplate.items = informationItems(screen)
+            informationTemplate.actions = textButtons(for: screen)
+        }
+    }
+
+    // MARK: - Templates
+
+    private func makeGridTemplate(_ screen: CarPlayScreen) -> CPGridTemplate {
+        CPGridTemplate(title: title(for: screen), gridButtons: buttons(for: screen))
+    }
+
+    /// The fallback, and the only shape available for the blocked screen — a grid needs at
+    /// least one button, and the blocked screen deliberately has none.
+    private func makeInformationTemplate(_ screen: CarPlayScreen) -> CPInformationTemplate {
+        CPInformationTemplate(
+            title: title(for: screen),
+            layout: .leading,
+            items: informationItems(screen),
+            actions: textButtons(for: screen)
+        )
+    }
+
+    private func informationItems(_ screen: CarPlayScreen) -> [CPInformationItem] {
+        switch screen {
+        case .blocked(let detailKey):
+            // One line, and nothing to compete with it. No storage, no camera list: the
+            // driver has exactly one thing to do and the screen says only that.
+            return [CPInformationItem(title: L10n.t("carplay.blocked.title"), detail: L10n.t(detailKey))]
+        case .ready(let camerasKey):
+            return [
+                CPInformationItem(title: L10n.t("carplay.status"), detail: L10n.t("carplay.ready")),
+                CPInformationItem(title: L10n.t("carplay.cameras"), detail: L10n.t(camerasKey)),
+                CPInformationItem(title: L10n.t("carplay.storage"), detail: Format.bytes(storage.snapshot.freeBytes)),
+            ]
+        case .recording:
+            return [
+                CPInformationItem(title: L10n.t("carplay.status"), detail: L10n.t("carplay.recording")),
+                CPInformationItem(title: L10n.t("carplay.duration"), detail: Format.duration(recording.elapsed)),
+                CPInformationItem(title: L10n.t("carplay.clips"), detail: "\(recording.segmentCount)"),
             ]
         }
-
-        return [
-            CPTextButton(title: L10n.t("carplay.stop"), textStyle: .cancel) { [weak self] _ in
-                Task { @MainActor in await self?.recording.stop() }
-            },
-            CPTextButton(title: L10n.t("carplay.protect"), textStyle: .confirm) { [weak self] _ in
-                Task { @MainActor in self?.protectFromCarPlay() }
-            },
-            CPTextButton(
-                title: L10n.t(dimmer.isDiscreet ? "carplay.screen.wake" : "carplay.screen.dim"),
-                textStyle: .normal
-            ) { [weak self] _ in
-                Task { @MainActor in self?.toggleDiscreet() }
-            },
-        ]
     }
 
-    private func protectFromCarPlay() {
-        recording.protectNow(origin: .carPlay)
-        refresh()
-    }
+    // MARK: - Buttons
 
-    /// The phone is in its cradle and the driver's hands are on the wheel; this is the
-    /// gesture the car's screen exists for. It obeys the same rule as the moon button on
-    /// the phone, because the rule lives in `ScreenDimmer` and not at the call sites.
-    private func toggleDiscreet() {
-        if dimmer.isDiscreet {
-            dimmer.exit()
-        } else {
-            dimmer.enter(whileRecording: recording.isRecording)
+    private func buttons(for screen: CarPlayScreen) -> [CPGridButton] {
+        screen.actions.map { action in
+            CPGridButton(titleVariants: [label(for: action)], image: image(for: action)) { [weak self] _ in
+                Task { @MainActor in self?.perform(action) }
+            }
         }
+    }
+
+    private func textButtons(for screen: CarPlayScreen) -> [CPTextButton] {
+        screen.actions.map { action in
+            CPTextButton(title: label(for: action), textStyle: style(for: action)) { [weak self] _ in
+                Task { @MainActor in self?.perform(action) }
+            }
+        }
+    }
+
+    private func label(for action: CarPlayScreen.Action) -> String {
+        switch action {
+        case .start: return L10n.t("carplay.start")
+        case .stop: return L10n.t("carplay.stop")
+        case .protectClip:
+            return L10n.t(confirmation == .clipProtected ? "carplay.protect.done" : "carplay.protect")
+        case .discreet: return L10n.t(dimmer.isDiscreet ? "carplay.screen.wake" : "carplay.screen.dim")
+        }
+    }
+
+    private func style(for action: CarPlayScreen.Action) -> CPTextButtonStyle {
+        switch action {
+        case .start: return .confirm
+        case .stop: return .cancel
+        case .protectClip, .discreet: return .normal
+        }
+    }
+
+    /// Green to start, red to stop, and a shield that is neither — the three states a
+    /// driver recognises without reading.
+    ///
+    /// ⚠️ Rendered `.alwaysOriginal`: CarPlay tints template images itself, and a red Stop
+    /// that arrives as a grey Stop is the rule this screen is built on. If the car tints it
+    /// anyway the icon simply loses its colour — the layout, and the size, are unaffected.
+    private func image(for action: CarPlayScreen.Action) -> UIImage {
+        switch action {
+        case .start: return Self.symbol("record.circle.fill", tint: .systemGreen)
+        case .stop: return Self.symbol("stop.circle.fill", tint: .systemRed)
+        case .protectClip:
+            return confirmation == .clipProtected
+                ? Self.symbol("checkmark.shield.fill", tint: .systemGreen)
+                : Self.symbol("shield.lefthalf.filled", tint: .systemBlue)
+        case .discreet:
+            return Self.symbol(dimmer.isDiscreet ? "sun.max.fill" : "moon.fill", tint: .systemYellow)
+        }
+    }
+
+    /// CarPlay asks for a 60×60 pt image. Drawn once per call rather than cached: these are
+    /// built on a state change, which happens a handful of times per drive.
+    private static func symbol(_ name: String, tint: UIColor) -> UIImage {
+        let size = CGSize(width: 60, height: 60)
+        let configuration = UIImage.SymbolConfiguration(pointSize: 44, weight: .semibold)
+        let symbol = UIImage(systemName: name, withConfiguration: configuration)?
+            .withTintColor(tint, renderingMode: .alwaysOriginal)
+        return UIGraphicsImageRenderer(size: size).image { _ in
+            guard let symbol else { return }
+            let rect = CGRect(
+                x: (size.width - symbol.size.width) / 2,
+                y: (size.height - symbol.size.height) / 2,
+                width: symbol.size.width, height: symbol.size.height
+            )
+            symbol.draw(in: rect)
+        }
+    }
+
+    // MARK: - Doing
+
+    private func perform(_ action: CarPlayScreen.Action) {
+        switch action {
+        case .start:
+            Task { @MainActor in await recording.start() }
+        case .stop:
+            Task { @MainActor in
+                await recording.stop()
+                // The confirmation belongs to the screen that follows, which is why it is
+                // raised after the stop rather than with it.
+                show(.driveSaved)
+            }
+        case .protectClip:
+            guard recording.protectNow(origin: .carPlay) else { return }
+            show(.clipProtected)
+        case .discreet:
+            if dimmer.isDiscreet {
+                dimmer.exit()
+            } else {
+                dimmer.enter(whileRecording: recording.isRecording)
+            }
+            refresh()
+        }
+    }
+
+    /// Says it, and leaves. Nothing to press: asking a driver to acknowledge « saved » is
+    /// asking them to look at the screen to dismiss news they already wanted.
+    private func show(_ confirmation: CarPlayConfirmation) {
+        self.confirmation = confirmation
         refresh()
+        confirmationTimer?.invalidate()
+        confirmationTimer = Timer.scheduledTimer(withTimeInterval: CarPlayConfirmation.duration, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                self?.confirmation = nil
+                self?.refresh()
+            }
+        }
     }
 
     // MARK: - Keeping it current
 
     private func observeState() {
-        // Three publishers, one refresh. The capture status is the newest of the three and
-        // the one that was missing: without it, a screen showing « Unlock the iPhone »
-        // stayed that way after the phone was unlocked.
-        recording.$isRecording
-            .sink { [weak self] _ in Task { @MainActor in self?.refresh() } }
-            .store(in: &cancellables)
-        capture.$status
-            .sink { [weak self] _ in Task { @MainActor in self?.refresh() } }
-            .store(in: &cancellables)
-        dimmer.$isDiscreet
-            .sink { [weak self] _ in Task { @MainActor in self?.refresh() } }
-            .store(in: &cancellables)
+        // Three publishers, one refresh. The capture status is the one that was missing:
+        // without it, a screen saying « open the app » stayed that way after it was opened.
+        for publisher in [
+            recording.$isRecording.map { _ in () }.eraseToAnyPublisher(),
+            capture.$status.map { _ in () }.eraseToAnyPublisher(),
+            dimmer.$isDiscreet.map { _ in () }.eraseToAnyPublisher(),
+        ] {
+            publisher
+                .sink { [weak self] in Task { @MainActor in self?.refresh() } }
+                .store(in: &cancellables)
+        }
 
-        // The duration and the clip counter have to tick, but only while there is
-        // something to tick.
         refreshTimer?.invalidate()
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in
@@ -212,9 +350,8 @@ final class CarPlayManager: ObservableObject {
     }
 
     private func refresh() {
-        guard let template else { return }
-        template.items = currentItems()
-        template.actions = currentActions()
+        guard isConnected else { return }
+        present(screen())
     }
     #else
     func disconnect() { isConnected = false }
@@ -223,18 +360,9 @@ final class CarPlayManager: ObservableObject {
 
 /// What the car's screen says, as plain decisions over the capture state.
 ///
-/// Kept apart from the template so it can be tested: `CPInformationTemplate` cannot be
-/// built on a machine without CarPlay, and these are exactly the lines that were wrong.
+/// Kept apart from the templates so it can be tested: `CPGridTemplate` cannot be built on a
+/// machine without CarPlay, and these are exactly the lines that were wrong.
 enum CarPlayDashboard {
-    /// The status detail while no drive is running. Says what to *do* when there is
-    /// something to do — « Stopped » in front of a locked phone is true and useless.
-    static func stoppedStatusKey(readiness: RecordingReadiness, interruption: CaptureInterruption?) -> String {
-        guard !readiness.isReady else { return "carplay.stopped" }
-        if interruption == .notRunnableInBackground { return "carplay.blocked.locked" }
-        if interruption != nil { return "carplay.blocked.paused" }
-        return "carplay.blocked.no_camera"
-    }
-
     static func camerasKey(status: CaptureStatus) -> String {
         switch status.mode {
         case .dual: return status.frontActive ? "carplay.cameras.both" : "carplay.cameras.road"

@@ -29,6 +29,8 @@ final class LocalizationTests: XCTestCase {
         "carplay.clips", "carplay.cameras", "carplay.cameras.both", "carplay.cameras.road",
         "carplay.cameras.none", "carplay.storage", "carplay.screen.dim", "carplay.screen.wake",
         "carplay.blocked.locked", "carplay.blocked.paused", "carplay.blocked.no_camera",
+        "carplay.blocked.title", "carplay.blocked.detail", "carplay.ready",
+        "carplay.confirm.protected", "carplay.confirm.saved", "carplay.protect.done",
         "capture.error.not_running", "capture.interrupted.background",
         "settings.support", "settings.language", "settings.quality", "settings.retention",
         "capture.error.no_camera", "capture.interrupted.call", "capture.interrupted.sensitive",

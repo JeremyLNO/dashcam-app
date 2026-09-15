@@ -1856,6 +1856,41 @@
         }
       }
     },
+    "carplay.blocked.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The cameras are only available while Dashcam Pocket is open on the iPhone."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les caméras ne sont accessibles que si Dashcam Pocket est ouverte sur l'iPhone."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kameras sind nur verfügbar, solange Dashcam Pocket auf dem iPhone geöffnet ist."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las cámaras solo están disponibles con Dashcam Pocket abierta en el iPhone."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As câmaras só estão disponíveis com a Dashcam Pocket aberta no iPhone."
+          }
+        }
+      }
+    },
     "carplay.blocked.locked": {
       "extractionState": "manual",
       "localizations": {
@@ -1957,6 +1992,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Câmara indisponível"
+          }
+        }
+      }
+    },
+    "carplay.blocked.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the app on your iPhone"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrez l'app sur votre iPhone"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffnen Sie die App auf dem iPhone"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre la app en tu iPhone"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abra a app no seu iPhone"
           }
         }
       }
@@ -2136,6 +2206,76 @@
         }
       }
     },
+    "carplay.confirm.protected": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Clip protected"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Clip protégé"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Clip geschützt"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Clip protegido"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Clipe protegido"
+          }
+        }
+      }
+    },
+    "carplay.confirm.saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Recording saved"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Enregistrement sauvegardé"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Aufnahme gespeichert"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Grabación guardada"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Gravação guardada"
+          }
+        }
+      }
+    },
     "carplay.duration": {
       "extractionState": "manual",
       "localizations": {
@@ -2206,6 +2346,41 @@
         }
       }
     },
+    "carplay.protect.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PROTECTED"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PROTÉGÉ"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GESCHÜTZT"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PROTEGIDO"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PROTEGIDO"
+          }
+        }
+      }
+    },
     "carplay.protected": {
       "extractionState": "manual",
       "localizations": {
@@ -2272,6 +2447,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Imagens guardadas"
+          }
+        }
+      }
+    },
+    "carplay.ready": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to record"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à enregistrer"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aufnahmebereit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para grabar"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto a gravar"
           }
         }
       }

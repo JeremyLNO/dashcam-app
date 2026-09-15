@@ -1,0 +1,155 @@
+name: TestFlight Release
+
+# Auto-publishes every push to main to TestFlight. Requires 5 repo secrets
+# (Settings → Secrets and variables → Actions):
+#   ASC_KEY_ID              — App Store Connect API Key ID
+#   ASC_ISSUER_ID           — App Store Connect API Issuer ID
+#   ASC_KEY_P8              — full contents of the AuthKey_<id>.p8 file
+#   IOS_DEV_CERT_P12        — base64 of an exported "Apple Development" .p12
+#   IOS_DEV_CERT_PASSWORD   — the password that .p12 was exported with
+# The API key comes from App Store Connect → Users and Access → Integrations
+# → App Store Connect API (NOT an APNs key — different key, same portal
+# family). xcodebuild archive with automatic signing always wants an "Apple
+# Development" identity for the archive step itself (distribution signing
+# happens later, during export/upload, driven by the API key) — so that's
+# the cert imported into a throwaway keychain every run, reused instead of
+# minting a brand new one each time (GitHub's runners are ephemeral; doing
+# that repeatedly silently exhausts the account's certificate quota).
+#
+# ⚠️ This repository is PRIVATE, so macOS runner minutes are billed at the
+# ×10 multiplier — unlike the other iOS repos, which are public on purpose.
+# Set the repo variable SKIP_TESTFLIGHT=true to park the pipeline without
+# deleting it.
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+concurrency:
+  group: testflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    name: Archive & upload to TestFlight
+    runs-on: xcode-27
+    timeout-minutes: 45
+    if: ${{ vars.SKIP_TESTFLIGHT != 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest available Xcode
+        run: |
+          latest=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          echo "Using $latest"
+          sudo xcode-select -s "$latest"
+          xcodebuild -version
+
+      - name: Regenerate Xcode project
+        # Same step release.sh runs before archiving: the pbxproj is generated,
+        # so a source file added without re-running the generator would be
+        # missing from the archive while the build still succeeds.
+        run: python3 gen_pbxproj.py
+
+      - name: Write App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p ~/private_keys
+          printf '%s' "$ASC_KEY_P8" > ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
+
+      - name: Import signing certificate
+        env:
+          CERT_P12: ${{ secrets.IOS_DEV_CERT_P12 }}
+          CERT_PASSWORD: ${{ secrets.IOS_DEV_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD=$(uuidgen)
+          echo "$CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN_PATH" -P "$CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/"//g')
+          # Without this, xcodebuild's automatic signing does not see the
+          # identity we just imported and quietly mints a BRAND NEW "Apple
+          # Development" certificate on every run, which exhausts the
+          # account-wide certificate quota after a handful of builds and then
+          # breaks archiving for every app on the account.
+          security default-keychain -s "$KEYCHAIN_PATH"
+          rm -f "$RUNNER_TEMP/cert.p12"
+          # Fail loudly rather than let the build "succeed" on a freshly
+          # created certificate.
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -q "Apple Development" || {
+            echo "::error::imported certificate is not usable for code signing"
+            exit 1
+          }
+
+      - name: Resolve Swift packages
+        # Résolu à part, avec son propre chrono. Une résolution qui se bloque
+        # *dans* `xcodebuild archive` n'a aucun timeout à elle : le 2026-09-14,
+        # trois dépôts sont restés figés juste après « Checking out 5.5.1 of
+        # package OneSignal-XCFramework » et GitHub ne les a tués qu'au bout de
+        # SIX heures. Ici, ça échoue en 10 minutes et ça se voit.
+        timeout-minutes: 10
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project Dashcam.xcodeproj \
+            -scheme Dashcam
+
+      - name: Archive (signed, automatic provisioning)
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        # Numéro de build : minutes écoulées depuis le 2023-11-14. Strictement
+        # croissant (~525 000/an), très au-dessus des numéros à deux chiffres de
+        # Config/Base.xcconfig, et identique à ce qu'utilise release.sh depuis ce
+        # Mac — les deux chemins ne se croiseront jamais. TestFlight trie par
+        # NUMÉRO, pas par date d'upload : un numéro plus bas laisse les testeurs
+        # sur un build périmé présenté comme « le dernier ».
+        #
+        # ⚠️ Aucun commentaire `#` à l'intérieur des commandes ci-dessous : le
+        # shell coupe la commande au premier `#`, et xcodebuild partirait sans
+        # clé ASC ni numéro de build.
+        run: |
+          archive() {
+            xcodebuild archive \
+              -project Dashcam.xcodeproj \
+              -scheme Dashcam \
+              -disableAutomaticPackageResolution \
+              -configuration Release \
+              -archivePath build/Dashcam.xcarchive \
+              -destination 'generic/platform=iOS' \
+              -allowProvisioningUpdates \
+              CURRENT_PROJECT_VERSION=$BUILD_NUMBER \
+              -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+              -authenticationKeyID "$ASC_KEY_ID" \
+              -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          }
+          BUILD_NUMBER=$(( ($(date +%s) - 1700000000) / 60 ))
+          echo "Build number: $BUILD_NUMBER"
+          # First run downloads/creates any missing provisioning profiles (esp.
+          # for the watch target) — occasionally the build plan is computed just
+          # before that download lands on disk, failing with "Build input file
+          # cannot be found: .../<uuid>.mobileprovision". A second attempt always
+          # finds the file already there and succeeds.
+          archive || { echo "Retrying archive (profile likely just landed)…"; archive; }
+
+      - name: Export & upload to TestFlight
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/Dashcam.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"

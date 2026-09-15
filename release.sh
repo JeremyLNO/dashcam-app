@@ -12,7 +12,12 @@ cd "$(dirname "$0")"
 KEY_ID="${ASC_KEY_ID:-88BAZ9XND3}"
 ISSUER="${ASC_ISSUER_ID:-***ASC-ISSUER-ID-RETIRE***}"
 APP_ID="6811080566"
-BUILD=$(awk -F'= *' '/^CURRENT_PROJECT_VERSION/{print $2}' Config/Base.xcconfig | tr -d ' ')
+# Minutes écoulées depuis le 2023-11-14 : strictement croissant (~525 000/an) et partagé
+# avec .github/workflows/testflight.yml, donc un build local et un build CI ne se croisent
+# jamais. Surtout ne pas relire CURRENT_PROJECT_VERSION depuis Config/Base.xcconfig : ces
+# numéros à deux chiffres passent SOUS ceux de la CI, et TestFlight trie par NUMÉRO, pas par
+# date d'upload — les testeurs resteraient sur le build précédent, l'upload disant « succès ».
+BUILD=$(( ($(date +%s) - 1700000000) / 60 ))
 VERSION=$(awk -F'= *' '/^MARKETING_VERSION/{print $2}' Config/Base.xcconfig | tr -d ' ')
 ARCHIVE="build/Dashcam-$BUILD.xcarchive"
 EXPORT="build/export-$BUILD"
@@ -22,6 +27,7 @@ python3 gen_pbxproj.py
 xcodebuild archive -project Dashcam.xcodeproj -scheme Dashcam \
   -configuration Release -destination "generic/platform=iOS" \
   -archivePath "$ARCHIVE" -allowProvisioningUpdates \
+  CURRENT_PROJECT_VERSION="$BUILD" \
   -authenticationKeyPath "$HOME/.appstoreconnect/private_keys/AuthKey_$KEY_ID.p8" \
   -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER" \
   | tail -3

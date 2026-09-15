@@ -29,11 +29,13 @@
 		2A8152FC47CE7E95D8E65953 /* CameraAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0592889709F0A18918B6D56 /* CameraAuthorization.swift */; };
 		C1CA3F829C6F5D581761B8E4 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3207B02AD3A55A22554F14 /* CameraPreviewView.swift */; };
 		792568D574D78B82A4434621 /* CaptureManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ECEAA412CB1C65A4A676BBF /* CaptureManager.swift */; };
+		F5158F948A87DD9D828997DD /* CapturePresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96ED0A50DCCDD6FDA6A3EBE7 /* CapturePresence.swift */; };
 		F5CC8282474F3E042CCDDDEB /* CaptureTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF685DDFDB6BB647491F852 /* CaptureTypes.swift */; };
 		BBC01AAFA7182871B42CAA02 /* CaptureWatchdog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2AABCE3128F1FFF6EEA958 /* CaptureWatchdog.swift */; };
 		152A32F9DA020B7E4021111E /* PhoneRemoteServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5203AB37AFA9992CA2D2521 /* PhoneRemoteServer.swift */; };
 		747AA06597F8D84060A46893 /* RecordingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0934A3F11601A65E954EB8E8 /* RecordingEngine.swift */; };
 		84AAA0068C4385AD0850DD1D /* RecordingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C881EBD4CB2AE29BB6573E2 /* RecordingManager.swift */; };
+		BA82F5DB935A0764C4D2C1FF /* RecordingReadiness.swift in Sources */ = {isa = PBXBuildFile; fileRef = 882CC924AD4CC3E65FBACEAE /* RecordingReadiness.swift */; };
 		32FC335D42658E97E811149D /* SceneOptimiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C238FFC64D7C6D9EA6E9B03 /* SceneOptimiser.swift */; };
 		BB04D8B53150D3EAB077D24D /* SegmentMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D8335CA253DD37FA9EF54B9 /* SegmentMetadata.swift */; };
 		828077070568F72C7E5C5C02 /* SegmentWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A16A3C54964730F01D8A /* SegmentWriter.swift */; };
@@ -83,8 +85,10 @@
 		D7E130AAA5ABAAA01927A683 /* ControlCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 609947873BB6ABA09F8E94A8 /* ControlCommands.swift */; };
 		196A0DF6FB8889B71E3F3DE6 /* RecordingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */; };
 		A1750838D5D7553667B33410 /* RemoteProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2590BCCDE50A3B33C610B /* RemoteProtocol.swift */; };
+		A7B4FC17884F8A57180C46C0 /* CapturePresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EEB934543C593832EA8D026 /* CapturePresenceTests.swift */; };
 		D0913E3AF31C4BE2CFC162DE /* CaptureWatchdogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */; };
 		E199FDD00CCBBB9C12B9FB20 /* CarPlayAutoStartTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D0C5D24848D735C4293345 /* CarPlayAutoStartTests.swift */; };
+		027902A59EFC5C4C644093E1 /* CarPlayDashboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B300AAECF53A7E6A249A87C /* CarPlayDashboardTests.swift */; };
 		CD69FDFA01BEA4242B995D36 /* CarPlayLocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03EFC9D9137F10F8CF61B7E /* CarPlayLocationTests.swift */; };
 		1F991AB66DCC92035CA2D4F1 /* CompositionCoverageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4513656EB7C83A081A01C9D4 /* CompositionCoverageTests.swift */; };
 		E5B259D6F221A32AFCA79CD8 /* CompositionGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */; };
@@ -101,7 +105,9 @@
 		92E351ABEFEBCDF53F532D14 /* OverlaySignatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D7052220D4E7D917DD022F9 /* OverlaySignatureTests.swift */; };
 		F59CA9E56C9AD109BF17CF29 /* PictureInPictureRenderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A57C287E2DD4EFD163E888A /* PictureInPictureRenderTests.swift */; };
 		B0AB628F67B1C8A4A2AFE46A /* PushConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AD700BC0F7109BF77C582 /* PushConfigurationTests.swift */; };
+		845E069BA5D4CDD604BF4EB4 /* RecordedFootageCompositionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93457CDC960D6805DA423FA /* RecordedFootageCompositionTests.swift */; };
 		8BB60537CD5122495951D592 /* RecordingEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D52B897BCBACEE8F07C2AAC /* RecordingEngineTests.swift */; };
+		FB32B5AE63D06F96B40CEAEC /* RecordingReadinessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9743AB61165A2CE73C1D87F3 /* RecordingReadinessTests.swift */; };
 		4BB0E281E23143258D8A0749 /* RemoteProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCAD3616A0C418E8C2ABDD3 /* RemoteProtocolTests.swift */; };
 		C8C0946635FF83FB831C56AF /* RetentionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCCCF422AFBE0B1628DBF3FA /* RetentionManagerTests.swift */; };
 		32E71694271CFAAE0D2B3273 /* SceneOptimiserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100B2C6A6A422D4EA37E99D5 /* SceneOptimiserTests.swift */; };
@@ -159,11 +165,13 @@
 		B0592889709F0A18918B6D56 /* CameraAuthorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraAuthorization.swift"; sourceTree = "<group>"; };
 		0C3207B02AD3A55A22554F14 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraPreviewView.swift"; sourceTree = "<group>"; };
 		4ECEAA412CB1C65A4A676BBF /* CaptureManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaptureManager.swift"; sourceTree = "<group>"; };
+		96ED0A50DCCDD6FDA6A3EBE7 /* CapturePresence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CapturePresence.swift"; sourceTree = "<group>"; };
 		DBF685DDFDB6BB647491F852 /* CaptureTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaptureTypes.swift"; sourceTree = "<group>"; };
 		9B2AABCE3128F1FFF6EEA958 /* CaptureWatchdog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaptureWatchdog.swift"; sourceTree = "<group>"; };
 		E5203AB37AFA9992CA2D2521 /* PhoneRemoteServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PhoneRemoteServer.swift"; sourceTree = "<group>"; };
 		0934A3F11601A65E954EB8E8 /* RecordingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingEngine.swift"; sourceTree = "<group>"; };
 		6C881EBD4CB2AE29BB6573E2 /* RecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingManager.swift"; sourceTree = "<group>"; };
+		882CC924AD4CC3E65FBACEAE /* RecordingReadiness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingReadiness.swift"; sourceTree = "<group>"; };
 		9C238FFC64D7C6D9EA6E9B03 /* SceneOptimiser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SceneOptimiser.swift"; sourceTree = "<group>"; };
 		7D8335CA253DD37FA9EF54B9 /* SegmentMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SegmentMetadata.swift"; sourceTree = "<group>"; };
 		7707A16A3C54964730F01D8A /* SegmentWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SegmentWriter.swift"; sourceTree = "<group>"; };
@@ -226,8 +234,10 @@
 		3CBC9DA2BA9DF3F3ADF792AF /* StorageLocations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StorageLocations.swift"; sourceTree = "<group>"; };
 		A504B2DD910C9470D162881D /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StorageManager.swift"; sourceTree = "<group>"; };
 		4A0ED5D734E00333761AAFDD /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubscriptionManager.swift"; sourceTree = "<group>"; };
+		2EEB934543C593832EA8D026 /* CapturePresenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CapturePresenceTests.swift"; sourceTree = "<group>"; };
 		CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaptureWatchdogTests.swift"; sourceTree = "<group>"; };
 		A5D0C5D24848D735C4293345 /* CarPlayAutoStartTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CarPlayAutoStartTests.swift"; sourceTree = "<group>"; };
+		8B300AAECF53A7E6A249A87C /* CarPlayDashboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CarPlayDashboardTests.swift"; sourceTree = "<group>"; };
 		D03EFC9D9137F10F8CF61B7E /* CarPlayLocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CarPlayLocationTests.swift"; sourceTree = "<group>"; };
 		4513656EB7C83A081A01C9D4 /* CompositionCoverageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CompositionCoverageTests.swift"; sourceTree = "<group>"; };
 		8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CompositionGeometryTests.swift"; sourceTree = "<group>"; };
@@ -244,7 +254,9 @@
 		7D7052220D4E7D917DD022F9 /* OverlaySignatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OverlaySignatureTests.swift"; sourceTree = "<group>"; };
 		4A57C287E2DD4EFD163E888A /* PictureInPictureRenderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictureInPictureRenderTests.swift"; sourceTree = "<group>"; };
 		FE3AD700BC0F7109BF77C582 /* PushConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PushConfigurationTests.swift"; sourceTree = "<group>"; };
+		F93457CDC960D6805DA423FA /* RecordedFootageCompositionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordedFootageCompositionTests.swift"; sourceTree = "<group>"; };
 		9D52B897BCBACEE8F07C2AAC /* RecordingEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingEngineTests.swift"; sourceTree = "<group>"; };
+		9743AB61165A2CE73C1D87F3 /* RecordingReadinessTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingReadinessTests.swift"; sourceTree = "<group>"; };
 		3BCAD3616A0C418E8C2ABDD3 /* RemoteProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RemoteProtocolTests.swift"; sourceTree = "<group>"; };
 		FCCCF422AFBE0B1628DBF3FA /* RetentionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RetentionManagerTests.swift"; sourceTree = "<group>"; };
 		100B2C6A6A422D4EA37E99D5 /* SceneOptimiserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SceneOptimiserTests.swift"; sourceTree = "<group>"; };
@@ -383,11 +395,13 @@
 				B0592889709F0A18918B6D56 /* CameraAuthorization.swift */,
 				0C3207B02AD3A55A22554F14 /* CameraPreviewView.swift */,
 				4ECEAA412CB1C65A4A676BBF /* CaptureManager.swift */,
+				96ED0A50DCCDD6FDA6A3EBE7 /* CapturePresence.swift */,
 				DBF685DDFDB6BB647491F852 /* CaptureTypes.swift */,
 				9B2AABCE3128F1FFF6EEA958 /* CaptureWatchdog.swift */,
 				E5203AB37AFA9992CA2D2521 /* PhoneRemoteServer.swift */,
 				0934A3F11601A65E954EB8E8 /* RecordingEngine.swift */,
 				6C881EBD4CB2AE29BB6573E2 /* RecordingManager.swift */,
+				882CC924AD4CC3E65FBACEAE /* RecordingReadiness.swift */,
 				9C238FFC64D7C6D9EA6E9B03 /* SceneOptimiser.swift */,
 				7D8335CA253DD37FA9EF54B9 /* SegmentMetadata.swift */,
 				7707A16A3C54964730F01D8A /* SegmentWriter.swift */,
@@ -582,8 +596,10 @@
 		74C0354F987B4FC0FDE2C044 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				2EEB934543C593832EA8D026 /* CapturePresenceTests.swift */,
 				CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */,
 				A5D0C5D24848D735C4293345 /* CarPlayAutoStartTests.swift */,
+				8B300AAECF53A7E6A249A87C /* CarPlayDashboardTests.swift */,
 				D03EFC9D9137F10F8CF61B7E /* CarPlayLocationTests.swift */,
 				4513656EB7C83A081A01C9D4 /* CompositionCoverageTests.swift */,
 				8D39EEDA7A187EB4C2C11AFD /* CompositionGeometryTests.swift */,
@@ -600,7 +616,9 @@
 				7D7052220D4E7D917DD022F9 /* OverlaySignatureTests.swift */,
 				4A57C287E2DD4EFD163E888A /* PictureInPictureRenderTests.swift */,
 				FE3AD700BC0F7109BF77C582 /* PushConfigurationTests.swift */,
+				F93457CDC960D6805DA423FA /* RecordedFootageCompositionTests.swift */,
 				9D52B897BCBACEE8F07C2AAC /* RecordingEngineTests.swift */,
+				9743AB61165A2CE73C1D87F3 /* RecordingReadinessTests.swift */,
 				3BCAD3616A0C418E8C2ABDD3 /* RemoteProtocolTests.swift */,
 				FCCCF422AFBE0B1628DBF3FA /* RetentionManagerTests.swift */,
 				100B2C6A6A422D4EA37E99D5 /* SceneOptimiserTests.swift */,
@@ -1000,11 +1018,13 @@
 				2A8152FC47CE7E95D8E65953 /* CameraAuthorization.swift in Sources */,
 				C1CA3F829C6F5D581761B8E4 /* CameraPreviewView.swift in Sources */,
 				792568D574D78B82A4434621 /* CaptureManager.swift in Sources */,
+				F5158F948A87DD9D828997DD /* CapturePresence.swift in Sources */,
 				F5CC8282474F3E042CCDDDEB /* CaptureTypes.swift in Sources */,
 				BBC01AAFA7182871B42CAA02 /* CaptureWatchdog.swift in Sources */,
 				152A32F9DA020B7E4021111E /* PhoneRemoteServer.swift in Sources */,
 				747AA06597F8D84060A46893 /* RecordingEngine.swift in Sources */,
 				84AAA0068C4385AD0850DD1D /* RecordingManager.swift in Sources */,
+				BA82F5DB935A0764C4D2C1FF /* RecordingReadiness.swift in Sources */,
 				32FC335D42658E97E811149D /* SceneOptimiser.swift in Sources */,
 				BB04D8B53150D3EAB077D24D /* SegmentMetadata.swift in Sources */,
 				828077070568F72C7E5C5C02 /* SegmentWriter.swift in Sources */,
@@ -1061,8 +1081,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A7B4FC17884F8A57180C46C0 /* CapturePresenceTests.swift in Sources */,
 				D0913E3AF31C4BE2CFC162DE /* CaptureWatchdogTests.swift in Sources */,
 				E199FDD00CCBBB9C12B9FB20 /* CarPlayAutoStartTests.swift in Sources */,
+				027902A59EFC5C4C644093E1 /* CarPlayDashboardTests.swift in Sources */,
 				CD69FDFA01BEA4242B995D36 /* CarPlayLocationTests.swift in Sources */,
 				1F991AB66DCC92035CA2D4F1 /* CompositionCoverageTests.swift in Sources */,
 				E5B259D6F221A32AFCA79CD8 /* CompositionGeometryTests.swift in Sources */,
@@ -1079,7 +1101,9 @@
 				92E351ABEFEBCDF53F532D14 /* OverlaySignatureTests.swift in Sources */,
 				F59CA9E56C9AD109BF17CF29 /* PictureInPictureRenderTests.swift in Sources */,
 				B0AB628F67B1C8A4A2AFE46A /* PushConfigurationTests.swift in Sources */,
+				845E069BA5D4CDD604BF4EB4 /* RecordedFootageCompositionTests.swift in Sources */,
 				8BB60537CD5122495951D592 /* RecordingEngineTests.swift in Sources */,
+				FB32B5AE63D06F96B40CEAEC /* RecordingReadinessTests.swift in Sources */,
 				4BB0E281E23143258D8A0749 /* RemoteProtocolTests.swift in Sources */,
 				C8C0946635FF83FB831C56AF /* RetentionManagerTests.swift in Sources */,
 				32E71694271CFAAE0D2B3273 /* SceneOptimiserTests.swift in Sources */,

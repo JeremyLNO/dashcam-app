@@ -20,6 +20,16 @@ final class ScreenDimmer: ObservableObject {
     /// what a discreet mode is for.
     static let dimmedLevel: CGFloat = 0.05
 
+    /// The *decision* to be discreet, which outlives the backlight being borrowed.
+    ///
+    /// The two are deliberately separate. Leaving the app hands the brightness straight
+    /// back — whatever takes the foreground next is not part of this bargain — but the
+    /// driver never asked to leave the discreet screen, so coming back has to find it
+    /// still chosen. Collapsing the two into one flag is how « I dimmed it, iOS showed a
+    /// notification, and now the screen is bright again » happens.
+    @Published private(set) var isDiscreet = false
+
+    /// Whether the backlight is borrowed at this instant.
     @Published private(set) var isDimmed = false
 
     /// What to hand back, captured before the first change and kept until it is handed
@@ -32,6 +42,23 @@ final class ScreenDimmer: ObservableObject {
     /// where the call is written, and `SystemDisplay` only exists on the main actor.
     init(display: BrightnessControlling? = nil) {
         self.display = display ?? SystemDisplay()
+    }
+
+    /// The gesture: the moon button on the phone, or the button on the car's screen.
+    ///
+    /// The rule lives here rather than at the two call sites, because a rule with two call
+    /// sites has two chances to be forgotten — and the second one was added months after
+    /// the first, by which time the first is the documentation.
+    func enter(whileRecording isRecording: Bool) {
+        guard !isDiscreet, Self.mayGoDiscreet(isRecording: isRecording) else { return }
+        isDiscreet = true
+        dim()
+    }
+
+    /// A touch, an impact, the end of a drive, or the button pressed again.
+    func exit() {
+        isDiscreet = false
+        restore()
     }
 
     func dim() {

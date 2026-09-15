@@ -32,6 +32,7 @@ struct DashcamApp: App {
                     .environmentObject(environment.thermal)
                     .environmentObject(environment.protection)
                     .environmentObject(environment.permissions)
+                    .environmentObject(environment.dimmer)
                     .modelContainer(environment.container)
                     // Left over from the dark interface this app used to have. It is
                     // overruled twice below — by `RootView`'s own modifier and by the

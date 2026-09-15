@@ -16,6 +16,9 @@ struct RecordingView: View {
     @EnvironmentObject private var storage: StorageManager
     @EnvironmentObject private var location: LocationManager
     @EnvironmentObject private var thermal: ThermalManager
+    /// Shared, not owned: the CarPlay remote turns the discreet screen on and off too, and
+    /// the end of a drive has to end it whatever tab the phone happens to be showing.
+    @EnvironmentObject private var dimmer: ScreenDimmer
 
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
@@ -25,14 +28,11 @@ struct RecordingView: View {
 
     @Environment(\.scenePhase) private var scenePhase
 
-    @State private var isDiscreet = false
     @State private var lastInteraction = Date()
     @State private var discreetTimer: Timer?
     @State private var protectFlash = false
 
-    /// Owned by this screen because this screen is the only one entitled to turn the
-    /// display down, and the only one that can be sure to put it back.
-    @StateObject private var dimmer = ScreenDimmer()
+    private var isDiscreet: Bool { dimmer.isDiscreet }
 
     var body: some View {
         ZStack {
@@ -586,15 +586,12 @@ struct RecordingView: View {
     /// Neither touches the capture. The session keeps running, the writers keep writing,
     /// and the only thing that changed is what the glass emits.
     private func enterDiscreet() {
-        guard !isDiscreet, ScreenDimmer.mayGoDiscreet(isRecording: recording.isRecording) else { return }
-        isDiscreet = true
-        dimmer.dim()
+        dimmer.enter(whileRecording: recording.isRecording)
         discreetTimer?.invalidate()
     }
 
     private func exitDiscreet() {
-        isDiscreet = false
-        dimmer.restore()
+        dimmer.exit()
         noteInteraction()
     }
 }

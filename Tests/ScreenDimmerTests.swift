@@ -110,6 +110,54 @@ final class ScreenDimmerTests: XCTestCase {
         XCTAssertTrue(ScreenDimmer.mayGoDiscreet(isRecording: true))
     }
 
+    // MARK: - The decision, which outlives the borrow
+
+    /// Leaving the app hands the brightness straight back — whatever takes the foreground
+    /// next is not part of this bargain — but the driver never asked to leave the discreet
+    /// screen. Collapsing « discreet » and « dimmed » into one flag is how coming back from
+    /// a notification ends up showing the cameras again.
+    func testLeavingTheAppReturnsTheBrightnessWithoutEndingTheDecision() {
+        let display = FakeDisplay(0.8)
+        let dimmer = ScreenDimmer(display: display)
+
+        dimmer.enter(whileRecording: true)
+        XCTAssertTrue(dimmer.isDiscreet)
+        XCTAssertTrue(dimmer.isDimmed)
+
+        dimmer.restore()                       // the app goes to the background
+        XCTAssertEqual(display.brightness, 0.8, accuracy: 0.0001)
+        XCTAssertTrue(dimmer.isDiscreet, "the driver did not ask to leave the discreet screen")
+
+        dimmer.dim()                           // and comes back
+        XCTAssertEqual(display.brightness, ScreenDimmer.dimmedLevel, accuracy: 0.0001)
+    }
+
+    func testExitEndsBothTheDecisionAndTheBorrow() {
+        let display = FakeDisplay(0.8)
+        let dimmer = ScreenDimmer(display: display)
+
+        dimmer.enter(whileRecording: true)
+        dimmer.exit()
+
+        XCTAssertFalse(dimmer.isDiscreet)
+        XCTAssertFalse(dimmer.isDimmed)
+        XCTAssertEqual(display.brightness, 0.8, accuracy: 0.0001)
+    }
+
+    /// The rule lives inside `enter`, not at its call sites — there are two of them now,
+    /// the moon button and the CarPlay remote, and a rule repeated twice is a rule that
+    /// will be repeated once.
+    func testEnteringIsRefusedOutsideADrive() {
+        let display = FakeDisplay(0.8)
+        let dimmer = ScreenDimmer(display: display)
+
+        dimmer.enter(whileRecording: false)
+
+        XCTAssertFalse(dimmer.isDiscreet)
+        XCTAssertEqual(display.brightness, 0.8, accuracy: 0.0001,
+                       "a phone that is filming nothing has nothing to be discreet about")
+    }
+
     /// What the car does wakes the screen; what the driver does does not. Pressing
     /// Protect from the discreet screen is a decision to stay dark.
     func testOnlyTheSensorsWakeTheScreen() {

@@ -118,12 +118,12 @@ final class RecordingManager: ObservableObject {
             }
         }
 
-        guard capture.status.mode != .unavailable else {
-            alert = RecordingAlert(
-                titleKey: "alert.camera_unavailable.title",
-                messageKey: capture.status.unavailability?.messageKey ?? "capture.error.no_camera",
-                isCritical: true
-            )
+        // Not « is there a camera » but « are pictures coming ». The two came apart on a
+        // drive started from the car's screen with the iPhone locked: a camera existed, the
+        // session existed, and iOS was delivering nothing to either. Cf. `RecordingReadiness`.
+        if case .blocked(let titleKey, let messageKey) = RecordingReadiness.assess(capture.status) {
+            alert = RecordingAlert(titleKey: titleKey, messageKey: messageKey, isCritical: true)
+            Log.recording.error("Refused to start: \(messageKey, privacy: .public)")
             return
         }
 
@@ -157,6 +157,35 @@ final class RecordingManager: ObservableObject {
         UIApplication.shared.isIdleTimerDisabled = true
 
         Log.recording.info("Recording started, session \(sessionID, privacy: .public), front=\(includesFront)")
+        watchForFirstFrame(of: sessionID, startedAt: startedAt ?? Date())
+    }
+
+    /// The second belt, and the one that does not take iOS at its word.
+    ///
+    /// Everything above can pass — a camera present, a session running, no interruption
+    /// posted — and still not one frame arrive. That is precisely what happened from
+    /// CarPlay, and nothing in the app noticed: the timer ticked, the template said
+    /// RECORDING, the writers waited for a first sample that never came, and the drive
+    /// ended with no files and a session row nobody could explain.
+    ///
+    /// So the drive is asked to show its work. No frame within the grace period and it is
+    /// stopped and said out loud, rather than left running for an hour over nothing.
+    private func watchForFirstFrame(of sessionID: UUID, startedAt: Date) {
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(RecordingReadiness.firstFrameGrace * 1_000_000_000))
+            guard let self, self.isRecording, self.currentSessionID == sessionID else { return }
+            guard !RecordingReadiness.hasReceivedFootage(
+                startedAt: startedAt, lastFrame: self.capture.lastVideoFrame
+            ) else { return }
+
+            Log.recording.error("No frame after \(RecordingReadiness.firstFrameGrace, privacy: .public)s — stopping a drive that is recording nothing")
+            await self.stop()
+            self.alert = RecordingAlert(
+                titleKey: "alert.camera_unavailable.title",
+                messageKey: "capture.interrupted.background",
+                isCritical: true
+            )
+        }
     }
 
     func stop() async {

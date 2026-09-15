@@ -15,7 +15,11 @@ struct RootView: View {
 
     /// Record sits in the middle, and the app opens on it: it is the only screen anyone
     /// needs before setting off.
-    @State private var selectedTab = 1
+    /// The tab that shows the cameras. Named rather than written as `1` in three places:
+    /// the number is the only thing tying the capture pipeline to the tab bar.
+    private static let recordingTab = 1
+
+    @State private var selectedTab = recordingTab
 
     var body: some View {
         Group {
@@ -39,6 +43,10 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             handle(phase: phase)
         }
+        // …and a drive beginning from anywhere brings them back, whatever is on screen.
+        .onChange(of: recording.isRecording) { _, _ in applyCapturePresence() }
+        // Leaving the recording tab gives the video pipeline back. Cf. `CapturePresence`.
+        .onChange(of: selectedTab) { _, _ in applyCapturePresence() }
         .sheet(isPresented: $review.isPrompting) {
             SatisfactionPrompt(
                 onHappy: { review.answerHappy { openURL($0) } },
@@ -78,7 +86,7 @@ struct RootView: View {
             environment.storage.refresh()
             environment.notifications.refreshAuthorization()
             review.evaluate(isRecording: recording.isRecording)
-            environment.capture.startRunning()
+            applyCapturePresence()
             environment.applyLocationIntent(isForeground: true)
         case .inactive:
             break
@@ -94,6 +102,20 @@ struct RootView: View {
             environment.index.save()
         @unknown default:
             break
+        }
+    }
+
+    /// The cameras follow what is on screen, not what the app is.
+    private func applyCapturePresence() {
+        let shouldRun = CapturePresence.shouldRun(
+            isRecording: recording.isRecording,
+            isShowingCameras: selectedTab == Self.recordingTab,
+            isForeground: scenePhase == .active
+        )
+        if shouldRun {
+            environment.capture.startRunning()
+        } else {
+            environment.capture.stopRunning()
         }
     }
 }

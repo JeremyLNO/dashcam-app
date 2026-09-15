@@ -36,6 +36,10 @@ final class AppEnvironment: ObservableObject {
     let permissions: PermissionCoordinator
     let notifications: NotificationManager
     let review: ReviewPrompter
+    /// Owned here rather than by the driving screen, since the CarPlay remote turns it on
+    /// and off too — and since the end of a drive has to end it whatever the phone happens
+    /// to be showing at that moment.
+    let dimmer = ScreenDimmer()
     let carPlay: CarPlayManager
     let watchRemote: PhoneRemoteServer
     let carPlayConnection: CarPlayConnectionMonitor
@@ -111,7 +115,9 @@ final class AppEnvironment: ObservableObject {
             recording?.protectNow(origin: .manual)
         }
 
-        self.carPlay = CarPlayManager(recording: recording)
+        self.carPlay = CarPlayManager(
+            recording: recording, capture: capture, storage: storage, dimmer: dimmer
+        )
         self.watchRemote = PhoneRemoteServer(recording: recording, index: index)
         self.carPlayConnection = CarPlayConnectionMonitor()
 
@@ -127,6 +133,7 @@ final class AppEnvironment: ObservableObject {
 
         observeSettings()
         observeCarPlay()
+        observeRecordingForDiscreetScreen()
     }
 
     /// Acts on what the driver asked for about location, whatever iOS currently allows.
@@ -172,6 +179,29 @@ final class AppEnvironment: ObservableObject {
         case .stop: location.stop()
         case .none: break
         }
+    }
+
+    /// The end of a drive gives the brightness back.
+    ///
+    /// Wired here, not in the driving screen: a drive can be stopped from the car, from the
+    /// Watch or by running out of storage while the phone shows the library, and in none of
+    /// those cases is the driving screen there to notice. A phone left at 5 % is a defect
+    /// the app does not even see.
+    private func observeRecordingForDiscreetScreen() {
+        recording.$isRecording
+            .sink { [weak self] isRecording in
+                guard !isRecording else { return }
+                Task { @MainActor in self?.dimmer.exit() }
+            }
+            .store(in: &cancellables)
+    }
+
+    /// A drive can begin from CarPlay, the Watch or a Shortcut while the phone shows the
+    /// library — where the cameras have been stopped on purpose. They have to come back, or
+    /// the drive records nothing, which is the very defect this session set out to end.
+    func ensureCamerasRunningForRecording() {
+        guard recording.isRecording else { return }
+        capture.startRunning()
     }
 
     /// Starts a recording when the car is plugged in, if the driver asked for that.

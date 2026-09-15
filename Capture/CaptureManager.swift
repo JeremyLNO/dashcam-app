@@ -367,6 +367,11 @@ final class CaptureManager: ObservableObject {
     nonisolated(unsafe) private var pendingOptimiserDevice: AVCaptureDevice?
     /// When the session was last told to run, and the timer that checks it kept its word.
     nonisolated(unsafe) private var startedRunningAt: Date?
+    /// When a video frame last arrived, whatever the camera — the only evidence that the
+    /// cameras are doing anything, as opposed to claiming to. Read by the watchdog, and by
+    /// a drive checking that it is actually recording something.
+    var lastVideoFrame: Date? { router.lastVideoFrame }
+
     nonisolated(unsafe) private var watchdogTimer: DispatchSourceTimer?
     /// One rebuild per stall: a camera that freezes again immediately is a broken device,
     /// and looping on it would burn the battery without ever showing a picture.
@@ -692,7 +697,14 @@ final class SampleRouter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate
 
     /// When a video frame last arrived, whatever the camera. Read by the watchdog, which
     /// is the only thing that can tell a frozen preview from a working one.
-    private(set) var lastVideoFrame: Date?
+    private var _lastVideoFrame: Date?
+    /// Read from the main actor as well as from the watchdog's queue, so it goes through
+    /// the same lock as the write.
+    var lastVideoFrame: Date? {
+        lock.lock()
+        defer { lock.unlock() }
+        return _lastVideoFrame
+    }
 
     private var sources: [ObjectIdentifier: SampleSource] = [:]
     private let lock = NSLock()
@@ -713,7 +725,7 @@ final class SampleRouter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate
         guard let source = source(for: output) else { return }
         if source != .audio {
             lock.lock()
-            lastVideoFrame = Date()
+            _lastVideoFrame = Date()
             lock.unlock()
         }
         sink?.consume(sampleBuffer, from: source)

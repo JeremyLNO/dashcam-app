@@ -1506,6 +1506,41 @@
         }
       }
     },
+    "capture.error.not_running": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The cameras are not running. Open Dashcam Pocket on the iPhone."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les caméras ne tournent pas. Ouvrez Dashcam Pocket sur l'iPhone."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kameras laufen nicht. Öffnen Sie Dashcam Pocket auf dem iPhone."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las cámaras no están funcionando. Abre Dashcam Pocket en el iPhone."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As câmaras não estão a funcionar. Abra a Dashcam Pocket no iPhone."
+          }
+        }
+      }
+    },
     "capture.error.permission": {
       "extractionState": "manual",
       "localizations": {
@@ -1582,31 +1617,31 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aufnahme unterbrochen: iOS erlaubt keine Kameraaufnahme im Hintergrund."
+            "value": "iOS lässt die Kameras nur laufen, wenn das iPhone entsperrt ist und Dashcam Pocket auf dem Bildschirm steht."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Recording interrupted: iOS does not allow camera capture in the background."
+            "value": "iOS only lets the cameras run while the iPhone is unlocked with Dashcam Pocket on screen."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Grabación interrumpida: iOS no permite capturar con la cámara en segundo plano."
+            "value": "iOS solo permite que las cámaras funcionen con el iPhone desbloqueado y Dashcam Pocket en pantalla."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Enregistrement interrompu : iOS n'autorise pas la capture caméra en arrière-plan."
+            "value": "iOS n'autorise les caméras que si l'iPhone est déverrouillé, avec Dashcam Pocket à l'écran."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gravação interrompida: o iOS não permite captura de câmara em segundo plano."
+            "value": "O iOS só permite as câmaras com o iPhone desbloqueado e a Dashcam Pocket no ecrã."
           }
         }
       }
@@ -1821,6 +1856,286 @@
         }
       }
     },
+    "carplay.blocked.locked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock the iPhone"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Déverrouillez l'iPhone"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPhone entsperren"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquea el iPhone"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloqueie o iPhone"
+          }
+        }
+      }
+    },
+    "carplay.blocked.no_camera": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No camera"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune caméra"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Kamera"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin cámara"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem câmara"
+          }
+        }
+      }
+    },
+    "carplay.blocked.paused": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera unavailable"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caméra indisponible"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamera nicht verfügbar"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cámara no disponible"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Câmara indisponível"
+          }
+        }
+      }
+    },
+    "carplay.cameras": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cameras"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caméras"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kameras"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cámaras"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Câmaras"
+          }
+        }
+      }
+    },
+    "carplay.cameras.both": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Road + Cabin"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Route + Habitacle"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Straße + Innenraum"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carretera + Habitáculo"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estrada + Habitáculo"
+          }
+        }
+      }
+    },
+    "carplay.cameras.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguna"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhuma"
+          }
+        }
+      }
+    },
+    "carplay.cameras.road": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Road only"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Route seule"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur Straße"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo carretera"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Só estrada"
+          }
+        }
+      }
+    },
+    "carplay.clips": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clips saved"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clips enregistrés"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gespeicherte Clips"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clips guardados"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clipes guardados"
+          }
+        }
+      }
+    },
     "carplay.duration": {
       "extractionState": "manual",
       "localizations": {
@@ -1996,6 +2311,76 @@
         }
       }
     },
+    "carplay.screen.dim": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DIM PHONE"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ÉCRAN DISCRET"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BILDSCHIRM DIMMEN"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ATENUAR PANTALLA"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ESCURECER ECRÃ"
+          }
+        }
+      }
+    },
+    "carplay.screen.wake": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WAKE PHONE"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RALLUMER L'ÉCRAN"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BILDSCHIRM AN"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ENCENDER PANTALLA"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LIGAR ECRÃ"
+          }
+        }
+      }
+    },
     "carplay.start": {
       "extractionState": "manual",
       "localizations": {
@@ -2132,6 +2517,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Parada"
+          }
+        }
+      }
+    },
+    "carplay.storage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Storage left"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stockage restant"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Freier Speicher"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Almacenamiento libre"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espaço livre"
           }
         }
       }

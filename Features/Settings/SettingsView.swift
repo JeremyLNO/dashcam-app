@@ -246,6 +246,7 @@ struct SettingsView: View {
                 options: DiscreetDelay.allCases,
                 selection: binding(\.discreetDelay)
             )
+            SettingsNote(textKey: "settings.discreet.footer")
 
             SettingsNote(textKey: "settings.safety.footer")
         }

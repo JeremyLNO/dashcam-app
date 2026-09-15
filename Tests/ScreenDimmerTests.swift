@@ -80,6 +80,36 @@ final class ScreenDimmerTests: XCTestCase {
         XCTAssertLessThan(ScreenDimmer.dimmedLevel, 0.15)
     }
 
+    // MARK: - When the screen is allowed to go dark
+
+    /// The rule Jeremy asked for on 2026-09-15, after finding the screen going dark while
+    /// parked: the discreet screen belongs to a drive, and to nothing else.
+    func testNothingGoesDiscreetWhileNoDriveIsRunning() {
+        for delay in DiscreetDelay.allCases {
+            XCTAssertNil(
+                ScreenDimmer.countdown(delay: delay, isRecording: false),
+                "\(delay) armed a countdown outside a recording"
+            )
+        }
+        XCTAssertFalse(ScreenDimmer.mayGoDiscreet(isRecording: false),
+                       "the button must not be able to dim a phone that is filming nothing")
+    }
+
+    /// And while one *is* running, the delay is exactly the one the driver chose.
+    func testTheChosenDelayGovernsWhileRecording() {
+        XCTAssertEqual(ScreenDimmer.countdown(delay: .fiveSeconds, isRecording: true), 5)
+        XCTAssertEqual(ScreenDimmer.countdown(delay: .tenSeconds, isRecording: true), 10)
+        XCTAssertEqual(ScreenDimmer.countdown(delay: .thirtySeconds, isRecording: true), 30)
+        XCTAssertTrue(ScreenDimmer.mayGoDiscreet(isRecording: true))
+    }
+
+    /// « Never » is about the countdown, not about the button. Turning the automatic delay
+    /// off must not confiscate the moon button from someone driving at night.
+    func testNeverSilencesTheCountdownAndLeavesTheButton() {
+        XCTAssertNil(ScreenDimmer.countdown(delay: .never, isRecording: true))
+        XCTAssertTrue(ScreenDimmer.mayGoDiscreet(isRecording: true))
+    }
+
     /// What the car does wakes the screen; what the driver does does not. Pressing
     /// Protect from the discreet screen is a decision to stay dark.
     func testOnlyTheSensorsWakeTheScreen() {

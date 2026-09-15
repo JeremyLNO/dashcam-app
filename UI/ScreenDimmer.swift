@@ -56,6 +56,27 @@ final class ScreenDimmer: ObservableObject {
         min(current, dimmedLevel)
     }
 
+    /// Whether the screen may go dark at all, and after how long.
+    ///
+    /// Both answers turn on the same fact — **a drive is running** — and that is the whole
+    /// rule. A discreet screen exists to stop a phone lighting the cabin *while it films*;
+    /// outside a recording there is nothing to keep discreet, and a driver who parks, looks
+    /// away for five seconds and finds a black screen has been given a defect, not a
+    /// feature. It also hides the one control that matters at that moment, which is Start.
+    ///
+    /// The countdown is deliberately *derived* rather than paused and resumed: asking for
+    /// it at the start of each recording is what makes the delay mean « after five seconds
+    /// of this drive », not « five seconds after whatever happened last ».
+    static func countdown(delay: DiscreetDelay, isRecording: Bool) -> TimeInterval? {
+        guard isRecording else { return nil }
+        return delay.interval
+    }
+
+    /// The same rule for the button. Kept separate because the two differ for `.never`:
+    /// a driver who turned the countdown off can still go discreet by hand, and taking the
+    /// button away would read as a broken control rather than as a setting.
+    static func mayGoDiscreet(isRecording: Bool) -> Bool { isRecording }
+
     /// Which protections pull the screen back up.
     ///
     /// The sensors do; the driver does not. Pressing Protect while dimmed is a decision

@@ -10536,6 +10536,41 @@
         }
       }
     },
+    "settings.discreet.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The discreet screen only comes on while a drive is being recorded, and the countdown starts over with every new drive."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'écran discret ne s'active que pendant l'enregistrement d'un trajet, et le décompte repart à chaque nouveau trajet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La pantalla discreta solo se activa mientras se graba un trayecto, y la cuenta atrás vuelve a empezar con cada trayecto nuevo."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der diskrete Bildschirm erscheint nur während einer laufenden Aufnahme, und der Countdown beginnt mit jeder neuen Fahrt von vorn."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O ecrã discreto só aparece durante a gravação de uma viagem, e a contagem recomeça a cada nova viagem."
+          }
+        }
+      }
+    },
     "settings.front_camera": {
       "extractionState": "manual",
       "localizations": {

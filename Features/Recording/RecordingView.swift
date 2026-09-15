@@ -68,9 +68,12 @@ struct RecordingView: View {
             guard let event, ScreenDimmer.wakes(event.origin) else { return }
             exitDiscreet()
         }
-        // The end of a drive ends the reason to be dark.
+        // A drive is the only reason to be dark, so it is also what arms the countdown —
+        // and it arms it **from its own first second**. A delay of five seconds means five
+        // seconds of *this* drive, not five seconds after whatever the driver last touched
+        // before setting off.
         .onChange(of: recording.isRecording) { _, isRecording in
-            if !isRecording { exitDiscreet() }
+            if isRecording { scheduleDiscreet() } else { exitDiscreet() }
         }
         // The brightness belongs to the whole phone, not to this app: whatever takes the
         // foreground next gets it back, and dimming resumes when this screen returns.
@@ -264,6 +267,11 @@ struct RecordingView: View {
     /// Deliberately small and unlabelled. It is the one control on this screen that
     /// changes nothing about the recording, and a full-width button would claim an
     /// importance it does not have.
+    ///
+    /// Inert while stopped, and **shown** inert rather than hidden — the same treatment
+    /// Protect gets, for the same reason: a control that disappears reads as a control
+    /// that does not exist, and the driver stops looking for it. There is nothing to be
+    /// discreet about before a drive starts.
     private var dimButton: some View {
         Button { enterDiscreet() } label: {
             Image(systemName: "moon.fill")
@@ -273,6 +281,8 @@ struct RecordingView: View {
                 .background(Circle().fill(Color(hex: 0x08264A).opacity(0.72)))
         }
         .buttonStyle(.plain)
+        .disabled(!recording.isRecording)
+        .opacity(recording.isRecording ? 1 : 0.55)
         .accessibilityIdentifier("dimScreen")
         .accessibilityLabel(Text(key: "discreet.dim"))
         .accessibilityHint(Text(key: "a11y.dim_hint"))
@@ -560,7 +570,10 @@ struct RecordingView: View {
 
     private func scheduleDiscreet() {
         discreetTimer?.invalidate()
-        guard let interval = settingsStore.settings.discreetDelay.interval else { return }
+        guard let interval = ScreenDimmer.countdown(
+            delay: settingsStore.settings.discreetDelay,
+            isRecording: recording.isRecording
+        ) else { return }
         discreetTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
             Task { @MainActor in enterDiscreet() }
         }
@@ -573,7 +586,7 @@ struct RecordingView: View {
     /// Neither touches the capture. The session keeps running, the writers keep writing,
     /// and the only thing that changed is what the glass emits.
     private func enterDiscreet() {
-        guard !isDiscreet else { return }
+        guard !isDiscreet, ScreenDimmer.mayGoDiscreet(isRecording: recording.isRecording) else { return }
         isDiscreet = true
         dimmer.dim()
         discreetTimer?.invalidate()

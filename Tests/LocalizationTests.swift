@@ -18,7 +18,7 @@ final class LocalizationTests: XCTestCase {
         "retention.7days", "retention.30days", "retention.never",
         "storage.5gb", "storage.10gb", "storage.25gb", "storage.50gb", "storage.unlimited",
         "shock.low", "shock.normal", "shock.high",
-        "discreet.never", "discreet.5s", "discreet.10s", "discreet.30s",
+        "discreet.never", "discreet.5s", "discreet.10s", "discreet.30s", "settings.discreet.footer",
         "export.mode.rear", "export.mode.front", "export.mode.both", "export.mode.pip",
         "export.style.original", "export.style.with_info", "export.error.subscription",
         "paywall.title", "paywall.restore", "paywall.manage", "paywall.terms", "paywall.privacy",

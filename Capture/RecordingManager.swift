@@ -121,9 +121,23 @@ final class RecordingManager: ObservableObject {
         // Not « is there a camera » but « are pictures coming ». The two came apart on a
         // drive started from the car's screen with the iPhone locked: a camera existed, the
         // session existed, and iOS was delivering nothing to either. Cf. `RecordingReadiness`.
-        if case .blocked(let titleKey, let messageKey) = RecordingReadiness.assess(capture.status) {
-            alert = RecordingAlert(titleKey: titleKey, messageKey: messageKey, isCritical: true)
-            Log.recording.error("Refused to start: \(messageKey, privacy: .public)")
+        //
+        // And a third answer, which the widget taught: **not yet**. Tapping Start on the
+        // home screen launches the app and asks for a drive in the same breath, before the
+        // capture graph has finished being built — and refusing there put « the cameras are
+        // not running » over two perfectly live previews. A request that arrives early
+        // waits for the cameras rather than being turned away.
+        if await waitForCameras() == false {
+            if case .blocked(let titleKey, let messageKey) = RecordingReadiness.assess(capture.status) {
+                alert = RecordingAlert(titleKey: titleKey, messageKey: messageKey, isCritical: true)
+                Log.recording.error("Refused to start: \(messageKey, privacy: .public)")
+            } else {
+                alert = RecordingAlert(
+                    titleKey: "alert.camera_unavailable.title",
+                    messageKey: "capture.error.not_running", isCritical: true
+                )
+                Log.recording.error("Gave up waiting for the cameras")
+            }
             return
         }
 
@@ -158,6 +172,25 @@ final class RecordingManager: ObservableObject {
 
         Log.recording.info("Recording started, session \(sessionID, privacy: .public), front=\(includesFront)")
         watchForFirstFrame(of: sessionID, startedAt: startedAt ?? Date())
+    }
+
+    /// Waits out a pipeline that is still coming up, and returns whether it arrived.
+    ///
+    /// Polled rather than awaited on a publisher: the wait has to end on a **deadline** as
+    /// well as on success, and a drive that never gets its cameras has to be told so rather
+    /// than hang. Returns immediately in the two cases that matter most — already ready,
+    /// and definitively blocked.
+    private func waitForCameras() async -> Bool {
+        let deadline = Date().addingTimeInterval(RecordingReadiness.startupGrace)
+        while true {
+            switch RecordingReadiness.assess(capture.status) {
+            case .ready: return true
+            case .blocked: return false
+            case .starting:
+                guard Date() < deadline else { return false }
+                try? await Task.sleep(nanoseconds: 120_000_000)
+            }
+        }
     }
 
     /// The second belt, and the one that does not take iOS at its word.

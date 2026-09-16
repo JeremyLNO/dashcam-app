@@ -16,6 +16,11 @@ import Foundation
 /// the whole fix is to stop claiming otherwise.
 enum RecordingReadiness: Equatable {
     case ready
+    /// The pipeline is still coming up. **Not** a refusal: a camera that is not ready yet
+    /// and a camera that will never be ready are opposite facts, and telling them apart is
+    /// the difference between waiting half a second and showing « the cameras are not
+    /// running » over two live previews. Tapping the widget did exactly that.
+    case starting
     /// Cannot record, with the reason in terms the driver can act on.
     case blocked(titleKey: String, messageKey: String)
 
@@ -24,12 +29,16 @@ enum RecordingReadiness: Equatable {
     /// The message, for a surface that has room for one line and no alert.
     var messageKey: String? {
         switch self {
-        case .ready: return nil
+        case .ready, .starting: return nil
         case .blocked(_, let messageKey): return messageKey
         }
     }
 
     static func assess(_ status: CaptureStatus) -> RecordingReadiness {
+        // Nothing has been built yet — it is about to be. Everything below would read that
+        // as a failure, and at launch it is simply « not yet ».
+        guard status.hasBeenConfigured else { return .starting }
+
         if status.mode == .unavailable {
             return .blocked(
                 titleKey: "alert.camera_unavailable.title",
@@ -43,10 +52,9 @@ enum RecordingReadiness: Equatable {
         if let interruption = status.interruption, interruption.affectsVideo {
             return .blocked(titleKey: "alert.camera_unavailable.title", messageKey: interruption.messageKey)
         }
-        // A session that is not running delivers nothing, whatever it says about why.
-        guard status.isRunning else {
-            return .blocked(titleKey: "alert.camera_unavailable.title", messageKey: "capture.error.not_running")
-        }
+        // Configured but not started: the session is stopped while the library is on
+        // screen, and starts again a moment after the drive is asked for. Also « not yet ».
+        guard status.isRunning else { return .starting }
         return .ready
     }
 
@@ -65,4 +73,11 @@ enum RecordingReadiness: Equatable {
     /// pressed, so a frame is due within milliseconds; this is generous by two orders of
     /// magnitude and still bounds the lie to a few seconds.
     static let firstFrameGrace: TimeInterval = CaptureWatchdog.stallTolerance
+
+    /// How long a drive asked for at launch waits for the cameras before giving up.
+    ///
+    /// Generous, because the cost of waiting is a moment and the cost of refusing is a
+    /// drive that was not filmed — and because the thing being waited for is a two-camera
+    /// graph built from cold, which is the slowest thing this app does.
+    static let startupGrace: TimeInterval = 8
 }

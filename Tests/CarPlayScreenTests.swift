@@ -9,7 +9,7 @@ import XCTest
 final class CarPlayScreenTests: XCTestCase {
     private func status(mode: CaptureMode = .dual, frontActive: Bool = true,
                         isRunning: Bool = true, interruption: CaptureInterruption? = nil) -> CaptureStatus {
-        CaptureStatus(mode: mode, isRunning: isRunning,
+        CaptureStatus(mode: mode, hasBeenConfigured: true, isRunning: isRunning,
                       rearActive: mode != .unavailable, frontActive: frontActive,
                       interruption: interruption)
     }

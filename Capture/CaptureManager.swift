@@ -100,12 +100,12 @@ final class CaptureManager: ObservableObject {
     /// and reconfigures rather than trying to mutate a live multi-cam session.
     func configureAndStart(settings: RecordingSettings) async {
         #if targetEnvironment(simulator)
-        status = CaptureStatus(mode: .unavailable, unavailability: .simulator)
+        status = CaptureStatus(mode: .unavailable, hasBeenConfigured: true, unavailability: .simulator)
         return
         #else
         let cameraGranted = AVCaptureDevice.authorizationStatus(for: .video) == .authorized
         guard cameraGranted else {
-            status = CaptureStatus(mode: .unavailable, unavailability: .permissionDenied)
+            status = CaptureStatus(mode: .unavailable, hasBeenConfigured: true, unavailability: .permissionDenied)
             return
         }
 
@@ -153,7 +153,9 @@ final class CaptureManager: ObservableObject {
             }
         }
 
-        status = result.status
+        var configured = result.status
+        configured.hasBeenConfigured = true
+        status = configured
         configuredAudioActive = result.status.audioActive
         rearFormat = result.rearFormat
         frontFormat = result.frontFormat

@@ -15,11 +15,12 @@ final class RecordingReadinessTests: XCTestCase {
         mode: CaptureMode = .dual,
         isRunning: Bool = true,
         interruption: CaptureInterruption? = nil,
-        unavailability: CaptureUnavailability? = nil
+        unavailability: CaptureUnavailability? = nil,
+        hasBeenConfigured: Bool = true
     ) -> CaptureStatus {
         CaptureStatus(
-            mode: mode, unavailability: unavailability, isRunning: isRunning,
-            rearActive: mode != .unavailable, frontActive: mode == .dual,
+            mode: mode, hasBeenConfigured: hasBeenConfigured, unavailability: unavailability,
+            isRunning: isRunning, rearActive: mode != .unavailable, frontActive: mode == .dual,
             interruption: interruption
         )
     }
@@ -66,13 +67,38 @@ final class RecordingReadinessTests: XCTestCase {
         XCTAssertEqual(RecordingReadiness.assess(status(interruption: .phoneCall)), .ready)
     }
 
-    /// A session that is simply not running says nothing about why, and still delivers
-    /// nothing. « No error posted » is not evidence of a working camera.
-    func testASessionThatIsNotRunningBlocksTheDrive() {
+    // MARK: - « Not yet » is not « never »
+
+    /// The one the widget taught. Tapping Start on the home screen launches the app and
+    /// asks for a drive in the same breath, before the capture graph has been built — and a
+    /// verdict there put « the cameras are not running » over two perfectly live previews.
+    func testAPipelineThatHasNotBeenBuiltYetIsStartingNotBlocked() {
         XCTAssertEqual(
-            RecordingReadiness.assess(status(isRunning: false)),
-            .blocked(titleKey: "alert.camera_unavailable.title", messageKey: "capture.error.not_running")
+            RecordingReadiness.assess(CaptureStatus()), .starting,
+            "the default status means « nothing built yet », which at launch is about to change"
         )
+    }
+
+    /// Configured but stopped is the library tab having given the cameras back. It comes
+    /// straight back when a drive is asked for, so it is a wait, not a refusal.
+    func testASessionConfiguredButNotRunningIsStarting() {
+        XCTAssertEqual(RecordingReadiness.assess(status(isRunning: false)), .starting)
+    }
+
+    /// And the distinction that makes it safe: a phone with no camera, or one whose
+    /// permission was refused, is **not** waiting for anything.
+    func testAConfiguredFailureIsStillARefusal() {
+        XCTAssertEqual(
+            RecordingReadiness.assess(status(mode: .unavailable, isRunning: false, unavailability: .permissionDenied)),
+            .blocked(titleKey: "alert.camera_unavailable.title", messageKey: "capture.error.permission")
+        )
+    }
+
+    /// Long enough for a two-camera graph built from cold, which is the slowest thing the
+    /// app does — and bounded, because a drive that never gets its cameras has to be told.
+    func testTheStartupWaitIsGenerousAndBounded() {
+        XCTAssertGreaterThanOrEqual(RecordingReadiness.startupGrace, 4)
+        XCTAssertLessThanOrEqual(RecordingReadiness.startupGrace, 15)
     }
 
     func testNoCameraKeepsItsOwnExplanation() {

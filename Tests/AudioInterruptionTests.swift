@@ -36,8 +36,8 @@ final class AudioInterruptionTests: XCTestCase {
     // MARK: - And what that means for starting a drive
 
     private func status(interruption: CaptureInterruption?) -> CaptureStatus {
-        CaptureStatus(mode: .dual, isRunning: true, rearActive: true, frontActive: true,
-                      interruption: interruption)
+        CaptureStatus(mode: .dual, hasBeenConfigured: true, isRunning: true,
+                      rearActive: true, frontActive: true, interruption: interruption)
     }
 
     /// The consequence that made this worse than cosmetic: since readiness started

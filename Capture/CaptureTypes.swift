@@ -108,6 +108,14 @@ enum CaptureInterruption: Equatable, Sendable {
 /// Snapshot of the pipeline, published to the UI and to CarPlay.
 struct CaptureStatus: Equatable, Sendable {
     var mode: CaptureMode = .unavailable
+    /// Whether a configuration has been attempted at all.
+    ///
+    /// The default `CaptureStatus` is `.unavailable` because nothing has been built yet —
+    /// which is indistinguishable, from the outside, from a phone with no camera. At launch
+    /// those two are the opposite of each other: one will be ready in a moment, the other
+    /// never will. A widget that starts a drive the instant the app opens lands exactly in
+    /// that gap.
+    var hasBeenConfigured: Bool = false
     var unavailability: CaptureUnavailability?
     var isRunning: Bool = false
     var rearActive: Bool = false

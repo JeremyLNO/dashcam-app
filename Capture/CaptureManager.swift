@@ -201,6 +201,7 @@ final class CaptureManager: ObservableObject {
     /// the only part of the configuration a user can flip mid-drive.
     func setAudioEnabled(_ enabled: Bool) {
         sessionQueue.async { [weak self] in
+            Self.applyAudioSession(recordsAudio: enabled)
             guard let self, let session = self.session else { return }
             session.beginConfiguration()
             defer { session.commitConfiguration() }
@@ -252,6 +253,10 @@ final class CaptureManager: ObservableObject {
         let useMultiCam = multiCamPair != nil && AVCaptureMultiCamSession.isMultiCamSupported
 
         let session: AVCaptureSession = useMultiCam ? AVCaptureMultiCamSession() : AVCaptureSession()
+        // Taken off AVFoundation on purpose: left to itself it claims a category that stops
+        // whatever else the car is playing. Cf. `AudioSessionPolicy`.
+        session.automaticallyConfiguresApplicationAudioSession = false
+        Self.applyAudioSession(recordsAudio: wantsAudio)
         self.session = session
 
         session.beginConfiguration()
@@ -684,6 +689,21 @@ final class CaptureManager: ObservableObject {
             connection.videoRotationAngle = angle
         }
         if camera == .rear { captureRotationAngle = angle }
+    }
+
+    /// Applies — or deliberately does not apply — the app's audio session.
+    ///
+    /// Failures are logged and swallowed: a category the system refuses is a drive with
+    /// awkward sound, while treating it as fatal would be a drive that does not happen.
+    nonisolated private static func applyAudioSession(recordsAudio: Bool) {
+        guard let configuration = AudioSessionPolicy.configuration(recordsAudio: recordsAudio) else { return }
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(configuration.category, mode: configuration.mode, options: configuration.options)
+            try session.setActive(true)
+        } catch {
+            Log.capture.error("Audio session refused: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     // MARK: - Hardware budget

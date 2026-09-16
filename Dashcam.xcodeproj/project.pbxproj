@@ -31,6 +31,7 @@
 		DD6F446ED6DEC8756ECB8A29 /* StillStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 855B98D348FEC0C8F7B9FFF0 /* StillStore.swift */; };
 		944B390682B7F123FAD9FB51 /* WidgetFeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647B11A43D5A2B7CC057959C /* WidgetFeeder.swift */; };
 		4E0B4E990B66B6F0258E5C3F /* WidgetPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C32B222909AECD55FBF8534 /* WidgetPalette.swift */; };
+		27E517582A3578EFD9824DA9 /* AudioSessionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA495B139D6AFE34227CA14 /* AudioSessionPolicy.swift */; };
 		2A8152FC47CE7E95D8E65953 /* CameraAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0592889709F0A18918B6D56 /* CameraAuthorization.swift */; };
 		C1CA3F829C6F5D581761B8E4 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3207B02AD3A55A22554F14 /* CameraPreviewView.swift */; };
 		7BAC3A2AA81C44C983D61667 /* CameraSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0065F2AF1C8DC46087E21924 /* CameraSignal.swift */; };
@@ -94,6 +95,7 @@
 		196A0DF6FB8889B71E3F3DE6 /* RecordingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */; };
 		A1750838D5D7553667B33410 /* RemoteProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2590BCCDE50A3B33C610B /* RemoteProtocol.swift */; };
 		36812CF03A73C56C5D1FB9D2 /* AudioInterruptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D443A27EEDB67132987EA77 /* AudioInterruptionTests.swift */; };
+		F7F2F93BA35C34A211EE7F6C /* AudioSessionPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E6BD4F1135F7C6C75DD492 /* AudioSessionPolicyTests.swift */; };
 		3F48C9673899D91D8D3D4A7A /* CameraSignalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A392A820D8CDE83D7209A56A /* CameraSignalTests.swift */; };
 		A7B4FC17884F8A57180C46C0 /* CapturePresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EEB934543C593832EA8D026 /* CapturePresenceTests.swift */; };
 		D0913E3AF31C4BE2CFC162DE /* CaptureWatchdogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */; };
@@ -180,6 +182,7 @@
 		98A98A8D12AAAE9D910CAC37 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppEnvironment.swift"; sourceTree = "<group>"; };
 		0FC2BBDE04822EF3378E091E /* DashcamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DashcamApp.swift"; sourceTree = "<group>"; };
 		6A01F56928DFCE630027E76A /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RootView.swift"; sourceTree = "<group>"; };
+		4AA495B139D6AFE34227CA14 /* AudioSessionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioSessionPolicy.swift"; sourceTree = "<group>"; };
 		B0592889709F0A18918B6D56 /* CameraAuthorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraAuthorization.swift"; sourceTree = "<group>"; };
 		0C3207B02AD3A55A22554F14 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraPreviewView.swift"; sourceTree = "<group>"; };
 		0065F2AF1C8DC46087E21924 /* CameraSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraSignal.swift"; sourceTree = "<group>"; };
@@ -261,6 +264,7 @@
 		A504B2DD910C9470D162881D /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StorageManager.swift"; sourceTree = "<group>"; };
 		4A0ED5D734E00333761AAFDD /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubscriptionManager.swift"; sourceTree = "<group>"; };
 		0D443A27EEDB67132987EA77 /* AudioInterruptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioInterruptionTests.swift"; sourceTree = "<group>"; };
+		09E6BD4F1135F7C6C75DD492 /* AudioSessionPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioSessionPolicyTests.swift"; sourceTree = "<group>"; };
 		A392A820D8CDE83D7209A56A /* CameraSignalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraSignalTests.swift"; sourceTree = "<group>"; };
 		2EEB934543C593832EA8D026 /* CapturePresenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CapturePresenceTests.swift"; sourceTree = "<group>"; };
 		CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaptureWatchdogTests.swift"; sourceTree = "<group>"; };
@@ -435,6 +439,7 @@
 		46B8693A1D1C75AB9611EEF8 /* Capture */ = {
 			isa = PBXGroup;
 			children = (
+				4AA495B139D6AFE34227CA14 /* AudioSessionPolicy.swift */,
 				B0592889709F0A18918B6D56 /* CameraAuthorization.swift */,
 				0C3207B02AD3A55A22554F14 /* CameraPreviewView.swift */,
 				0065F2AF1C8DC46087E21924 /* CameraSignal.swift */,
@@ -644,6 +649,7 @@
 			isa = PBXGroup;
 			children = (
 				0D443A27EEDB67132987EA77 /* AudioInterruptionTests.swift */,
+				09E6BD4F1135F7C6C75DD492 /* AudioSessionPolicyTests.swift */,
 				A392A820D8CDE83D7209A56A /* CameraSignalTests.swift */,
 				2EEB934543C593832EA8D026 /* CapturePresenceTests.swift */,
 				CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */,
@@ -1071,6 +1077,7 @@
 				DD6F446ED6DEC8756ECB8A29 /* StillStore.swift in Sources */,
 				944B390682B7F123FAD9FB51 /* WidgetFeeder.swift in Sources */,
 				4E0B4E990B66B6F0258E5C3F /* WidgetPalette.swift in Sources */,
+				27E517582A3578EFD9824DA9 /* AudioSessionPolicy.swift in Sources */,
 				2A8152FC47CE7E95D8E65953 /* CameraAuthorization.swift in Sources */,
 				C1CA3F829C6F5D581761B8E4 /* CameraPreviewView.swift in Sources */,
 				7BAC3A2AA81C44C983D61667 /* CameraSignal.swift in Sources */,
@@ -1141,6 +1148,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				36812CF03A73C56C5D1FB9D2 /* AudioInterruptionTests.swift in Sources */,
+				F7F2F93BA35C34A211EE7F6C /* AudioSessionPolicyTests.swift in Sources */,
 				3F48C9673899D91D8D3D4A7A /* CameraSignalTests.swift in Sources */,
 				A7B4FC17884F8A57180C46C0 /* CapturePresenceTests.swift in Sources */,
 				D0913E3AF31C4BE2CFC162DE /* CaptureWatchdogTests.swift in Sources */,

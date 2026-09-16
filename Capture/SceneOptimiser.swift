@@ -49,9 +49,33 @@ final class SceneOptimiser {
     /// `activeMaxExposureDurationCurrent` in its documentation but exports no such symbol;
     /// the sentinel is an invalid time, which the framework reads as "no cap".
     private static let uncappedExposureDuration = CMTime.invalid
-    /// ISO above this, with the shutter already long, means night rather than shade.
-    private static let darkISOThreshold: Float = 1_000
-    private static let brightISOThreshold: Float = 60
+    /// Thresholds come in **pairs** — one to enter a scene, one to leave it — and the
+    /// reason is not tidiness, it is that a single threshold here oscillates by
+    /// construction.
+    ///
+    /// `apply(.dark)` caps the shutter at 1/60 s. The old rule entered `.dark` at a shutter
+    /// of 1/45 s or slower. So the moment the cap took effect the shutter was *faster* than
+    /// the threshold that had just classified the scene as dark: next tick, neutral; cap
+    /// removed; shutter lengthens again; dark. **Four times a second, for as long as it was
+    /// dark** — and every one of those flips took a device lock on a running camera, which
+    /// is a visible hitch in the picture. From the driver's seat: « the video stream keeps
+    /// cutting out, and there is no interruption ».
+    ///
+    /// The remedy erased its own cause. The shape of that mistake is worth more than the
+    /// numbers: whenever a control loop *acts on* the quantity it also *measures*, the
+    /// action has to be taken out of the measurement — here, by ignoring the shutter once
+    /// dark, since that shutter is our own cap talking rather than the world.
+    private static let darkISOEnter: Float = 1_000
+    private static let darkISOLeave: Float = 700
+    private static let brightISOEnter: Float = 60
+    private static let brightISOLeave: Float = 120
+    /// Only ever used to *enter* the dark scene, never to leave it.
+    private static let darkShutterEnter = 1.0 / 45
+
+    /// And a floor under how often the scene may change at all, whatever the numbers say.
+    /// A tunnel mouth is one change; a hedge flickering across a low sun is not four a
+    /// second. Hysteresis handles the loop above; this handles everything else.
+    static let minimumDwell: TimeInterval = 3
 
     /// Video HDR doubles what a format asks of the image pipeline. On a single camera
     /// that is affordable; running two cameras at once, it competes with the recording
@@ -62,6 +86,7 @@ final class SceneOptimiser {
     private var timer: DispatchSourceTimer?
     private let queue: DispatchQueue
     private(set) var scene: Scene = .neutral
+    private var lastChange = Date.distantPast
 
     init(queue: DispatchQueue) {
         self.queue = queue
@@ -121,8 +146,12 @@ final class SceneOptimiser {
         guard let device else { return }
         let iso = device.iso
         let shutterSeconds = CMTimeGetSeconds(device.exposureDuration)
-        let newScene = classify(iso: iso, shutterSeconds: shutterSeconds)
+        let newScene = classify(iso: iso, shutterSeconds: shutterSeconds, current: scene)
         guard newScene != scene else { return }
+        // Each change locks the camera for configuration, which the picture shows. Rare is
+        // the point.
+        guard Date().timeIntervalSince(lastChange) >= Self.minimumDwell else { return }
+        lastChange = Date()
         scene = newScene
         apply(newScene, to: device)
         Log.capture.debug("Scene now \(newScene.rawValue, privacy: .public) (ISO \(Int(iso)), \(shutterSeconds, privacy: .public)s)")
@@ -139,11 +168,30 @@ final class SceneOptimiser {
         return CMTime(seconds: clamped, preferredTimescale: 1_000_000)
     }
 
-    /// Internal rather than private: the boundaries between the three scenes are the
-    /// part worth testing, and they are pure arithmetic on two numbers.
-    func classify(iso: Float, shutterSeconds: Double) -> Scene {
-        if iso >= Self.darkISOThreshold || shutterSeconds >= 1.0 / 45 { return .dark }
-        if iso <= Self.brightISOThreshold { return .bright }
+    /// Internal rather than private: the boundaries between the three scenes are the part
+    /// worth testing, and they are pure arithmetic on two numbers **and the scene already
+    /// in force** — which is the whole correction. A classifier that does not know where it
+    /// is cannot tell a reading from its own doing.
+    func classify(iso: Float, shutterSeconds: Double, current: Scene) -> Scene {
+        switch current {
+        case .dark:
+            // The shutter is deliberately not consulted here: while dark, it is pinned by
+            // the cap this class applied, so reading it is reading our own hand. Only the
+            // light itself — the ISO — can say the night is over, and it has to say it
+            // clearly before the cap is given up.
+            return iso <= Self.darkISOLeave ? enteringScene(iso: iso, shutterSeconds: shutterSeconds) : .dark
+        case .bright:
+            return iso >= Self.brightISOLeave ? enteringScene(iso: iso, shutterSeconds: shutterSeconds) : .bright
+        case .neutral:
+            return enteringScene(iso: iso, shutterSeconds: shutterSeconds)
+        }
+    }
+
+    /// The thresholds for *arriving* somewhere, which sit further out than those for
+    /// leaving.
+    private func enteringScene(iso: Float, shutterSeconds: Double) -> Scene {
+        if iso >= Self.darkISOEnter || shutterSeconds >= Self.darkShutterEnter { return .dark }
+        if iso <= Self.brightISOEnter { return .bright }
         return .neutral
     }
 

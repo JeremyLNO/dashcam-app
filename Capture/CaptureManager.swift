@@ -672,7 +672,12 @@ final class CaptureManager: ObservableObject {
         let output: AVCaptureOutput = camera == .rear ? rearOutput : frontOutput
         sessionQueue.async {
             guard let connection = output.connection(with: .video),
-                  connection.isVideoRotationAngleSupported(angle)
+                  connection.isVideoRotationAngleSupported(angle),
+                  // Setting the same angle again is not free: it re-negotiates the
+                  // connection, which shows in the picture and makes the writer cut a
+                  // segment when the buffer shape settles. A phone shivering on a boundary
+                  // in a windscreen cradle would pay that over and over.
+                  connection.videoRotationAngle != angle
             else { return }
             connection.videoRotationAngle = angle
         }

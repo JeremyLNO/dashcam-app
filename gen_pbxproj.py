@@ -47,6 +47,8 @@ CONTROL_SHARED_SOURCES = [
     # the snapshot and the extension draws it, and sharing the view is what lets a
     # test render the widget and look at it.
     "Core/Widgets/DashcamSnapshot.swift",
+    "Core/Widgets/WidgetPalette.swift",
+    "Core/Widgets/StillStore.swift",
     "Core/Widgets/DashcamStatusView.swift",
 ]
 CONTROL_INFO_PLIST = "Controls/Info.plist"

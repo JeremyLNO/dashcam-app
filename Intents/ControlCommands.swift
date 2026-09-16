@@ -19,13 +19,18 @@ enum ControlBridge {
     static var protectFootage: (() -> Void)?
 }
 
+/// Start a drive from Control Center, the Lock Screen, the Action button — **or a home
+/// screen widget**, which is why this is not annotated for iOS 18.
+///
+/// Control *widgets* are an iOS 18 feature; an `AppIntent` is not. Marking the intent 18-only
+/// too made it unusable from the widget's `Button(intent:)`, which the app's own floor of 17
+/// still supports. The annotation belongs on the control, not on the command.
 /// Start a drive from Control Center, the Lock Screen or the Action button.
 ///
 /// The app is opened on purpose, and it is not a shortcut taken lightly: iOS suspends
 /// camera capture the moment an app leaves the foreground, so a control that claimed to
 /// record without opening anything would be advertising something the system does not
 /// allow.
-@available(iOS 18.0, *)
 struct ControlStartRecordingIntent: AppIntent {
     static var title: LocalizedStringResource = "Start Dashcam recording"
     static var description = IntentDescription(
@@ -41,7 +46,6 @@ struct ControlStartRecordingIntent: AppIntent {
 }
 
 /// Protect what has just been filmed, without hunting for the button.
-@available(iOS 18.0, *)
 struct ControlProtectFootageIntent: AppIntent {
     static var title: LocalizedStringResource = "Protect Dashcam footage"
     static var description = IntentDescription(

@@ -3,23 +3,28 @@ import WidgetKit
 
 /// The home-screen and lock-screen widget.
 ///
-/// It offers no button: starting a drive already lives in Control Center, on the Lock
-/// Screen and on the Action button, all of which are reachable with the phone locked where
-/// a widget is not. Duplicating it here would be a second, worse way to do the same thing.
+/// It carries one real button — **Start** — because since iOS 17 a widget can run an
+/// `AppIntent` on tap, and starting a drive is the single thing a home screen can usefully
+/// do about a dashcam. It opens the app, which is not a shortcut taken lightly: iOS
+/// suspends camera capture the moment an app leaves the foreground, so a button that
+/// claimed to record without opening anything would advertise something the system forbids.
 ///
-/// And there is deliberately **no live « recording now » widget**, tempting as it is: a
-/// drive requires the app on screen — iOS suspends camera capture otherwise — so by the
-/// time a Lock Screen or Dynamic Island is visible, the recording has already stopped.
-/// The one widget that could show a running drive is the one that could never be seen.
+/// And by the same rule there is deliberately **no « Recording » state**, tempting as the
+/// design is: a drive requires the app on screen, so at the instant a home screen becomes
+/// visible the recording has already stopped. Stop and Protect on a widget would be two
+/// buttons nobody could ever be in a position to press.
 struct DashcamStatusWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "company.lno.dashcam.widget.status", provider: StatusProvider()) { entry in
             DashcamStatusView(snapshot: entry.snapshot, family: entry.family, now: entry.date)
-                .containerBackground(.fill.tertiary, for: .widget)
+                // Dark on purpose, and the one place the widget parts company with the app:
+                // a home screen is read at arm's length against a wallpaper, where the
+                // app's cream ground disappears.
+                .containerBackground(WidgetPalette.background, for: .widget)
         }
         .configurationDisplayName("Dashcam status")
         .description("The last drive, the recording time left, and any protected moment still waiting.")
-        .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryRectangular])
     }
 }
 

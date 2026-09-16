@@ -28,7 +28,9 @@
 		969D8C5614273F9DFF87ADB0 /* ScreenshotSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93660396293AC50A8BBF60B /* ScreenshotSeeder.swift */; };
 		53017A13EFBBEEE517D4E136 /* DashcamSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FA7A3A4ACBFA8843F84A34 /* DashcamSnapshot.swift */; };
 		7CA23DCD2D7D959B3B611AAF /* DashcamStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9891E5DAE7E46F6BE601BA3 /* DashcamStatusView.swift */; };
+		DD6F446ED6DEC8756ECB8A29 /* StillStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 855B98D348FEC0C8F7B9FFF0 /* StillStore.swift */; };
 		944B390682B7F123FAD9FB51 /* WidgetFeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647B11A43D5A2B7CC057959C /* WidgetFeeder.swift */; };
+		4E0B4E990B66B6F0258E5C3F /* WidgetPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C32B222909AECD55FBF8534 /* WidgetPalette.swift */; };
 		2A8152FC47CE7E95D8E65953 /* CameraAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0592889709F0A18918B6D56 /* CameraAuthorization.swift */; };
 		C1CA3F829C6F5D581761B8E4 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3207B02AD3A55A22554F14 /* CameraPreviewView.swift */; };
 		7BAC3A2AA81C44C983D61667 /* CameraSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0065F2AF1C8DC46087E21924 /* CameraSignal.swift */; };
@@ -143,6 +145,8 @@
 		ABEA5B7DD8CB219B063F67E2 /* StatusWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09750CC6BCC6DBD866AFA93A /* StatusWidget.swift */; };
 		485C5B8D3ECC5BD2D559BFE6 /* ControlCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 609947873BB6ABA09F8E94A8 /* ControlCommands.swift */; };
 		D4ECF46B9E8042F2A6CD0A71 /* DashcamSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FA7A3A4ACBFA8843F84A34 /* DashcamSnapshot.swift */; };
+		51AB48F95D2E9D4F2DD9230C /* WidgetPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C32B222909AECD55FBF8534 /* WidgetPalette.swift */; };
+		79A7306720868B14CBA2FA8B /* StillStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 855B98D348FEC0C8F7B9FFF0 /* StillStore.swift */; };
 		07BA490EF6ECB9AB8D3870E3 /* DashcamStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9891E5DAE7E46F6BE601BA3 /* DashcamStatusView.swift */; };
 		5AF023AD862542B63CEE966A /* DashcamWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 163F58FFBAAFDBC2CD0F02B3 /* DashcamWatchApp.swift */; };
 		1A0031CB2C13DD9EE7BDD001 /* RemoteProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2590BCCDE50A3B33C610B /* RemoteProtocol.swift */; };
@@ -213,7 +217,9 @@
 		C93660396293AC50A8BBF60B /* ScreenshotSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScreenshotSeeder.swift"; sourceTree = "<group>"; };
 		D0FA7A3A4ACBFA8843F84A34 /* DashcamSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DashcamSnapshot.swift"; sourceTree = "<group>"; };
 		B9891E5DAE7E46F6BE601BA3 /* DashcamStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DashcamStatusView.swift"; sourceTree = "<group>"; };
+		855B98D348FEC0C8F7B9FFF0 /* StillStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StillStore.swift"; sourceTree = "<group>"; };
 		647B11A43D5A2B7CC057959C /* WidgetFeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WidgetFeeder.swift"; sourceTree = "<group>"; };
+		8C32B222909AECD55FBF8534 /* WidgetPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WidgetPalette.swift"; sourceTree = "<group>"; };
 		5EF829100A389E1DF198AC06 /* AttestationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AttestationService.swift"; sourceTree = "<group>"; };
 		54B5E8AA4099992446C1767B /* AutoExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AutoExporter.swift"; sourceTree = "<group>"; };
 		A6D4A66F0739101E04F86503 /* CompositionDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CompositionDiagnostics.swift"; sourceTree = "<group>"; };
@@ -408,7 +414,9 @@
 			children = (
 				D0FA7A3A4ACBFA8843F84A34 /* DashcamSnapshot.swift */,
 				B9891E5DAE7E46F6BE601BA3 /* DashcamStatusView.swift */,
+				855B98D348FEC0C8F7B9FFF0 /* StillStore.swift */,
 				647B11A43D5A2B7CC057959C /* WidgetFeeder.swift */,
+				8C32B222909AECD55FBF8534 /* WidgetPalette.swift */,
 			);
 			path = Widgets;
 			sourceTree = "<group>";
@@ -1060,7 +1068,9 @@
 				969D8C5614273F9DFF87ADB0 /* ScreenshotSeeder.swift in Sources */,
 				53017A13EFBBEEE517D4E136 /* DashcamSnapshot.swift in Sources */,
 				7CA23DCD2D7D959B3B611AAF /* DashcamStatusView.swift in Sources */,
+				DD6F446ED6DEC8756ECB8A29 /* StillStore.swift in Sources */,
 				944B390682B7F123FAD9FB51 /* WidgetFeeder.swift in Sources */,
+				4E0B4E990B66B6F0258E5C3F /* WidgetPalette.swift in Sources */,
 				2A8152FC47CE7E95D8E65953 /* CameraAuthorization.swift in Sources */,
 				C1CA3F829C6F5D581761B8E4 /* CameraPreviewView.swift in Sources */,
 				7BAC3A2AA81C44C983D61667 /* CameraSignal.swift in Sources */,
@@ -1196,6 +1206,8 @@
 				ABEA5B7DD8CB219B063F67E2 /* StatusWidget.swift in Sources */,
 				485C5B8D3ECC5BD2D559BFE6 /* ControlCommands.swift in Sources */,
 				D4ECF46B9E8042F2A6CD0A71 /* DashcamSnapshot.swift in Sources */,
+				51AB48F95D2E9D4F2DD9230C /* WidgetPalette.swift in Sources */,
+				79A7306720868B14CBA2FA8B /* StillStore.swift in Sources */,
 				07BA490EF6ECB9AB8D3870E3 /* DashcamStatusView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

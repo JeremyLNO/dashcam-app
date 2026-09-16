@@ -14771,72 +14771,37 @@
         }
       }
     },
-    "widget.headline.last": {
+    "widget.free": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "LAST DRIVE"
+            "value": "%@ free"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "DERNIER TRAJET"
+            "value": "%@ libres"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "LETZTE FAHRT"
+            "value": "%@ frei"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "ÚLTIMO TRAYECTO"
+            "value": "%@ libres"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "ÚLTIMA VIAGEM"
-          }
-        }
-      }
-    },
-    "widget.headline.never": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NEVER RECORDED"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "JAMAIS ENREGISTRÉ"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NIE AUFGEZEICHNET"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NUNCA GRABADO"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NUNCA GRAVADO"
+            "value": "%@ livres"
           }
         }
       }
@@ -14942,6 +14907,111 @@
           "stringUnit": {
             "state": "translated",
             "value": "%d momentos protegidos"
+          }
+        }
+      }
+    },
+    "widget.state.never": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NEVER RECORDED"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JAMAIS ENREGISTRÉ"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NIE AUFGEZEICHNET"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NUNCA GRABADO"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NUNCA GRAVADO"
+          }
+        }
+      }
+    },
+    "widget.state.ready": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "READY"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PRÊT"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BEREIT"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LISTO"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PRONTO"
+          }
+        }
+      }
+    },
+    "widget.state.stale": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO RECENT DRIVE"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AUCUN TRAJET RÉCENT"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KEINE FAHRT ZULETZT"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SIN TRAYECTOS RECIENTES"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SEM VIAGENS RECENTES"
           }
         }
       }

@@ -77,8 +77,8 @@ final class WidgetSnapshotTests: XCTestCase {
     func testAnEmptyLibrarySaysSoRatherThanShowingNothing() {
         let snapshot = feeder.makeSnapshot(now: now)
         XCTAssertNil(snapshot.lastDriveEndedAt)
-        XCTAssertFalse(snapshot.lastDriveSummary.isEmpty, "a blank widget is indistinguishable from a broken one")
-        XCTAssertFalse(snapshot.headline.isEmpty)
+        XCTAssertFalse(snapshot.lastDriveClips.isEmpty, "a blank widget is indistinguishable from a broken one")
+        XCTAssertFalse(snapshot.stateStale.isEmpty)
         XCTAssertNil(snapshot.protectedWaiting)
     }
 
@@ -90,14 +90,14 @@ final class WidgetSnapshotTests: XCTestCase {
 
         let snapshot = feeder.makeSnapshot(now: now)
         XCTAssertEqual(snapshot.lastDriveEndedAt, now)
-        XCTAssertTrue(snapshot.lastDriveSummary.contains("0"), "got \(snapshot.lastDriveSummary)")
+        XCTAssertTrue(snapshot.lastDriveClips.contains("0"), "got \(snapshot.lastDriveClips)")
     }
 
     func testTheSummaryCarriesTheClipCount() throws {
         let sessionID = drive(clips: 3, endedAt: now)
         defer { TestSupport.removeSessionFiles(sessionID) }
 
-        XCTAssertTrue(feeder.makeSnapshot(now: now).lastDriveSummary.contains("3"))
+        XCTAssertTrue(feeder.makeSnapshot(now: now).lastDriveClips.contains("3"))
     }
 
     /// A protected moment is evidence with a deadline: the retention sweep will not touch
@@ -130,11 +130,12 @@ final class WidgetSnapshotTests: XCTestCase {
     /// out. The images are written to the build folder as well, because the fastest way to
     /// find a layout that overflows is still to look at it.
     private func render(_ snapshot: DashcamSnapshot, family: WidgetFamily, size: CGSize, name: String) throws -> UIImage {
-        let view = DashcamStatusView(snapshot: snapshot, family: family, now: rendered)
+        let view = DashcamStatusView(snapshot: snapshot, family: family, now: rendered,
+                                     stillLoader: fakeStill)
             .padding(14)
             .frame(width: size.width, height: size.height)
-            .background(Color(white: 0.96))
-            .environment(\.colorScheme, .light)
+            .background(WidgetPalette.background)
+            .environment(\.colorScheme, .dark)
         let renderer = ImageRenderer(content: view)
         renderer.scale = 3
         let image = try XCTUnwrap(renderer.uiImage, "the widget rendered to nothing at all")
@@ -162,8 +163,9 @@ final class WidgetSnapshotTests: XCTestCase {
 
         var inked = 0
         for offset in stride(from: 0, to: pixels.count, by: 4) {
-            // The ground is a flat light grey; anything appreciably darker is drawn.
-            if Int(pixels[offset]) < 200 { inked += 1 }
+            // The ground is very dark now, so what counts as drawn is what is lighter
+            // than it — the inverse of the old test, and the same question.
+            if Int(pixels[offset]) > 60 { inked += 1 }
         }
         return Double(inked) / Double(width * height)
     }
@@ -171,19 +173,39 @@ final class WidgetSnapshotTests: XCTestCase {
     private var populated: DashcamSnapshot {
         DashcamSnapshot(
             lastDriveEndedAt: rendered.addingTimeInterval(-3600),
-            headline: "DERNIER TRAJET",
-            lastDriveSummary: "34 min · 12 clips",
-            autonomy: "86 Go · ≈ 11 h d'autonomie",
-            protectedWaiting: "1 moment protégé · 14 sept. 2026",
-            protectedShort: "1 moment protégé",
+            state: "PRÊT", stateStale: "AUCUN TRAJET RÉCENT",
+            lastDriveDuration: "34 min",
+            lastDriveClips: "12 clips enregistrés",
+            storageFree: "128 Go libres",
+            storageUsedFraction: 0.68,
+            autonomy: "≈ 9 h d'enregistrement",
+            protectedWaiting: "3 moments protégés · 14 sept. 2026",
+            protectedShort: "3 moments protégés",
+            lastDriveStill: "road.jpg",
+            protectedStills: ["a.jpg", "b.jpg", "c.jpg"],
             writtenAt: now
         )
+    }
+
+    /// Stands in for the frames on disk, so the layout can be judged with pictures in it —
+    /// a still that fails to load takes a very different amount of room from one that does.
+    private func fakeStill(_ name: String?) -> Image? {
+        guard name != nil else { return nil }
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 240, height: 135))
+        let image = renderer.image { context in
+            UIColor(red: 0.22, green: 0.28, blue: 0.42, alpha: 1).setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 240, height: 135))
+            UIColor(white: 0.75, alpha: 1).setFill()
+            context.fill(CGRect(x: 100, y: 60, width: 40, height: 75))
+        }
+        return Image(uiImage: image)
     }
 
     func testEveryFamilyDrawsSomething() throws {
         for (family, size, name) in [
             (WidgetFamily.systemSmall, CGSize(width: 158, height: 158), "small"),
             (WidgetFamily.systemMedium, CGSize(width: 338, height: 158), "medium"),
+            (WidgetFamily.systemLarge, CGSize(width: 338, height: 354), "large"),
             (WidgetFamily.accessoryRectangular, CGSize(width: 160, height: 72), "lock"),
         ] {
             let coverage = inkCoverage(try render(populated, family: family, size: size, name: name))
@@ -196,10 +218,11 @@ final class WidgetSnapshotTests: XCTestCase {
     /// is read at arm's length, on a home screen, in passing.
     func testTheAlarmingStateDoesNotLookLikeTheHealthyOne() throws {
         let stale = DashcamSnapshot(
-            lastDriveEndedAt: nil, headline: "JAMAIS ENREGISTRÉ",
-            lastDriveSummary: "Aucun trajet enregistré",
-            autonomy: "86 Go · ≈ 11 h d'autonomie", protectedWaiting: nil, protectedShort: nil,
-            writtenAt: now
+            lastDriveEndedAt: nil, state: "PRÊT", stateStale: "JAMAIS ENREGISTRÉ",
+            lastDriveDuration: "", lastDriveClips: "Aucun trajet enregistré",
+            storageFree: "128 Go libres", storageUsedFraction: 0.68,
+            autonomy: "≈ 9 h d'enregistrement", protectedWaiting: nil, protectedShort: nil,
+            lastDriveStill: nil, protectedStills: [], writtenAt: now
         )
         let healthy = try render(populated, family: .systemMedium, size: CGSize(width: 338, height: 158), name: "medium")
         let alarming = try render(stale, family: .systemMedium, size: CGSize(width: 338, height: 158), name: "medium-stale")

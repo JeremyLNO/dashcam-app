@@ -14,27 +14,46 @@ import Foundation
 struct DashcamSnapshot: Codable, Equatable, Sendable {
     /// When the last finished drive ended. `nil` when nothing has ever been recorded.
     var lastDriveEndedAt: Date?
-    /// « DERNIER TRAJET », or « JAMAIS ENREGISTRÉ ». Sits where the app's own name would
-    /// otherwise be repeated — the widget is already labelled on the home screen.
-    var headline: String
-    /// « 34 min · 12 clips ». The clip count is there on purpose: it is the only figure
+    /// The state badge: « PRÊT ». Red like the app's own Ready pill — here red means the
+    /// dashcam is armed, not that it is filming.
+    var state: String
+    /// What the same badge says once nothing has been recorded for a week, or ever. The
+    /// app cannot know which of the two applies at the moment the widget is *drawn* — that
+    /// depends on how long the snapshot has been sitting there — so both travel and the
+    /// view picks.
+    var stateStale: String
+    /// « 34 min ».
+    var lastDriveDuration: String
+    /// « 12 clips enregistrés ». The clip count is there on purpose: it is the only figure
     /// that requires files to exist, so a drive that recorded nothing reads as « 0 clips »
     /// instead of looking like every other drive.
-    var lastDriveSummary: String
-    /// « 86 Go · ≈ 11 h ».
+    var lastDriveClips: String
+    /// « 128 Go libres ».
+    var storageFree: String
+    /// 0…1, for the bar. The *used* share of the disk.
+    var storageUsedFraction: Double
+    /// « ≈ 9 h d'enregistrement ».
     var autonomy: String
     /// « 1 moment protégé · 14 sept. », or nil when there is nothing waiting.
     var protectedWaiting: String?
     /// The same thing without its date, for the small widget — where the long form is cut
     /// mid-word, which reads as a bug rather than as a shortage of room.
     var protectedShort: String?
+    /// File name, inside the shared container, of a still from the last drive.
+    ///
+    /// A real frame of the driver's own road rather than an illustration: it is the one
+    /// thing on this widget that proves footage exists, as opposed to describing it.
+    var lastDriveStill: String?
+    /// Up to three stills of protected moments, newest first.
+    var protectedStills: [String]
     /// When the app last wrote this. A widget showing figures from three weeks ago is the
     /// same silent lie as a player that shows black: the age has to be legible.
     var writtenAt: Date
 
     static let empty = DashcamSnapshot(
-        lastDriveEndedAt: nil, headline: "", lastDriveSummary: "", autonomy: "",
-        protectedWaiting: nil, protectedShort: nil, writtenAt: .distantPast
+        lastDriveEndedAt: nil, state: "", stateStale: "", lastDriveDuration: "", lastDriveClips: "",
+        storageFree: "", storageUsedFraction: 0, autonomy: "", protectedWaiting: nil,
+        protectedShort: nil, lastDriveStill: nil, protectedStills: [], writtenAt: .distantPast
     )
 }
 
@@ -74,10 +93,27 @@ enum DashcamSnapshotStore {
     /// `containerURL` simply returns nil and the widget stays empty forever.
     static let appGroup = "group.company.lno.dashcam"
 
+    static var containerURL: URL? {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
+    }
+
     static var fileURL: URL? {
-        FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: appGroup)?
-            .appendingPathComponent("widget-snapshot.json")
+        containerURL?.appendingPathComponent("widget-snapshot.json")
+    }
+
+    /// Where the stills live. A folder of its own so the whole set can be swept without
+    /// touching the snapshot beside it.
+    static var stillsURL: URL? {
+        containerURL?.appendingPathComponent("stills", isDirectory: true)
+    }
+
+    /// Resolves a name from the snapshot to a file the widget can load. Returns nil rather
+    /// than a broken path: a widget that cannot find its picture draws the gradient, which
+    /// is a design, where a missing file draws an empty box.
+    static func still(named name: String?) -> URL? {
+        guard let name, let url = stillsURL?.appendingPathComponent(name),
+              FileManager.default.fileExists(atPath: url.path) else { return nil }
+        return url
     }
 
     /// Returns whether it landed. The caller logs — this file is compiled into the widget

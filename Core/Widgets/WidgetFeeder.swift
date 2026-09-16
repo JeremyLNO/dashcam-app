@@ -24,6 +24,49 @@ struct WidgetFeeder {
             return
         }
         WidgetCenter.shared.reloadAllTimelines()
+        // The figures go out first and the pictures follow: extracting four frames takes
+        // long enough that waiting for it would delay the numbers, which are the part the
+        // widget is actually for. The second reload costs nothing when nothing changed.
+        Task { await refreshStills(for: snapshot) }
+    }
+
+    /// Writes the stills the snapshot names, then sweeps everything it does not.
+    private func refreshStills(for snapshot: DashcamSnapshot) async {
+        var wrote = false
+        for (name, source) in stillSources(for: snapshot) {
+            if await StillStore.write(named: name, from: source.url, at: source.seconds) { wrote = true }
+        }
+        StillStore.sweep(keeping: [snapshot.lastDriveStill].compactMap { $0 } + snapshot.protectedStills)
+        if wrote { WidgetCenter.shared.reloadAllTimelines() }
+    }
+
+    /// Where each still comes from: a file on disk and a moment inside it.
+    private func stillSources(for snapshot: DashcamSnapshot) -> [(String, (url: URL, seconds: TimeInterval))] {
+        let sessions = index.allSessions()
+        var sources: [(String, (url: URL, seconds: TimeInterval))] = []
+
+        if let name = snapshot.lastDriveStill,
+           let session = sessions.first(where: { StillStore.name(for: $0.id) == name }),
+           let segment = session.rearSegments.first {
+            // A few seconds in rather than the very first frame: a drive begins with the
+            // camera still settling, and the first frame of a dashcam is usually a garage.
+            sources.append((name, (StorageLocations.absoluteURL(forRelativePath: segment.relativePath), 4)))
+        }
+
+        for session in sessions {
+            for event in session.activeEvents {
+                let name = StillStore.name(for: session.id, event: event.id)
+                guard snapshot.protectedStills.contains(name) else { continue }
+                // The frame at the moment itself, measured from the segment that holds it.
+                let offset = event.triggerDate.timeIntervalSince(session.startedAt)
+                guard let segment = session.rearSegments.last(where: { $0.startDate <= event.triggerDate })
+                        ?? session.rearSegments.first else { continue }
+                let within = max(0, event.triggerDate.timeIntervalSince(segment.startDate))
+                _ = offset
+                sources.append((name, (StorageLocations.absoluteURL(forRelativePath: segment.relativePath), within)))
+            }
+        }
+        return sources
     }
 
     func makeSnapshot(now: Date = Date()) -> DashcamSnapshot {
@@ -34,40 +77,49 @@ struct WidgetFeeder {
             .filter { $0.endedAt != nil }
             .max { ($0.endedAt ?? .distantPast) < ($1.endedAt ?? .distantPast) }
 
-        let protectedEvents = sessions.flatMap(\.activeEvents)
+        let protectedEvents = sessions.flatMap(\.activeEvents).sorted { $0.triggerDate > $1.triggerDate }
         let oldestProtected = protectedEvents.map(\.triggerDate).min()
+        let snapshotStorage = storage.snapshot
 
-        let protectedCount = protectedEvents.count
         return DashcamSnapshot(
             lastDriveEndedAt: lastDrive?.endedAt,
-            headline: L10n.t(lastDrive == nil ? "widget.headline.never" : "widget.headline.last"),
-            lastDriveSummary: lastDrive.map(summary(of:)) ?? L10n.t("widget.no_drive"),
-            autonomy: autonomy(),
-            protectedWaiting: protectedLine(count: protectedCount, oldest: oldestProtected),
-            protectedShort: protectedCount > 0 ? protectedLabel(count: protectedCount) : nil,
+            state: L10n.t("widget.state.ready"),
+            stateStale: L10n.t(lastDrive == nil ? "widget.state.never" : "widget.state.stale"),
+            lastDriveDuration: lastDrive.map { Format.duration($0.duration) } ?? "",
+            lastDriveClips: lastDrive.map(clips(of:)) ?? L10n.t("widget.no_drive"),
+            storageFree: L10n.t("widget.free", Format.bytes(snapshotStorage.freeBytes)),
+            storageUsedFraction: usedFraction(snapshotStorage),
+            autonomy: L10n.t("widget.autonomy", Int(hoursLeft(snapshotStorage).rounded())),
+            protectedWaiting: protectedLine(count: protectedEvents.count, oldest: oldestProtected),
+            protectedShort: protectedEvents.isEmpty ? nil : protectedLabel(count: protectedEvents.count),
+            lastDriveStill: lastDrive.map { StillStore.name(for: $0.id) },
+            protectedStills: protectedEvents.prefix(3).map { StillStore.name(for: $0.sessionID, event: $0.id) },
             writtenAt: now
         )
     }
 
-    /// « 34 min · 12 clips ».
+    /// « 12 clips enregistrés ».
     ///
     /// The clip count is here on purpose and it is the whole reason this line is worth a
     /// widget: it is the only figure that requires files to exist. A drive that declared
     /// itself and recorded nothing reads « 0 clips » instead of looking like every other
     /// drive in the list.
-    private func summary(of session: DriveSession) -> String {
-        let clips = session.segmentCount
-        let clipsText = clips == 1 ? L10n.t("widget.clips.one") : L10n.t("widget.clips.other", clips)
-        return "\(Format.duration(session.duration)) · \(clipsText)"
+    private func clips(of session: DriveSession) -> String {
+        let count = session.segmentCount
+        return count == 1 ? L10n.t("widget.clips.one") : L10n.t("widget.clips.other", count)
     }
 
-    /// « 86 Go · ≈ 11 h ».
-    private func autonomy() -> String {
-        let free = storage.snapshot.freeBytes
-        let hours = DashcamStatusRules.hoursRemaining(
-            freeBytes: free, gigabytesPerHour: settingsStore.settings.quality.gigabytesPerHour
+    private func usedFraction(_ snapshot: StorageSnapshot) -> Double {
+        let total = Double(snapshot.totalBytes)
+        guard total > 0 else { return 0 }
+        return min(1, max(0, 1 - Double(snapshot.freeBytes) / total))
+    }
+
+    private func hoursLeft(_ snapshot: StorageSnapshot) -> Double {
+        DashcamStatusRules.hoursRemaining(
+            freeBytes: snapshot.freeBytes,
+            gigabytesPerHour: settingsStore.settings.quality.gigabytesPerHour
         )
-        return "\(Format.bytes(free)) · \(L10n.t("widget.autonomy", Int(hours.rounded())))"
     }
 
     /// A protected moment is evidence with a deadline: the retention sweep will not touch

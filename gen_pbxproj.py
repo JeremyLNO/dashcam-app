@@ -41,8 +41,19 @@ WATCH_TARGET = f"{PROJ}Watch"
 CONTROL_SOURCE_DIR = "Controls"
 # Compiled into the extension *and* the app: an intent must exist in both binaries for
 # iOS to hand it to the app once the control has opened it.
-CONTROL_SHARED_SOURCES = ["Intents/ControlCommands.swift"]
+CONTROL_SHARED_SOURCES = [
+    "Intents/ControlCommands.swift",
+    # The widget's data and its face, compiled into both binaries: the app writes
+    # the snapshot and the extension draws it, and sharing the view is what lets a
+    # test render the widget and look at it.
+    "Core/Widgets/DashcamSnapshot.swift",
+    "Core/Widgets/DashcamStatusView.swift",
+]
 CONTROL_INFO_PLIST = "Controls/Info.plist"
+# The widget reads a file in the shared container, so the extension needs the group
+# too — an entitlement on the app alone leaves the extension with a nil container and
+# a widget that is empty without ever raising.
+CONTROL_ENTITLEMENTS = "Controls/DashcamControls.entitlements"
 CONTROL_TARGET = f"{PROJ}Controls"
 TEST_SOURCE_DIR = "Tests"
 UITEST_SOURCE_DIR = "UITests"
@@ -731,6 +742,7 @@ def uitest_common():
 def control_common():
     return [
         "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;",
+        f'CODE_SIGN_ENTITLEMENTS = "{CONTROL_ENTITLEMENTS}";',
         "ENABLE_PREVIEWS = YES;",
         "GENERATE_INFOPLIST_FILE = NO;",
         f'INFOPLIST_FILE = "{CONTROL_INFO_PLIST}";',

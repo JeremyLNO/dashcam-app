@@ -40,6 +40,7 @@ final class AppEnvironment: ObservableObject {
     /// and off too — and since the end of a drive has to end it whatever the phone happens
     /// to be showing at that moment.
     let dimmer = ScreenDimmer()
+
     let carPlay: CarPlayManager
     let watchRemote: PhoneRemoteServer
     let carPlayConnection: CarPlayConnectionMonitor
@@ -101,8 +102,14 @@ final class AppEnvironment: ObservableObject {
         self.recording = recording
         // A finished drive is the only moment the protected windows are complete: their
         // forward half is footage that did not exist when the event fired.
-        recording.onSessionFinished = { [weak autoExporter] sessionID in
+        // The end of a drive is also the one moment every figure on the widget changes at
+        // once. Captured piece by piece rather than through `self`, which is not fully
+        // formed at this point in the initialiser.
+        recording.onSessionFinished = { [weak autoExporter, index, storage, settingsStore] sessionID in
             Task { await autoExporter?.exportProtectedFootage(ofSession: sessionID) }
+            Task { @MainActor in
+                WidgetFeeder(index: index, storage: storage, settingsStore: settingsStore).refresh()
+            }
         }
         // Control Center's buttons are performed by the app once it has been opened, so
         // this is where they find something to act on.
@@ -181,6 +188,15 @@ final class AppEnvironment: ObservableObject {
         }
     }
 
+    /// Rebuilds the widget's snapshot and asks iOS to redraw it.
+    ///
+    /// Called on events rather than on a schedule: a widget refreshed on a timer shows
+    /// whatever was true when the timer last fired, and looks exactly like one that is up
+    /// to date.
+    func refreshWidgets() {
+        WidgetFeeder(index: index, storage: storage, settingsStore: settingsStore).refresh()
+    }
+
     /// The end of a drive gives the brightness back.
     ///
     /// Wired here, not in the driving screen: a drive can be stopped from the car, from the
@@ -244,6 +260,7 @@ final class AppEnvironment: ObservableObject {
             await recording.start()
         }
 
+        refreshWidgets()
         await notifications.checkForUpdate()
     }
 

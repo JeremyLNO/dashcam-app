@@ -16,6 +16,7 @@ struct DashcamControlBundle: WidgetBundle {
     var body: some Widget {
         StartRecordingControl()
         ProtectFootageControl()
+        DashcamStatusWidget()
     }
 }
 

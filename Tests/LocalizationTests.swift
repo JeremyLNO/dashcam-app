@@ -38,6 +38,8 @@ final class LocalizationTests: XCTestCase {
         "alert.storage_full.title", "alert.impact.title",
         "permission.camera.explanation", "permission.location.explanation",
         "lens.ultrawide", "lens.wide", "unit.gb_per_hour",
+        "widget.headline.last", "widget.headline.never", "widget.no_drive",
+        "widget.clips.one", "widget.autonomy", "widget.protected.one",
     ]
 
     private func bundle(for language: AppLanguage) throws -> Bundle {

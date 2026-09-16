@@ -100,6 +100,8 @@ struct RootView: View {
             environment.capture.stopRunning()
             environment.applyLocationIntent(isForeground: false)
             environment.index.save()
+            // Leaving the app is the moment the home screen is about to be looked at.
+            environment.refreshWidgets()
         @unknown default:
             break
         }

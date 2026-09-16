@@ -16,5 +16,13 @@
 	     paraît inscrite et ne reçoit jamais rien. -->
 	<key>aps-environment</key>
 	<string>production</string>
+	<!-- Shared with the widget extension, which reads the snapshot the app writes there.
+	     Byte-identical on both sides and equal to `DashcamSnapshotStore.appGroup`: a
+	     mismatch does not fail to build and raises nothing — the container URL is simply
+	     nil and the widget stays empty for ever. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.company.lno.dashcam</string>
+	</array>
 </dict>
 </plist>

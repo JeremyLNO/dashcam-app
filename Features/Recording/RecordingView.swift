@@ -330,15 +330,15 @@ struct RecordingView: View {
                 titleKey: "status.rear",
                 systemImage: "video.fill",
                 accent: .coral,
-                stateKey: capture.status.rearActive ? readyStateKey : "status.off",
-                isOn: capture.status.rearActive
+                stateKey: signal(for: capture.status.rearActive).stateKey(isRecording: recording.isRecording),
+                isOn: signal(for: capture.status.rearActive).isHealthy
             )
             hardwareCard(
                 titleKey: "status.front",
                 systemImage: "person.fill",
                 accent: .blue,
-                stateKey: capture.status.frontActive ? readyStateKey : "status.off",
-                isOn: capture.status.frontActive
+                stateKey: signal(for: capture.status.frontActive).stateKey(isRecording: recording.isRecording),
+                isOn: signal(for: capture.status.frontActive).isHealthy
             )
             // GPS is the one of the three a driver can actually change from here, so it
             // is a button rather than a lamp: tapping asks for the permission when it has
@@ -381,6 +381,16 @@ struct RecordingView: View {
 
     private var readyStateKey: String {
         recording.isRecording ? "status.recording" : "record.ready"
+    }
+
+    /// A camera card reads the frames, not the configuration. Cf. `CameraSignal`.
+    private func signal(for isActive: Bool) -> CameraSignal {
+        CameraSignal.assess(
+            isActive: isActive,
+            isRunning: capture.status.isRunning,
+            lastFrame: capture.status.lastVideoFrame,
+            startedRunningAt: capture.status.startedRunningAt
+        )
     }
 
     /// On means both halves are true: the user wants position, and iOS allows it.

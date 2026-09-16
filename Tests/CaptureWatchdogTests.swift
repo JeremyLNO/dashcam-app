@@ -84,10 +84,9 @@ final class CaptureWatchdogTests: XCTestCase {
 
     // MARK: - The first frame is its own question
 
-    /// A camera that has never produced a frame is not hesitating — it is misconfigured,
-    /// and no frame is on the way. Giving it the same four seconds as a session that *was*
-    /// delivering is four seconds of frozen picture at every launch.
-    func testASessionThatHasNeverDeliveredIsJudgedSooner() {
+    /// A session that has never delivered is still judged — just later, once « slow » has
+    /// been ruled out. What must not happen is a verdict before a cold start has finished.
+    func testASessionThatHasNeverDeliveredIsJudgedOnItsOwnClock() {
         let started = Date(timeIntervalSince1970: 1_700_000_000)
         XCTAssertEqual(
             CaptureWatchdog.assess(isRunning: true, lastFrame: nil, startedRunningAt: started,
@@ -119,9 +118,18 @@ final class CaptureWatchdogTests: XCTestCase {
         )
     }
 
-    func testTheFirstFrameIsGivenLessRopeThanARunningSession() {
-        XCTAssertLessThan(CaptureWatchdog.firstFrameTolerance, CaptureWatchdog.stallTolerance)
-        XCTAssertGreaterThan(CaptureWatchdog.firstFrameTolerance, 0.5,
-                             "below this, an ordinary cold start would be rebuilt for nothing")
+    /// The rope runs the other way, and getting it backwards shipped: a first frame that
+    /// is merely slow must not be mistaken for a camera that will never produce one, because
+    /// waiting costs nothing when the frame is coming and a rebuild costs the whole wait
+    /// again when it is.
+    func testTheFirstFrameIsGivenMoreRopeThanARunningSession() {
+        XCTAssertGreaterThan(
+            CaptureWatchdog.firstFrameTolerance, CaptureWatchdog.stallTolerance,
+            "a cold multi-camera start takes longer than a running session's hiccup"
+        )
+        XCTAssertGreaterThanOrEqual(CaptureWatchdog.firstFrameTolerance, 4,
+                                    "below this, an ordinary cold start is rebuilt for nothing")
+        XCTAssertLessThanOrEqual(CaptureWatchdog.firstFrameTolerance, 10,
+                                 "and past this the driver is watching a black rectangle")
     }
 }

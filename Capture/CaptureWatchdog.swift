@@ -18,12 +18,18 @@ enum CaptureWatchdog {
 
     /// And how long a session that has delivered **nothing at all** is given.
     ///
-    /// The two are not the same question, and treating them as one is why a launch freeze
-    /// lasted four seconds: a camera that has never produced a frame is not hesitating, it
-    /// is misconfigured — an over-budget multi-cam graph starts, reports itself running and
-    /// delivers nothing, forever. There is no frame on the way to wait for. One second of
-    /// slack covers the genuinely slow first frame; anything past that is the failure.
-    static let firstFrameTolerance: TimeInterval = 1.5
+    /// The two are not the same question — and the first answer to that was backwards, at
+    /// the driver's expense. « A camera that has never produced a frame is misconfigured,
+    /// so judge it sooner » sounds right and is wrong: at a cold start the first frame of a
+    /// two-camera graph genuinely takes a second or two, and cutting the rope at 1.5 s
+    /// rebuilt a session that was about to work. The rebuild costs the wait again, from
+    /// zero, and it reported itself as `Ready` throughout.
+    ///
+    /// The asymmetry is the other way round. **Waiting costs nothing when the frame is on
+    /// its way; rebuilding costs a guaranteed delay when it is.** So a session that has
+    /// never delivered gets *more* rope than one that has stopped — and when it does run
+    /// out, it really is misconfigured.
+    static let firstFrameTolerance: TimeInterval = 6
 
     enum Verdict: Equatable {
         /// Frames are arriving, or nothing is expected yet.

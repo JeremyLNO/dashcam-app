@@ -97,6 +97,13 @@ struct CaptureStatus: Equatable, Sendable {
     /// e.g. "Ultra Wide" / "Wide" — shown so the driver knows which lens is filming.
     var rearLensKey: String = "lens.unknown"
     var interruption: CaptureInterruption?
+    /// When a frame last arrived, whatever the camera — the only evidence that the
+    /// cameras are producing pictures rather than claiming to. Published so a card can say
+    /// « no picture » instead of « ready » over a black rectangle.
+    var lastVideoFrame: Date?
+    /// When the session last started. The pair is what tells a cold start apart from a
+    /// camera that will never deliver.
+    var startedRunningAt: Date?
     /// 0…1, how much of the multi-cam hardware budget the configuration uses.
     var hardwareCost: Float = 0
     var systemPressureCost: Float = 0

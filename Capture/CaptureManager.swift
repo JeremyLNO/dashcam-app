@@ -172,9 +172,13 @@ final class CaptureManager: ObservableObject {
             if let device = self.pendingOptimiserDevice {
                 self.sceneOptimiser.start(on: device)
             }
-            self.startedRunningAt = Date()
+            let startedAt = Date()
+            self.startedRunningAt = startedAt
             self.startWatchdog()
-            Task { @MainActor [weak self] in self?.status.isRunning = true }
+            Task { @MainActor [weak self] in
+                self?.status.isRunning = true
+                self?.status.startedRunningAt = startedAt
+            }
         }
     }
 
@@ -421,6 +425,15 @@ final class CaptureManager: ObservableObject {
                 lastFrame: self.router.lastVideoFrame,
                 startedRunningAt: self.startedRunningAt
             )
+            // Published every tick, whatever the verdict: the cards answer to this, and a
+            // camera delivering nothing has to be able to say so long before the watchdog
+            // decides to rebuild anything.
+            let lastFrame = self.router.lastVideoFrame
+            let startedAt = self.startedRunningAt
+            Task { @MainActor [weak self] in
+                self?.status.lastVideoFrame = lastFrame
+                self?.status.startedRunningAt = startedAt
+            }
             guard verdict == .stalled, self.stallRecoveries < Self.stallRecoveryLimit else { return }
             self.stallRecoveries += 1
             Log.capture.error("Capture stalled with no frame — rebuild \(self.stallRecoveries, privacy: .public) of \(Self.stallRecoveryLimit, privacy: .public)")
@@ -688,17 +701,40 @@ final class CaptureManager: ObservableObject {
             case .lowerFrameRate(let next):
                 Log.capture.info("Multi-cam cost \(cost, privacy: .public) over budget — trying \(next, privacy: .public) fps")
                 rate = next
-                session.beginConfiguration()
+                // ⚠️ Frame durations only, and **outside** any `beginConfiguration`.
+                //
+                // The first version of this walked the whole format selection again inside
+                // the session's own configuration block — which is exactly what the comment
+                // in `buildSession` warns against, and for exactly the reason it gives:
+                // locking a camera for configuration while the session is reconfiguring the
+                // same hardware leaves a preview frozen on its first frame. It shipped, and
+                // it came back as « the cameras do not start, it stays black » with every
+                // status reading Ready. A frame duration needs no session reconfiguration,
+                // and it is the only lever this walk actually needs.
                 for device in [rearInput?.device, frontInput?.device].compactMap({ $0 }) {
-                    Self.configureFormat(on: device, quality: quality, multiCam: true, frameRate: next)
+                    Self.applyFrameRate(next, to: device)
                 }
-                session.commitConfiguration()
             case .dropCabinCamera:
                 Log.capture.error("Multi-cam cost \(cost, privacy: .public) over budget at every frame rate — one camera")
                 return false
             }
         }
         return MultiCamBudget.fits(session.hardwareCost)
+    }
+
+    /// The one change the budget walk makes to a built graph. Deliberately narrow: the
+    /// active *format* cannot be changed without `beginConfiguration`, a frame duration can.
+    nonisolated private static func applyFrameRate(_ fps: Int, to device: AVCaptureDevice) {
+        let duration = CMTime(value: 1, timescale: CMTimeScale(fps))
+        // A format has a floor and a ceiling on what it will accept; asking outside it is
+        // an exception thrown at the camera, not a slower camera.
+        let supported = device.activeFormat.videoSupportedFrameRateRanges.contains {
+            $0.minFrameRate <= Double(fps) && $0.maxFrameRate >= Double(fps)
+        }
+        guard supported, (try? device.lockForConfiguration()) != nil else { return }
+        defer { device.unlockForConfiguration() }
+        device.activeVideoMinFrameDuration = duration
+        device.activeVideoMaxFrameDuration = duration
     }
 
     // MARK: - Observers

@@ -13,6 +13,7 @@ final class LocalizationTests: XCTestCase {
         "tab.record", "tab.videos", "tab.settings",
         "rec.on", "rec.off", "action.start", "action.stop", "action.protect", "action.export",
         "status.rear", "status.front", "status.gps", "status.free_space", "status.remaining", "status.quality",
+        "status.waking", "status.no_signal",
         "quality.eco", "quality.standard", "quality.high",
         "segment.1min", "segment.3min", "segment.5min",
         "retention.7days", "retention.30days", "retention.never",

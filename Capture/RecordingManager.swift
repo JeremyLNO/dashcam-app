@@ -364,7 +364,19 @@ final class RecordingManager: ObservableObject {
                 self?.thermal.update(hardwareCost: status.hardwareCost, systemPressureCost: status.systemPressureCost)
                 // A capture interruption while recording must not leave half-written
                 // files behind; close the session cleanly and tell the driver.
+                //
+                // ⚠️ Unless it only took the microphone. That fires whenever any other app
+                // wants the mic — Siri, a voice memo, a navigation app speaking a turn —
+                // and the cameras keep running throughout. Ending the drive there, with a
+                // modal on top, made a phone that speaks directions unable to film: the
+                // road was lost to protect the sound, which is the wrong way round for a
+                // dashcam. The drive carries on without sound and says so once.
                 if let interruption = status.interruption, self?.isRecording == true {
+                    guard interruption.affectsVideo else {
+                        self?.engine.setAudioAvailable(false)
+                        Log.recording.info("Microphone taken by another app — the drive continues without sound")
+                        return
+                    }
                     self?.alert = RecordingAlert(
                         titleKey: "alert.interrupted.title",
                         messageKey: interruption.messageKey,
@@ -372,6 +384,12 @@ final class RecordingManager: ObservableObject {
                     )
                     self?.isWaitingToResume = interruption.isTemporary
                     Task { await self?.stop(keepingResumeIntent: interruption.isTemporary) }
+                }
+
+                // The microphone came back. Later segments carry sound again; the ones
+                // written meanwhile simply have none, which is honest.
+                if status.interruption == nil, self?.isRecording == true {
+                    self?.engine.setAudioAvailable(status.audioActive)
                 }
 
                 // The hardware is back. A drive that was interrupted rather than stopped

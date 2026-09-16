@@ -74,6 +74,19 @@ final class RecordingEngine: SampleSink, @unchecked Sendable {
         }
     }
 
+    /// Whether the microphone is currently ours.
+    ///
+    /// Not a preference — a fact about the hardware, which another app can take at any
+    /// moment. It matters at a **segment boundary**: a writer that declares an audio input
+    /// and never feeds it does not produce a silent film, it produces a movie a fraction of
+    /// its true length, and sometimes one that will not open at all.
+    func setAudioAvailable(_ available: Bool) {
+        lock.lock()
+        let writer = rearWriter
+        lock.unlock()
+        writer?.setAudioAvailable(available)
+    }
+
     /// Stops the cabin camera without touching the road camera — what `ThermalManager`
     /// asks for when the device is too hot to keep both.
     /// Passes a position and an acceleration to both writers, so each file carries where

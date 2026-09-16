@@ -1652,31 +1652,31 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aufnahme unterbrochen: Ein Anruf nutzt das Mikrofon."
+            "value": "Eine andere App nutzt das Mikrofon. Die Fahrt wird weiter gefilmt, ohne Ton."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Recording interrupted: a phone call is using the microphone."
+            "value": "Another app is using the microphone. The drive keeps filming, without sound."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Grabación interrumpida: una llamada está usando el micrófono."
+            "value": "Otra app está usando el micrófono. El trayecto se sigue grabando, sin sonido."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Enregistrement interrompu : un appel utilise le micro."
+            "value": "Une autre app utilise le micro. Le trajet continue d'être filmé, sans le son."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gravação interrompida: uma chamada está a usar o microfone."
+            "value": "Outra app está a usar o microfone. A viagem continua a ser filmada, sem som."
           }
         }
       }

@@ -42,10 +42,15 @@ final class RecordingReadinessTests: XCTestCase {
         XCTAssertFalse(verdict.isReady)
     }
 
-    /// Any interruption, not only that one: a phone call and a thermal cut-off deliver
-    /// exactly as many frames.
-    func testEveryInterruptionBlocksTheDrive() {
-        for interruption in [CaptureInterruption.phoneCall, .takenByAnotherApp,
+    /// Every interruption that takes the **cameras**, not only the locked phone: another
+    /// app borrowing the lens and a thermal cut-off deliver exactly as many frames.
+    ///
+    /// ⚠️ This test used to say « every interruption », full stop — and that assertion was
+    /// the defect, written down and locked in. It made a microphone borrowed by Siri or by
+    /// a map speaking a turn refuse the drive outright, on a device whose cameras were
+    /// filming perfectly. A test can pin a mistake as firmly as it pins a rule.
+    func testEveryInterruptionThatTakesTheCamerasBlocksTheDrive() {
+        for interruption in [CaptureInterruption.takenByAnotherApp,
                              .videoDeviceTemporarilyUnavailable, .systemPressure,
                              .sensitiveContentBlocked, .unknown] {
             let verdict = RecordingReadiness.assess(status(interruption: interruption))
@@ -53,6 +58,12 @@ final class RecordingReadinessTests: XCTestCase {
             XCTAssertEqual(verdict.messageKey, interruption.messageKey,
                            "the driver is owed the reason, not a generic failure")
         }
+    }
+
+    /// And the one that does not: the cameras keep running while another app holds the
+    /// microphone, and a dashcam films the road.
+    func testAMicrophoneTakenElsewhereDoesNotBlockTheDrive() {
+        XCTAssertEqual(RecordingReadiness.assess(status(interruption: .phoneCall)), .ready)
     }
 
     /// A session that is simply not running says nothing about why, and still delivers

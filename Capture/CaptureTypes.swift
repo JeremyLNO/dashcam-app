@@ -52,6 +52,25 @@ enum CaptureInterruption: Equatable, Sendable {
         }
     }
 
+    /// Whether the **cameras** are affected, as opposed to the microphone alone.
+    ///
+    /// `audioDeviceInUseByAnotherClient` is the odd one out and its old name here —
+    /// « phone call » — hid that: it fires whenever *any* other client takes the
+    /// microphone. Siri, a voice memo, a navigation app speaking a turn, a Bluetooth
+    /// handset connecting. The cameras keep running throughout, and on a dashcam that is
+    /// the part that matters — so a drive must not stop, the status must not claim the
+    /// session has halted, and nothing must refuse to start because of it.
+    ///
+    /// Treating all interruptions alike ended a drive every time a map spoke.
+    var affectsVideo: Bool {
+        switch self {
+        case .phoneCall: return false
+        case .takenByAnotherApp, .notRunnableInBackground, .videoDeviceTemporarilyUnavailable,
+             .systemPressure, .sensitiveContentBlocked, .unknown:
+            return true
+        }
+    }
+
     /// Whether the camera can be expected back without the driver doing anything.
     ///
     /// A phone call, another app borrowing the camera, thermal pressure: all of them end.

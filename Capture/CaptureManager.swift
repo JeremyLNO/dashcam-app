@@ -63,6 +63,9 @@ final class CaptureManager: ObservableObject {
     /// The frame rate the last build actually applied to the cameras, which is the driver's
     /// choice until the hardware budget says otherwise. Read by the budget walk.
     nonisolated(unsafe) private var appliedFrameRate = 30
+    /// Whether the graph was built with audio at all — the value to restore when a
+    /// microphone borrowed by another app is handed back.
+    private var configuredAudioActive = false
 
     /// Latest resolved encoding parameters, read by `RecordingManager` when it starts.
     private(set) var rearFormat = VideoFormatDescriptor.resolved(for: .standard, codec: AVVideoCodecType.hevc.rawValue)
@@ -151,6 +154,7 @@ final class CaptureManager: ObservableObject {
         }
 
         status = result.status
+        configuredAudioActive = result.status.audioActive
         rearFormat = result.rearFormat
         frontFormat = result.frontFormat
         isConfigured = result.status.mode != .unavailable
@@ -748,15 +752,22 @@ final class CaptureManager: ObservableObject {
         observers.append(center.addObserver(forName: AVCaptureSession.wasInterruptedNotification, object: session, queue: .main) { [weak self] note in
             let raw = (note.userInfo?[AVCaptureSessionInterruptionReasonKey] as? NSNumber)?.intValue
             let reason = raw.flatMap { AVCaptureSession.InterruptionReason(rawValue: $0) }
+            let interruption = reason.map(CaptureInterruption.init(reason:)) ?? .unknown
             Task { @MainActor in
-                self?.status.interruption = reason.map(CaptureInterruption.init(reason:)) ?? .unknown
-                self?.status.isRunning = false
+                self?.status.interruption = interruption
+                // Only when the cameras are actually affected. An interruption that took
+                // the microphone alone leaves the session running and delivering video,
+                // and saying otherwise makes everything downstream — the cards, the
+                // readiness check, the drive itself — act on a failure that did not happen.
+                if interruption.affectsVideo { self?.status.isRunning = false }
+                if !interruption.affectsVideo { self?.status.audioActive = false }
             }
         })
 
         observers.append(center.addObserver(forName: AVCaptureSession.interruptionEndedNotification, object: session, queue: .main) { [weak self] _ in
             Task { @MainActor in
                 self?.status.interruption = nil
+                self?.status.audioActive = self?.configuredAudioActive ?? false
                 // AVFoundation restarts the session itself once the interruption clears;
                 // nudging it is harmless and covers the cases where it does not.
                 self?.startRunning()

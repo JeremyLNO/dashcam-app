@@ -36,9 +36,11 @@ enum RecordingReadiness: Equatable {
                 messageKey: status.unavailability?.messageKey ?? "capture.error.no_camera"
             )
         }
-        // An interruption is the locked-phone case, and also the phone call and the
-        // thermal cut-off. All three mean the same thing here: no frames are coming.
-        if let interruption = status.interruption {
+        // An interruption is the locked-phone case, and also the thermal cut-off. Both mean
+        // the same thing here: no frames are coming. The microphone being taken by another
+        // app does **not** — the cameras keep running, and a dashcam films the road. A
+        // drive refused because a map spoke a turn is a drive that was not filmed.
+        if let interruption = status.interruption, interruption.affectsVideo {
             return .blocked(titleKey: "alert.camera_unavailable.title", messageKey: interruption.messageKey)
         }
         // A session that is not running delivers nothing, whatever it says about why.

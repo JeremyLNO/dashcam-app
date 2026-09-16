@@ -56,6 +56,10 @@ final class SegmentWriter {
     private var latestLocation: CLLocation?
     private var latestGForce: Double?
 
+    /// Whether the microphone is ours right now. Starts true — a writer built with audio
+    /// was built because audio was available.
+    private var isAudioAvailable = true
+
     private var currentIndex = 0
     private var currentStartDate = Date()
     private var currentRelativePath = ""
@@ -96,6 +100,17 @@ final class SegmentWriter {
     func appendAudio(_ sampleBuffer: CMSampleBuffer) {
         guard includesAudio else { return }
         queue.async { [weak self] in self?.handleAudio(sampleBuffer) }
+    }
+
+    /// Told when another app takes the microphone, and when it gives it back.
+    ///
+    /// Read at the top of each segment rather than acted on immediately: the segment being
+    /// written keeps the audio track it already has — which simply ends early, and that is
+    /// honest — while the **next** one is opened without an audio input at all. An input
+    /// declared and never fed is the defect that produces a movie a fraction of its length,
+    /// or one that will not open. Cf. the metadata track below, same lesson.
+    func setAudioAvailable(_ available: Bool) {
+        queue.async { [weak self] in self?.isAudioAvailable = available }
     }
 
     /// Hands over where the car is, to be written into the timed track.
@@ -247,7 +262,7 @@ final class SegmentWriter {
             newWriter.add(videoInput)
             self.videoInput = videoInput
 
-            if includesAudio {
+            if includesAudio && isAudioAvailable {
                 let audioInput = AVAssetWriterInput(mediaType: .audio, outputSettings: Self.audioSettings)
                 audioInput.expectsMediaDataInRealTime = true
                 if newWriter.canAdd(audioInput) {

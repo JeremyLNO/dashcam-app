@@ -91,6 +91,7 @@
 		D7E130AAA5ABAAA01927A683 /* ControlCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 609947873BB6ABA09F8E94A8 /* ControlCommands.swift */; };
 		196A0DF6FB8889B71E3F3DE6 /* RecordingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B852E8C1E9E287C8DBD08608 /* RecordingIntents.swift */; };
 		A1750838D5D7553667B33410 /* RemoteProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2590BCCDE50A3B33C610B /* RemoteProtocol.swift */; };
+		36812CF03A73C56C5D1FB9D2 /* AudioInterruptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D443A27EEDB67132987EA77 /* AudioInterruptionTests.swift */; };
 		3F48C9673899D91D8D3D4A7A /* CameraSignalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A392A820D8CDE83D7209A56A /* CameraSignalTests.swift */; };
 		A7B4FC17884F8A57180C46C0 /* CapturePresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EEB934543C593832EA8D026 /* CapturePresenceTests.swift */; };
 		D0913E3AF31C4BE2CFC162DE /* CaptureWatchdogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */; };
@@ -253,6 +254,7 @@
 		3CBC9DA2BA9DF3F3ADF792AF /* StorageLocations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StorageLocations.swift"; sourceTree = "<group>"; };
 		A504B2DD910C9470D162881D /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StorageManager.swift"; sourceTree = "<group>"; };
 		4A0ED5D734E00333761AAFDD /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubscriptionManager.swift"; sourceTree = "<group>"; };
+		0D443A27EEDB67132987EA77 /* AudioInterruptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioInterruptionTests.swift"; sourceTree = "<group>"; };
 		A392A820D8CDE83D7209A56A /* CameraSignalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraSignalTests.swift"; sourceTree = "<group>"; };
 		2EEB934543C593832EA8D026 /* CapturePresenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CapturePresenceTests.swift"; sourceTree = "<group>"; };
 		CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaptureWatchdogTests.swift"; sourceTree = "<group>"; };
@@ -633,6 +635,7 @@
 		74C0354F987B4FC0FDE2C044 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				0D443A27EEDB67132987EA77 /* AudioInterruptionTests.swift */,
 				A392A820D8CDE83D7209A56A /* CameraSignalTests.swift */,
 				2EEB934543C593832EA8D026 /* CapturePresenceTests.swift */,
 				CBC88E1B8DBE21FCDFF98348 /* CaptureWatchdogTests.swift */,
@@ -1127,6 +1130,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				36812CF03A73C56C5D1FB9D2 /* AudioInterruptionTests.swift in Sources */,
 				3F48C9673899D91D8D3D4A7A /* CameraSignalTests.swift in Sources */,
 				A7B4FC17884F8A57180C46C0 /* CapturePresenceTests.swift in Sources */,
 				D0913E3AF31C4BE2CFC162DE /* CaptureWatchdogTests.swift in Sources */,

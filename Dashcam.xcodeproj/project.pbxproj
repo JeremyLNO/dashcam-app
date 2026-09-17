@@ -85,7 +85,6 @@
 		F8846E7D2150CB341960CECA /* SessionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A168E45E14AD7C867D14DE /* SessionDetailView.swift */; };
 		70B69B11362F15766AEA4E06 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7975660CA6839AEB438A1334 /* OnboardingView.swift */; };
 		1208F07E1DC91715A947F364 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB7FD6D0E9A8A53A3C95972 /* PaywallView.swift */; };
-		269B36EA5DF9324C6C46626F /* DiscreetScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D2FDE4F9560F629A92F105 /* DiscreetScreen.swift */; };
 		DBF4014381EF8BF8642E8D03 /* MountAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3962361BD0D5AD11527FA13A /* MountAssistant.swift */; };
 		1682E3A08A7007269982433E /* RecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4B4082160F60E8FDB19DD8 /* RecordingView.swift */; };
 		AF1C33268A61D0D71F8B7837 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128876BA9CB203F0B32BD069 /* SettingsView.swift */; };
@@ -241,7 +240,6 @@
 		26A168E45E14AD7C867D14DE /* SessionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionDetailView.swift"; sourceTree = "<group>"; };
 		7975660CA6839AEB438A1334 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingView.swift"; sourceTree = "<group>"; };
 		CEB7FD6D0E9A8A53A3C95972 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallView.swift"; sourceTree = "<group>"; };
-		F7D2FDE4F9560F629A92F105 /* DiscreetScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DiscreetScreen.swift"; sourceTree = "<group>"; };
 		3962361BD0D5AD11527FA13A /* MountAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MountAssistant.swift"; sourceTree = "<group>"; };
 		2A4B4082160F60E8FDB19DD8 /* RecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecordingView.swift"; sourceTree = "<group>"; };
 		128876BA9CB203F0B32BD069 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView.swift"; sourceTree = "<group>"; };
@@ -577,7 +575,6 @@
 		BFA1F92B3F16F2F23B252E48 /* Recording */ = {
 			isa = PBXGroup;
 			children = (
-				F7D2FDE4F9560F629A92F105 /* DiscreetScreen.swift */,
 				3962361BD0D5AD11527FA13A /* MountAssistant.swift */,
 				2A4B4082160F60E8FDB19DD8 /* RecordingView.swift */,
 			);
@@ -1131,7 +1128,6 @@
 				F8846E7D2150CB341960CECA /* SessionDetailView.swift in Sources */,
 				70B69B11362F15766AEA4E06 /* OnboardingView.swift in Sources */,
 				1208F07E1DC91715A947F364 /* PaywallView.swift in Sources */,
-				269B36EA5DF9324C6C46626F /* DiscreetScreen.swift in Sources */,
 				DBF4014381EF8BF8642E8D03 /* MountAssistant.swift in Sources */,
 				1682E3A08A7007269982433E /* RecordingView.swift in Sources */,
 				AF1C33268A61D0D71F8B7837 /* SettingsView.swift in Sources */,

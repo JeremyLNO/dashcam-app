@@ -69,7 +69,11 @@ struct RootView: View {
                 .tabItem {
                     Label(title: { Text(key: "tab.record") }, icon: { Image(systemName: "record.circle") })
                 }
-                .tag(1)
+                // Nothing to go to while filming: Drives and Settings are read while
+                // stopped, and a bar floating over the road is three targets a driver can
+                // hit by reaching for Stop. Stopping brings it back.
+                .toolbar(recording.isRecording ? .hidden : .visible, for: .tabBar)
+                .tag(Self.recordingTab)
 
             SettingsView()
                 .tabItem {

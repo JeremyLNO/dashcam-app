@@ -3256,6 +3256,41 @@
         }
       }
     },
+    "detail.protected": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protected"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protégés"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geschützt"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protegidos"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protegidos"
+          }
+        }
+      }
+    },
     "detail.protected_events": {
       "extractionState": "manual",
       "localizations": {
@@ -3927,31 +3962,31 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tippen, um die Kameras einzublenden"
+            "value": "Tippen Sie, um den diskreten Bildschirm zu verlassen"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tap anywhere to show the cameras"
+            "value": "Tap anywhere to leave the discreet screen"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Toca la pantalla para ver las cámaras"
+            "value": "Toca la pantalla para salir del modo discreto"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Touchez l'écran pour réafficher les caméras"
+            "value": "Touchez l'écran pour quitter le mode discret"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Toque no ecrã para ver as câmaras"
+            "value": "Toque no ecrã para sair do modo discreto"
           }
         }
       }
@@ -9412,6 +9447,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pronto"
+          }
+        }
+      }
+    },
+    "record.segments": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clips"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clips"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clips"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clips"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clipes"
           }
         }
       }

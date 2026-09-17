@@ -347,18 +347,25 @@ final class RecordingManager: ObservableObject {
             self.engine.appendMetadata(location: fix, gForce: nil)
         }
 
+        // ⚠️ **No alert here, and that is the point.** A modal needs a hand on it, and the
+        // moment it appears is the moment both hands are on the wheel — a driver who has
+        // just braked hard or been hit is the last person who should be asked to press OK.
+        // Worse, the sheet covers the road preview and the Stop button until they do.
+        //
+        // The app already did the only thing that mattered before saying anything: the
+        // footage is protected. So it says so the way a dashboard light says things —
+        // `lastDetectedEvent` turns the Protect button green for a few seconds and then
+        // goes out on its own, seen or not.
         motion.onImpact = { [weak self] event in
             guard let self, self.isRecording else { return }
             self.protectNow(origin: .impact, magnitude: event.magnitude)
             self.lastDetectedEvent = DetectedEvent(origin: .impact, magnitude: event.magnitude, at: Date())
-            self.alert = RecordingAlert(titleKey: "alert.impact.title", messageKey: "alert.impact.message")
         }
 
         motion.onHarshBraking = { [weak self] event in
             guard let self, self.isRecording else { return }
             self.protectNow(origin: .harshBraking, magnitude: event.magnitude)
             self.lastDetectedEvent = DetectedEvent(origin: .harshBraking, magnitude: event.magnitude, at: Date())
-            self.alert = RecordingAlert(titleKey: "alert.braking.title", messageKey: "alert.braking.message")
         }
 
         motion.onSecondElapsed = { [weak self] date, peak in

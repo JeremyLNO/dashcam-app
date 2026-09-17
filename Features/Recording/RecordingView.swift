@@ -31,27 +31,27 @@ struct RecordingView: View {
     @State private var lastInteraction = Date()
     @State private var discreetTimer: Timer?
     @State private var protectFlash = false
+    @State private var protectFlashTask: Task<Void, Never>?
 
     private var isDiscreet: Bool { dimmer.isDiscreet }
 
     var body: some View {
         ZStack {
-            Theme.background.ignoresSafeArea()
+            // Black rather than the app's cream while discreet: at night the ground is the
+            // lamp, not the picture. A windscreen reflects a full-width pale rectangle long
+            // before it reflects a dark road.
+            (isDiscreet ? Color.black : Theme.background).ignoresSafeArea()
 
-            if isDiscreet {
-                DiscreetScreen(
-                    isRecording: recording.isRecording,
-                    elapsed: recording.elapsed,
-                    status: capture.status,
-                    freeSpace: storage.snapshot.freeBytes,
-                    wakesOnImpact: recording.isRecording && settingsStore.settings.impactDetectionEnabled,
-                    onProtect: protect,
-                    onExit: exitDiscreet
-                )
-                .transition(.opacity)
-            } else {
-                content
-            }
+            // The same screen throughout, **darkened** — not a different one. The previous
+            // version swapped in a separate view and took the cameras away with it, which
+            // is the one thing a driver may still want to glance at. Going discreet is
+            // about how much light the phone throws, not about what it is showing.
+            content
+                .overlay {
+                    if isDiscreet {
+                        discreetHint
+                    }
+                }
         }
         .animation(.easeInOut(duration: 0.25), value: isDiscreet)
         .onAppear { scheduleDiscreet() }
@@ -65,7 +65,13 @@ struct RecordingView: View {
         // A collision is not a moment to be looking at a black screen: the app has
         // something to say, and it cannot say it in the dark.
         .onChange(of: recording.lastDetectedEvent) { _, event in
-            guard let event, ScreenDimmer.wakes(event.origin) else { return }
+            guard let event else { return }
+            // The whole announcement: the Protect button goes green for a few seconds and
+            // then goes out, seen or not. A driver who has just braked hard has both hands
+            // on the wheel, and a sheet that has to be dismissed sits on top of the road
+            // and the Stop button until one of them comes off it.
+            confirmProtection()
+            guard ScreenDimmer.wakes(event.origin) else { return }
             exitDiscreet()
         }
         // A drive is the only reason to be dark, so it is also what arms the countdown —
@@ -123,22 +129,44 @@ struct RecordingView: View {
             }
         }
         .contentShape(Rectangle())
-        .onTapGesture { noteInteraction() }
+        .onTapGesture { isDiscreet ? exitDiscreet() : noteInteraction() }
+    }
+
+    /// How far everything that is not a camera fades while discreet.
+    ///
+    /// Not zero: Stop and Protect have to stay findable by a hand that knows where they
+    /// are, and a control faded to nothing is a control the driver has to leave the mode to
+    /// reach. Opacity does not block a tap, so both still work at this value.
+    private var chromeOpacity: Double { isDiscreet ? 0.16 : 1 }
+    private var controlsOpacity: Double { isDiscreet ? 0.34 : 1 }
+
+    private var discreetHint: some View {
+        VStack {
+            Spacer()
+            Text(key: "discreet.tap_to_exit")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.white.opacity(0.35))
+                .padding(.bottom, 10)
+        }
+        .allowsHitTesting(false)
     }
 
     private var portraitContent: some View {
         ScrollView {
             VStack(spacing: 18) {
-                header
+                header.opacity(chromeOpacity)
                 previews
                     .aspectRatio(previewAspect, contentMode: .fit)
-                hardwareRow
-                controls
-                // While recording, the figures give way: the road and the two controls
-                // are all a driver should have to look at. They are a pre-flight check,
-                // not something to read at speed.
+                // While recording, the pre-flight cards give way — they are read while
+                // stopped — and the room they leave goes to the live figures instead.
+                if recording.isRecording {
+                    liveStats.opacity(chromeOpacity)
+                } else {
+                    hardwareRow.opacity(chromeOpacity)
+                }
+                controls.opacity(controlsOpacity)
                 if !recording.isRecording {
-                    driveStats
+                    driveStats.opacity(chromeOpacity)
                 }
             }
             .padding(.horizontal, 18)
@@ -153,20 +181,27 @@ struct RecordingView: View {
             previews
                 .aspectRatio(previewAspect, contentMode: .fit)
                 .frame(maxWidth: .infinity)
-                // The tab bar floats over the content, so the preview has to stop short
-                // of it rather than disappear behind it.
-                .padding(.bottom, Theme.floatingTabBarClearance)
+                // The tab bar floats over the content, so the preview has to stop short of
+                // it — except while recording, when the bar is not there at all and the
+                // road takes the room back.
+                .padding(.bottom, recording.isRecording ? 0 : Theme.floatingTabBarClearance)
 
-            VStack(spacing: 10) {
-                compactHeader
-                if !recording.isRecording {
-                    hardwareColumn
+            VStack(spacing: 12) {
+                compactHeader.opacity(chromeOpacity)
+                if recording.isRecording {
+                    // This column used to be a header, a spacer and two buttons — which on
+                    // a wide screen meant a third of the display holding nothing at all,
+                    // right where a driver's eye lands. The figures that change while
+                    // driving belong there.
+                    liveStats.opacity(chromeOpacity)
+                } else {
+                    hardwareColumn.opacity(chromeOpacity)
                 }
                 Spacer(minLength: 0)
-                controls
+                controls.opacity(controlsOpacity)
             }
             .frame(width: 366)
-            .padding(.bottom, Theme.floatingTabBarClearance)
+            .padding(.bottom, recording.isRecording ? 8 : Theme.floatingTabBarClearance)
         }
         .padding(.horizontal, 16)
         .padding(.top, 6)
@@ -480,6 +515,40 @@ struct RecordingView: View {
         }
     }
 
+    /// What changes while the car is moving, and nothing else.
+    ///
+    /// Four lines rather than the pastel grid: a driver reads a figure in the corner of an
+    /// eye or not at all, and a card with a coloured disc beside it costs a look.
+    private var liveStats: some View {
+        VStack(spacing: 8) {
+            liveRow(titleKey: "detail.distance", value: distanceValue, systemImage: "point.topleft.down.to.point.bottomright.curvepath.fill")
+            liveRow(titleKey: "record.segments", value: "\(recording.segmentCount)", systemImage: "square.stack.3d.up.fill")
+            liveRow(titleKey: "detail.protected", value: "\(currentSession?.activeEvents.count ?? 0)", systemImage: "shield.lefthalf.filled")
+            liveRow(titleKey: "status.free_space", value: Format.bytes(storage.snapshot.freeBytes), systemImage: "internaldrive.fill")
+        }
+        .dashcamCard()
+    }
+
+    private func liveRow(titleKey: String, value: String, systemImage: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.textTertiary)
+                .frame(width: 20)
+            Text(key: titleKey)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Spacer(minLength: 6)
+            Text(verbatim: value)
+                .font(.system(size: 17, weight: .bold).monospacedDigit())
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
     // MARK: - Drive stats
 
     private var driveStats: some View {
@@ -564,10 +633,24 @@ struct RecordingView: View {
     /// wrong moment.
     private func protect() {
         guard recording.protectNow(origin: .manual) else { return }
+        noteInteraction()
+        confirmProtection()
+    }
+
+    /// Says « kept » without asking for anything back.
+    ///
+    /// Shared by the button and by the sensors, because from the driver's seat they are the
+    /// same event — footage has just been pinned — and answering them differently would
+    /// mean learning two languages for one fact.
+    private func confirmProtection() {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         withAnimation(.easeOut(duration: 0.15)) { protectFlash = true }
-        noteInteraction()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+        protectFlashTask?.cancel()
+        protectFlashTask = Task { @MainActor in
+            // Cancellable, so two events in quick succession do not leave the first one's
+            // timer to switch the light off under the second.
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            guard !Task.isCancelled else { return }
             withAnimation(.easeIn(duration: 0.4)) { protectFlash = false }
         }
     }

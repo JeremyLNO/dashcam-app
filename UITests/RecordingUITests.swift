@@ -55,7 +55,7 @@ final class RecordingUITests: UITestCase {
 
         dim.tap()
         XCTAssertFalse(
-            app.staticTexts["Tap anywhere to show the cameras"].waitForExistence(timeout: 3),
+            app.staticTexts["Tap anywhere to leave the discreet screen"].waitForExistence(timeout: 3),
             "the screen went discreet with no recording running"
         )
         XCTAssertTrue(app.buttons["Start Drive"].exists, "and Start is exactly what it would have hidden")
